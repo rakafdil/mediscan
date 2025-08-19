@@ -107,6 +107,7 @@ const Symptoms: React.FC = () => {
                         Lanjut
                     </button>
                 </form>
+
             </div>
         </div>
     );

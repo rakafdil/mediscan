@@ -21,7 +21,7 @@ const SistemPakarPage = () => {
                         <li className="hover:scale-105 transition-all duration-300">Pastikan Anda telah daftar dan masuk
                             ke sistem, jika belum Anda dapat mendaftar terlebih dahulu.
                         </li>
-                        <li className="hover:scale-105 transition-all duration-300">Tekan tombol "Mulai Diagnosa" di sebelah untuk melanjutkan pengecekan.</li>
+                        <li className="hover:scale-105 transition-all duration-300">Tekan tombol {"Mulai Diagnosa"} di sebelah untuk melanjutkan pengecekan.</li>
                         <li className="hover:scale-105 transition-all duration-300">Masukkan informasi diri Anda yang telah
                             diminta oleh sistem (usia, jenis kelamin, riwayat
                             kesehatan).</li>
