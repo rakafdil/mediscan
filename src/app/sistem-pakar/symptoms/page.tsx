@@ -5,11 +5,19 @@ const Symptoms: React.FC = () => {
     const [umur, setUmur] = useState<number | "">("");
     const [gender, setGender] = useState<string>("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log({ umur, gender });
-        // TODO: ganti dengan fetch/axios ke API Next.js atau backend Laravel
+
+        const res = await fetch("/api/symptoms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ umur, gender }),
+        });
+
+        const data = await res.json();
+        console.log(data);
     };
+
 
     return (
         <div>
@@ -92,8 +100,8 @@ const Symptoms: React.FC = () => {
                         type="submit"
                         disabled={!umur || !gender}
                         className={`w-full font-semibold py-2 px-4 rounded-lg transition ${umur && gender
-                                ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
-                                : "bg-gray-400 text-white cursor-not-allowed"
+                            ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
+                            : "bg-gray-400 text-white cursor-not-allowed"
                             }`}
                     >
                         Lanjut
