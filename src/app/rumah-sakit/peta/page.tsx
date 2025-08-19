@@ -1,167 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-
-// Types
-interface Hospital {
-    id: string;
-    place_id: string;
-    name: string;
-    address: string;
-    distance: string;
-    rating: number;
-    capacity: string;
-    availability?: {
-        status: 'high' | 'medium' | 'low' | 'full';
-        percentage: number;
-    };
-    lat: number;
-    lng: number;
-}
-
-interface LocationData {
-    name: string;
-    lat: number;
-    lng: number;
-}
-
-interface AppState {
-    centerLat: number | null;
-    centerLng: number | null;
-    currentRadius: number;
-    selectedLocation: string;
-    hospitals: Hospital[];
-    loading: boolean;
-    error: string | null;
-    showLocationSelector: boolean;
-    stats: {
-        total_hospitals: number;
-        average_rating: number;
-        total_available_beds: number;
-        occupancy_rate: number;
-    } | null;
-}
-
-// Constants
-const CONFIG = {
-    DEFAULT_RADIUS: 10,
-    DEFAULT_ZOOM: 13,
-    USER_ZOOM: 14,
-    API_ENDPOINTS: {
-        NEARBY_HOSPITALS: '/api/rumah-sakit/nearby',
-        HOSPITAL_STATS: '/api/rumah-sakit/stats'
-    }
-};
-
-const LOCATION_DATA: Record<string, LocationData> = {
-    jawa_barat: { name: "Jawa Barat", lat: -6.9147, lng: 107.6098 },
-    jawa_tengah: { name: "Jawa Tengah", lat: -7.0051, lng: 110.4381 },
-    jawa_timur: { name: "Jawa Timur", lat: -7.2575, lng: 112.7521 },
-    dki_jakarta: { name: "DKI Jakarta", lat: -6.2088, lng: 106.8456 },
-    di_yogyakarta: { name: "DI Yogyakarta", lat: -7.7971, lng: 110.3688 }
-};
-
-const dataKabupaten: Record<string, LocationData[]> = {
-    jawa_barat: [
-        { name: 'Bandung', lat: -6.90389, lng: 107.61861 },
-        { name: 'Bekasi', lat: -6.2349, lng: 106.9896 },
-        { name: 'Bogor', lat: -6.595, lng: 106.8166 },
-        { name: 'Cianjur', lat: -6.8222, lng: 107.1424 },
-        { name: 'Cirebon', lat: -6.732, lng: 108.552 }
-    ],
-    jawa_tengah: [
-        { name: 'Semarang', lat: -6.9667, lng: 110.4167 },
-        { name: 'Solo', lat: -7.5667, lng: 110.8167 },
-        { name: 'Magelang', lat: -7.4818, lng: 110.2177 },
-        { name: 'Pekalongan', lat: -6.8833, lng: 109.667 },
-        { name: 'Tegal', lat: -6.869, lng: 109.1256 }
-    ],
-    jawa_timur: [
-        { name: 'Surabaya', lat: -7.25, lng: 112.75 },
-        { name: 'Malang', lat: -7.9819, lng: 112.6265 },
-        { name: 'Sidoarjo', lat: -7.45, lng: 112.717 },
-        { name: 'Kediri', lat: -7.8166, lng: 112.0111 },
-        { name: 'Jember', lat: -8.1737, lng: 113.7004 }
-    ],
-    dki_jakarta: [
-        { name: 'Jakarta Pusat', lat: -6.1865, lng: 106.8341 },
-        { name: 'Jakarta Barat', lat: -6.1683, lng: 106.7589 },
-        { name: 'Jakarta Timur', lat: -6.2251, lng: 106.9004 },
-        { name: 'Jakarta Selatan', lat: -6.2666, lng: 106.8133 },
-        { name: 'Jakarta Utara', lat: -6.138, lng: 106.8827 }
-    ],
-    di_yogyakarta: [
-        { name: 'Sleman', lat: -7.7167, lng: 110.3667 },
-        { name: 'Bantul', lat: -7.8886, lng: 110.3282 },
-        { name: 'Gunung Kidul', lat: -7.9949, lng: 110.6177 },
-        { name: 'Kulon Progo', lat: -7.8244, lng: 110.1644 },
-        { name: 'Yogyakarta Kota', lat: -7.8014, lng: 110.3649 }
-    ]
-};
-
-const dataKota: Record<string, Record<string, LocationData[]>> = {
-    'jawa_barat': {
-        'Bandung': [
-            { name: 'Bandung Kota', lat: -6.9147, lng: 107.6098 },
-            { name: 'Cimahi', lat: -6.8728, lng: 107.5429 },
-            { name: 'Lembang', lat: -6.8181, lng: 107.6155 }
-        ],
-        'Bekasi': [
-            { name: 'Bekasi Kota', lat: -6.2383, lng: 106.9756 },
-            { name: 'Cikarang', lat: -6.3066, lng: 107.1722 },
-            { name: 'Tambun', lat: -6.2574, lng: 107.0505 }
-        ],
-        'Bogor': [
-            { name: 'Bogor Kota', lat: -6.595, lng: 106.8166 },
-            { name: 'Cibinong', lat: -6.4859, lng: 106.8543 },
-            { name: 'Cisarua', lat: -6.6705, lng: 106.9328 }
-        ]
-    },
-    'jawa_tengah': {
-        'Semarang': [
-            { name: 'Semarang Kota', lat: -6.9667, lng: 110.4167 },
-            { name: 'Ungaran', lat: -7.1397, lng: 110.4066 },
-            { name: 'Ambarawa', lat: -7.2603, lng: 110.4031 }
-        ],
-        'Solo': [
-            { name: 'Solo Kota', lat: -7.5667, lng: 110.8167 },
-            { name: 'Laweyan', lat: -7.5691, lng: 110.7969 },
-            { name: 'Banjarsari', lat: -7.5587, lng: 110.8221 }
-        ]
-    },
-    'jawa_timur': {
-        'Surabaya': [
-            { name: 'Surabaya Pusat', lat: -7.2575, lng: 112.7521 },
-            { name: 'Surabaya Timur', lat: -7.275, lng: 112.787 },
-            { name: 'Surabaya Selatan', lat: -7.321, lng: 112.730 }
-        ],
-        'Malang': [
-            { name: 'Malang Kota', lat: -7.9819, lng: 112.6265 },
-            { name: 'Kepanjen', lat: -8.1317, lng: 112.5666 },
-            { name: 'Turen', lat: -8.1762, lng: 112.7086 }
-        ]
-    }
-};
-
-// Utility functions
-const getAvailabilityInfo = (availability?: Hospital['availability']) => {
-    if (!availability) {
-        return { class: 'bg-gray-400', color: '#95a5a6', text: 'Tidak diketahui' };
-    }
-
-    const statusMap = {
-        high: { class: 'bg-green-500', color: '#27ae60', text: `Tersedia (${availability.percentage}%)` },
-        medium: { class: 'bg-yellow-500', color: '#f39c12', text: `Terbatas (${availability.percentage}%)` },
-        low: { class: 'bg-orange-500', color: '#e67e22', text: `Sedikit (${availability.percentage}%)` },
-        full: { class: 'bg-red-500', color: '#e74c3c', text: 'Penuh (0%)' }
-    };
-
-    return statusMap[availability.status] || { class: 'bg-gray-400', color: '#95a5a6', text: 'Tidak diketahui' };
-};
-
-const formatDistance = (distance: string | number): string => {
-    return parseFloat(distance.toString()).toFixed(1);
-};
+import {
+    Hospital, LocationData, AppState, CONFIG, LOCATION_DATA,
+    dataKabupaten, dataKota, getAvailabilityInfo, formatDistance
+} from './utils';
 
 // Success Alert Component
 const SuccessAlert: React.FC<{ message: string; onClose: () => void }> = ({ message, onClose }) => {
@@ -252,26 +95,26 @@ const MapComponent: React.FC<{
                 }).addTo(map);
 
                 const popupContent = `
-            <div class="max-w-xs">
-                <div class="flex items-center mb-2">
-                <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${availabilityInfo.color}"></span>
-                <h3 class="font-bold">${hospital.name}</h3>
-                </div>
-                <p class="mb-1"><strong>📍 Alamat:</strong> ${hospital.address}</p>
-                <p class="mb-1"><strong>📏 Jarak:</strong> ${hospital.distance} km</p>
-                <p class="mb-1"><strong>🏥 Kapasitas:</strong> ${hospital.capacity}</p>
-                <p class="mb-1"><strong>⭐ Rating:</strong> ${hospital.rating}</p>
-                <p class="mb-3" style="color: ${availabilityInfo.color};">
-                <strong>🛏 Ketersediaan:</strong> ${availabilityInfo.text}
-                </p>
-                <div class="text-center">
-                <button onclick="window.showHospitalDetail('${hospital.id}')" 
-                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                    <i class="fas fa-info-circle"></i> Lihat Detail
-                </button>
-                </div>
+          <div class="max-w-xs">
+            <div class="flex items-center mb-2">
+              <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${availabilityInfo.color}"></span>
+              <h3 class="font-bold">${hospital.name}</h3>
             </div>
-            `;
+            <p class="mb-1"><strong>📍 Alamat:</strong> ${hospital.address}</p>
+            <p class="mb-1"><strong>📏 Jarak:</strong> ${hospital.distance} km</p>
+            <p class="mb-1"><strong>🏥 Kapasitas:</strong> ${hospital.capacity}</p>
+            <p class="mb-1"><strong>⭐ Rating:</strong> ${hospital.rating}</p>
+            <p class="mb-3" style="color: ${availabilityInfo.color};">
+              <strong>🛏 Ketersediaan:</strong> ${availabilityInfo.text}
+            </p>
+            <div class="text-center">
+              <button onclick="window.showHospitalDetail('${hospital.id}')" 
+                      class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                <i class="fas fa-info-circle"></i> Lihat Detail
+              </button>
+            </div>
+          </div>
+        `;
 
                 marker.bindPopup(popupContent);
             });
@@ -292,13 +135,13 @@ const MapComponent: React.FC<{
                 }).addTo(map);
 
                 const popupContent = `
-            <div class="text-center">
-                <strong>📍 Lokasi Anda</strong><br>
-                <small>Lat: ${userLocation[0].toFixed(6)}</small><br>
-                <small>Lng: ${userLocation[1].toFixed(6)}</small><br>
-                ${userAccuracy ? `<small>Akurasi: ~${Math.round(userAccuracy)}m</small>` : ''}
-            </div>
-            `;
+          <div class="text-center">
+            <strong>📍 Lokasi Anda</strong><br>
+            <small>Lat: ${userLocation[0].toFixed(6)}</small><br>
+            <small>Lng: ${userLocation[1].toFixed(6)}</small><br>
+            ${userAccuracy ? `<small>Akurasi: ~${Math.round(userAccuracy)}m</small>` : ''}
+          </div>
+        `;
 
                 userMarker.bindPopup(popupContent).openPopup();
 
@@ -321,7 +164,7 @@ const MapComponent: React.FC<{
 };
 
 // Main Component
-const HospitalMap: React.FC = () => {
+const Peta: React.FC = () => {
     const [state, setState] = useState<AppState>({
         centerLat: null,
         centerLng: null,
@@ -750,65 +593,65 @@ const HospitalMap: React.FC = () => {
             />
 
             <style jsx global>{`
-            .hospital-marker, .user-marker {
-            border-radius: 50%;
-            color: white;
-            text-align: center;
-            font-weight: bold;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            }
-            .hospital-marker {
-            width: 32px;
-            height: 32px;
-            line-height: 32px;
-            background-color: #3498db;
-            font-size: 18px;
-            }
-            .user-marker {
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            background-color: #e74c3c;
-            font-size: 18px;
-            z-index: 1000 !important;
-            }
-            .leaflet-popup-content {
-            width: 300px;
-            padding: 5px;
-            }
-            .availability-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            }
-            .availability-high { background-color: #27ae60; }
-            .availability-medium { background-color: #f39c12; }
-            .availability-low { background-color: #e67e22; }
-            .availability-full { background-color: #e74c3c; }
-            .availability-unknown { background-color: #95a5a6; }
-            .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #000000ff;
-            }
-            .stat-label {
-            font-size: 12px;
-            color: #000000ff;
-            margin-top: 5px;
-            }
-        `}</style>
+        .hospital-marker, .user-marker {
+          border-radius: 50%;
+          color: white;
+          text-align: center;
+          font-weight: bold;
+          border: 2px solid white;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          font-family: 'Font Awesome 6 Free';
+          font-weight: 900;
+        }
+        .hospital-marker {
+          width: 32px;
+          height: 32px;
+          line-height: 32px;
+          background-color: #3498db;
+          font-size: 18px;
+        }
+        .user-marker {
+          width: 40px;
+          height: 40px;
+          line-height: 40px;
+          background-color: #e74c3c;
+          font-size: 18px;
+          z-index: 1000 !important;
+        }
+        .leaflet-popup-content {
+          width: 300px;
+          padding: 5px;
+        }
+        .availability-indicator {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 8px;
+        }
+        .availability-high { background-color: #27ae60; }
+        .availability-medium { background-color: #f39c12; }
+        .availability-low { background-color: #e67e22; }
+        .availability-full { background-color: #e74c3c; }
+        .availability-unknown { background-color: #95a5a6; }
+        .stat-item {
+          text-align: center;
+          padding: 15px;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+          font-size: 24px;
+          font-weight: bold;
+          color: #000000ff;
+        }
+        .stat-label {
+          font-size: 12px;
+          color: #000000ff;
+          margin-top: 5px;
+        }
+      `}</style>
 
             <div className="container mx-auto px-4 py-5 max-w-6xl">
                 <h2 className="text-2xl font-bold text-center my-5 text-black">Peta Ketersediaan Rumah Sakit</h2>
@@ -1054,4 +897,4 @@ const HospitalMap: React.FC = () => {
     );
 };
 
-export default HospitalMap;
+export default Peta;
