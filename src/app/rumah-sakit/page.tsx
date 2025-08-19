@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -44,37 +45,39 @@ const RumahSakitPage = () => {
         'Yogyakarta Kota': ['Gondokusuman', 'Jetis', 'Danurejan']
     };
 
-    const handleProvinsiChange = (e) => {
+    const handleProvinsiChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const provinsi = e.target.value;
         setSelectedProvinsi(provinsi);
         setSelectedKabupaten('');
         setSelectedKota('');
     };
 
-    const handleKabupatenChange = (e) => {
+    const handleKabupatenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const kabupaten = e.target.value;
         setSelectedKabupaten(kabupaten);
         setSelectedKota('');
     };
 
-    const handleKotaChange = (e) => {
+    const handleKotaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedKota(e.target.value);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        e.preventDefault();
+        
         if (!selectedProvinsi || !selectedKabupaten || !selectedKota) {
             alert('Silakan pilih lokasi lengkap (Provinsi, Kabupaten, dan Kota)');
             return;
         }
 
         // Navigate to the hospital map page with query parameters
-        const queryParams = new URLSearchParams({
+        const searchParams = new URLSearchParams({
             provinsi: selectedProvinsi,
             kabupaten: selectedKabupaten,
             kota: selectedKota
         });
         
-        router.push(`/rumah-sakit/peta?${queryParams.toString()}`);
+        router.push(`/rumah-sakit/peta?${searchParams.toString()}`);
     };
 
     const getKabupatenOptions = () => {
@@ -94,9 +97,9 @@ const RumahSakitPage = () => {
                     Pilih Lokasi Rumah Sakit
                 </h2>
 
-                <div className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <select 
+                        <select
                             className="w-full p-4 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" 
                             value={selectedProvinsi}
                             onChange={handleProvinsiChange}
@@ -111,7 +114,7 @@ const RumahSakitPage = () => {
                     </div>
 
                     <div>
-                        <select 
+                        <select
                             className="w-full p-4 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" 
                             value={selectedKabupaten}
                             onChange={handleKabupatenChange}
@@ -126,7 +129,7 @@ const RumahSakitPage = () => {
                     </div>
 
                     <div>
-                        <select 
+                        <select
                             className="w-full p-4 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white" 
                             value={selectedKota}
                             onChange={handleKotaChange}
@@ -140,16 +143,16 @@ const RumahSakitPage = () => {
                         </select>
                     </div>
 
-                    <button 
-                        onClick={handleSubmit}
-                        className="w-full py-4 px-6 rounded-lg font-medium text-base transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-black hover:bg-blue-700 focus:ring-blue-500"
+                    <button
+                        type="submit" 
+                        className="w-full py-4 px-6 rounded-lg font-medium text-base transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-white hover:bg-blue-700 focus:ring-blue-500"
                         style={{ backgroundColor: '#499BE8' }}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#3a7bc8'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = '#499BE8'}
                     >
                         Telusuri
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     );
