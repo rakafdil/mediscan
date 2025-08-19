@@ -592,67 +592,6 @@ const Peta: React.FC = () => {
                 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
             />
 
-            <style jsx global>{`
-        .hospital-marker, .user-marker {
-          border-radius: 50%;
-          color: white;
-          text-align: center;
-          font-weight: bold;
-          border: 2px solid white;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-          font-family: 'Font Awesome 6 Free';
-          font-weight: 900;
-        }
-        .hospital-marker {
-          width: 32px;
-          height: 32px;
-          line-height: 32px;
-          background-color: #3498db;
-          font-size: 18px;
-        }
-        .user-marker {
-          width: 40px;
-          height: 40px;
-          line-height: 40px;
-          background-color: #e74c3c;
-          font-size: 18px;
-          z-index: 1000 !important;
-        }
-        .leaflet-popup-content {
-          width: 300px;
-          padding: 5px;
-        }
-        .availability-indicator {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          display: inline-block;
-          margin-right: 8px;
-        }
-        .availability-high { background-color: #27ae60; }
-        .availability-medium { background-color: #f39c12; }
-        .availability-low { background-color: #e67e22; }
-        .availability-full { background-color: #e74c3c; }
-        .availability-unknown { background-color: #95a5a6; }
-        .stat-item {
-          text-align: center;
-          padding: 15px;
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .stat-value {
-          font-size: 24px;
-          font-weight: bold;
-          color: #000000ff;
-        }
-        .stat-label {
-          font-size: 12px;
-          color: #000000ff;
-          margin-top: 5px;
-        }
-      `}</style>
-
             <div className="container mx-auto px-4 py-5 max-w-6xl">
                 <h2 className="text-2xl font-bold text-center my-5 text-black">Peta Ketersediaan Rumah Sakit</h2>
                 <p className="text-center text-black">
@@ -782,24 +721,24 @@ const Peta: React.FC = () => {
 
                 {/* Statistics */}
                 {state.stats && (
-                    <div className="bg-gray-50 p-4 rounded-lg my-5">
+                    <div className="bg-white p-4 rounded-lg my-5 shadow">
                         <h4 className="text-center font-bold mb-3 text-black">Statistik Area</h4>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div className="stat-item">
-                                <div className="stat-value">{state.stats.total_hospitals}</div>
-                                <div className="stat-label">Total Rumah Sakit</div>
+                            <div className="bg-white p-4 rounded-lg shadow text-center">
+                                <div className="text-2xl font-bold text-black">{state.stats.total_hospitals}</div>
+                                <div className="text-xs text-black mt-1">Total Rumah Sakit</div>
                             </div>
-                            <div className="stat-item">
-                                <div className="stat-value">{state.stats.average_rating}</div>
-                                <div className="stat-label">Rating Rata-rata</div>
+                            <div className="bg-white p-4 rounded-lg shadow text-center">
+                                <div className="text-2xl font-bold text-black">{state.stats.average_rating}</div>
+                                <div className="text-xs text-black mt-1">Rating Rata-rata</div>
                             </div>
-                            <div className="stat-item">
-                                <div className="stat-value">{state.stats.total_available_beds}</div>
-                                <div className="stat-label">Tempat Tidur Tersedia</div>
+                            <div className="bg-white p-4 rounded-lg shadow text-center">
+                                <div className="text-2xl font-bold text-black">{state.stats.total_available_beds}</div>
+                                <div className="text-xs text-black mt-1">Tempat Tidur Tersedia</div>
                             </div>
-                            <div className="stat-item">
-                                <div className="stat-value">{state.stats.occupancy_rate}%</div>
-                                <div className="stat-label">Tingkat Okupansi</div>
+                            <div className="bg-white p-4 rounded-lg shadow text-center">
+                                <div className="text-2xl font-bold text-black">{state.stats.occupancy_rate}%</div>
+                                <div className="text-xs text-black mt-1">Tingkat Okupansi</div>
                             </div>
                         </div>
                     </div>
@@ -837,7 +776,7 @@ const Peta: React.FC = () => {
                             ) : state.hospitals.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-5 text-center">
-                                        <i className="fas fa-hospital text-4xl text-black-400 mb-3"></i><br />
+                                        <i className="fas fa-hospital text-4xl text-gray-400 mb-3"></i><br />
                                         <strong>Tidak ada rumah sakit ditemukan</strong><br />
                                         <span className="text-gray-500">Coba perluas radius pencarian atau ubah lokasi</span>
                                     </td>
@@ -851,22 +790,21 @@ const Peta: React.FC = () => {
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center">
                                                     <span
-                                                        className="availability-indicator mr-2"
-                                                        style={{ backgroundColor: availabilityInfo.color }}
+                                                        className={`w-3 h-3 rounded-full mr-2 ${availabilityInfo.text === 'high' ? 'bg-green-500' : availabilityInfo.text === 'medium' ? 'bg-yellow-500' : availabilityInfo.text === 'low' ? 'bg-orange-500' : 'bg-red-500'}`}
                                                     ></span>
                                                     <div>
                                                         <div className="font-medium">{hospital.name}</div>
-                                                        <div className="text-sm text-black-500">{hospital.address}</div>
+                                                        <div className="text-sm text-gray-500">{hospital.address}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="font-bold text-black-800">{hospital.distance} km</span>
+                                                <span className="font-bold text-gray-800">{hospital.distance} km</span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div>
                                                     <div>{hospital.capacity}</div>
-                                                    <small style={{ color: availabilityInfo.color }}>
+                                                    <small className={`${availabilityInfo.text === 'high' ? 'text-green-600' : availabilityInfo.text === 'medium' ? 'text-yellow-600' : availabilityInfo.text === 'low' ? 'text-orange-600' : 'text-red-600'}`}>
                                                         {availabilityInfo.text}
                                                     </small>
                                                 </div>
