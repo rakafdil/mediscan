@@ -1,144 +1,115 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from "react";
 
 interface SearchResult {
     id: string;
     judul: string;
     isi: string;
+    link: string;
     source: string;
-    link?: string;
 }
 
 export default function SearchPage() {
-    const searchParams = useSearchParams();
-    const query = searchParams.get('q') || '';
-
+    const [query, setQuery] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [searchTerm, setSearchTerm] = useState(query);
 
-    const performSearch = async (term: string) => {
-        if (!term.trim()) {
-            setResults([]);
-            return;
-        }
-
+    const handleSearch = async () => {
+        if (!query.trim()) return;
         setLoading(true);
-        setError(null);
 
         try {
-            const response = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch results');
-            }
-
-            const data = await response.json();
+            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
             setResults(data);
         } catch (err) {
-            console.error('Search error:', err);
-            setError(err instanceof Error ? err.message : 'An error occurred');
+            console.error("Search failed:", err);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        if (query) {
-            performSearch(query);
-        }
-    }, [query]);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchTerm.trim()) {
-            // Update URL without full page reload
-            window.history.pushState({}, '', `?q=${encodeURIComponent(searchTerm)}`);
-            performSearch(searchTerm);
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            handleSearch();
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="container mx-auto px-4 max-w-4xl">
-                <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Search</h1>
+        <div className="min-h-screen bg-white text-gray-800 p-6">
+            <div className="max-w-3xl mx-auto">
+                {/* Header */}
+                <header className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Search</h1>
+                </header>
 
-                {/* Search Form */}
-                <form onSubmit={handleSubmit} className="mb-8 text-black">
-                    <div className="flex shadow-sm rounded-md">
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Cari informasi kesehatan..."
-                            className="flex-1 border border-gray-300 p-4 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-blue-600 text-white px-6 py-4 rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                        >
-                            {loading ? 'Mencari...' : 'Cari'}
-                        </button>
-                    </div>
-                </form>
+                {/* Search Input */}
+                <div className="flex gap-2 mb-6">
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Masukkan kata kunci..."
+                        className="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <button
+                        onClick={handleSearch}
+                        disabled={loading}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                    >
+                        {loading ? "Mencari..." : "Cari"}
+                    </button>
+                </div>
 
                 {/* Results */}
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        {error}
-                    </div>
-                )}
-
                 {loading && (
-                    <div className="flex justify-center my-8">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                    </div>
+                    <p className="text-center text-gray-500">Sedang mencari...</p>
                 )}
 
-                {!loading && results.length > 0 && (
-                    <div>
-                        <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                            Hasil Pencarian untuk &quot;{query}&quot;
-                        </h2>
-
-                        <div className="space-y-6">
-                            {results.map((result) => (
-                                <div key={result.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                                    <h3 className="text-lg font-semibold text-blue-800 mb-2">{result.judul}</h3>
-                                    <p className="text-black mb-3">{result.isi}</p>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-black capitalize">Sumber: {result.source}</span>
-                                        {result.link && (
-                                            <a
-                                                href={result.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-black hover:text-blue-800 text-sm"
-                                            >
-                                                Buka Link
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                <div className="space-y-4">
+                    {results.map((r) => (
+                        <div
+                            key={r.id}
+                            className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition"
+                        >
+                            <a
+                                href={r.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block mb-1"
+                            >
+                                <h2 className="text-lg font-semibold text-blue-700 hover:underline">
+                                    {r.judul}
+                                </h2>
+                            </a>
+                            <p className="text-sm text-gray-700 mb-2">{r.isi}</p>
+                            <div className="flex justify-between text-xs text-gray-500">
+                                <span>{r.source}</span>
+                                <a
+                                    href={r.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    Lihat sumber
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    ))}
+                </div>
 
                 {!loading && results.length === 0 && query && (
-                    <div className="text-center py-12">
-                        <p className="text-black text-lg">Tidak ada hasil ditemukan untuk &quot;{query}&quot;</p>
-                    </div>
+                    <p className="text-center text-gray-500 mt-8">
+                        Tidak ada hasil untuk <span className="font-medium">{query}</span>.
+                    </p>
                 )}
 
                 {!loading && !query && (
-                    <div className="text-center py-12">
-                        <p className="text-black text-lg">Masukkan kata kunci untuk mencari informasi kesehatan</p>
-                    </div>
+                    <p className="text-center text-gray-400 mt-8">
+                        Masukkan kata kunci untuk memulai pencarian
+                    </p>
                 )}
             </div>
         </div>
