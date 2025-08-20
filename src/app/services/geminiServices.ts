@@ -8,8 +8,8 @@ export async function main(message: string) {
             model: "gemini-2.5-flash",
             contents: message,
         });
-        console.log(response.text);
-        return new Response(null, { status: 204 })
+
+        return response.text
     } catch (reason) {
         const errorMessage = reason instanceof Error ? reason.message : 'Unexpected error'
 

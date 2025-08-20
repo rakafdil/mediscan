@@ -4,8 +4,6 @@ import { useState } from "react"
 export default function DiagnosisFlow() {
     const [step, setStep] = useState(1)
     const [loading, setLoading] = useState(false)
-    const [age, setAge] = useState<number | "">("");
-    const [gender, setGender] = useState<string>("");
     const [formData, setFormData] = useState({
         gender: "",
         age: "",
@@ -20,7 +18,11 @@ export default function DiagnosisFlow() {
             const res = await fetch("/api/symptoms/validate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ gejala: formData.symptoms }),
+                body: JSON.stringify({
+                    gender: formData.gender,
+                    age: formData.age,
+                    symptoms: formData.symptoms
+                }),
             })
             const data = await res.json()
             setFormData((prev) => ({ ...prev, result: data }))
@@ -92,8 +94,8 @@ export default function DiagnosisFlow() {
                             id="age"
                             name="age"
                             required={true}
-                            value={age}
-                            onChange={(e) => setAge(e.target.value ? Number(e.target.value) : "")}
+                            value={formData.age}
+                            onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                             min={0}
                             placeholder="Insert your age"
 
@@ -114,8 +116,8 @@ export default function DiagnosisFlow() {
                                     id="laki-laki"
                                     name="gender"
                                     value="Laki-laki"
-                                    checked={gender === "Laki-laki"}
-                                    onChange={(e) => setGender(e.target.value)}
+                                    checked={formData.gender === "Laki-laki"}
+                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                                     className="hidden peer/laki"
                                     required
                                 />
@@ -135,8 +137,8 @@ export default function DiagnosisFlow() {
                                     id="perempuan"
                                     name="gender"
                                     value="Perempuan"
-                                    checked={gender === "Perempuan"}
-                                    onChange={(e) => setGender(e.target.value)}
+                                    checked={formData.gender === "Perempuan"}
+                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                                     className="hidden peer/perempuan"
                                     required
                                 />
@@ -155,8 +157,8 @@ export default function DiagnosisFlow() {
                     {/* Submit */}
                     <button
                         type="submit"
-                        disabled={!age || !gender}
-                        className={`w-full font-semibold py-2 px-4 rounded-lg transition ${age && gender
+                        disabled={!formData.age || !formData.gender}
+                        className={`w-full font-semibold py-2 px-4 rounded-lg transition ${formData.age && formData.gender
                             ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
                             : "bg-gray-400 text-white cursor-not-allowed"
                             }`}

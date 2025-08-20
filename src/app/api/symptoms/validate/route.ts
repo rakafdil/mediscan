@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { main } from "@/app/services/geminiServices";
 
+interface UserComplication {
+  gender: string
+  age: string
+  symptoms: string
+}
+
 export async function POST(req: NextRequest) {
-    const { symptoms } = await req.json();
-    console.log(symptoms);
-    const messages = `{
-        "user_question":"${symptoms}"
+  const body = await req.json()
+  console.log(body)
+  const userComplication: UserComplication = {
+    gender: body.gender,
+    age: body.age,
+    symptoms: body.symptoms
+  }
+
+  const messages = `{
+        "user_question":"saya merupakan ${userComplication.gender} yang berumur ${userComplication.age}. ${userComplication.symptoms}"
       }
 
       You are a diagnoses validator and specifier. Your only tasks are:
@@ -25,21 +37,21 @@ export async function POST(req: NextRequest) {
     - Do not infer or add unrelated symptoms.
     - Always produce valid JSON with no extra text outside the JSON.
       `
-        ;
+  try {
+    const aiText = (await main(messages));
 
-    try {
-        const aiText = await main(messages);
-
-        // // Bersihin JSON (kalau AI masih ngereturn pake ```json ... ``` )
-        // let cleanJson = aiText
-        //     .replace(/```(json)?\s*/gi, "")
-        //     .replace(/```$/m, "")
-        //     .trim();
-        // const parsed = JSON.parse(cleanJson);
-        console.log(aiText);
-        return NextResponse.json(aiText);
-    } catch (e) {
-        console.error("JSON Error:", e);
-        return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
+    if (aiText === undefined) return NextResponse.json({ error: "Response is empty" }, { status: 500 })
+    else if (typeof aiText !== 'string') return NextResponse.json({ error: "Invalid response type" }, { status: 500 })
+    else {
+      const cleanJson = aiText
+        .replace(/```(json)?\s*/gi, "")
+        .replace(/```$/m, "")
+        .trim();
+      const parsed = JSON.parse(cleanJson);
+      return NextResponse.json(parsed);
     }
+  } catch (e) {
+    console.error("JSON Error:", e);
+    return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
+  }
 }
