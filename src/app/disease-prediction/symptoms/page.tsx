@@ -66,6 +66,34 @@ export default function DiagnosisFlow() {
         }
     }
 
+    const predictDisease = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        try {
+            const res = await fetch("/api/symptoms/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    gender: formData.gender,
+                    age: formData.age,
+                    symptoms: formData.result_validate.symptoms
+                }),
+            })
+            const data = await res.json()
+            console.log(data)
+            setFormData((prev) => ({
+                ...prev,
+                result_prediction: data
+            }));
+
+            nextStep()
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const addSymptoms = () => {
         if (symptomInput.trim() === "") return;
 
@@ -351,7 +379,12 @@ export default function DiagnosisFlow() {
                     </div>
                     <div className="flex justify-between">
                         <BackButton />
-                        <NextButton />
+                        <button
+                            onClick={predictDisease}
+                            className="px-4 py-2 bg-indigo-500 text-white rounded cursor-pointer"
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
             }
@@ -365,12 +398,12 @@ export default function DiagnosisFlow() {
                         <b>Age:</b> {formData.age}
                     </p>
                     <p>
-                        <b>Gejala:</b> {formData.symptoms}
+                        <b>Hasil:</b>
                     </p>
 
                     {formData.result_prediction ? (
                         <pre className="bg-gray-100 p-3 mt-4 rounded text-sm whitespace-pre-wrap">
-                            {JSON.stringify(formData.result_prediction, null, 2)}
+                            {formData.result_prediction.description}
                         </pre>
                     ) : (
                         <p className="mt-4 text-red-500">Tidak ada hasil</p>

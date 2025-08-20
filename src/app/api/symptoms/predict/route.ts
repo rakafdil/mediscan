@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { main } from "@/app/services/geminiServices";
 
+interface UserComplication {
+    gender: string
+    age: string
+    symptoms: string
+}
+
 export async function POST(req: NextRequest) {
-    const symptoms = await req.text();
-    console.log(symptoms);
+    const body = await req.json()
+    console.log(body)
+    const userComplication: UserComplication = {
+        gender: body.gender,
+        age: body.age,
+        symptoms: body.symptoms
+    }
+
     const messages = `{
-        "user_symptoms":"${symptoms}"
+        "user_question":"saya merupakan ${userComplication.gender} yang berumur ${userComplication.age}. saya memiliki beberapa gejala, yaitu: ${userComplication.symptoms}"
       }
 
       You are a medical disease prediction assistant.
