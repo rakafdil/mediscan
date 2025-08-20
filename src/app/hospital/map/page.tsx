@@ -132,13 +132,13 @@ const PetaRumahSakitPage = () => {
             const overpassQuery = `
                 [out:json][timeout:25];
                 (
-                  node["amenity"="hospital"](around:5000,${centerLat},${centerLng});
-                  way["amenity"="hospital"](around:5000,${centerLat},${centerLng});
-                  relation["amenity"="hospital"](around:5000,${centerLat},${centerLng});
-                  node["amenity"="clinic"](around:5000,${centerLat},${centerLng});
-                  way["amenity"="clinic"](around:5000,${centerLat},${centerLng});
-                  node["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
-                  way["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
+                node["amenity"="hospital"](around:5000,${centerLat},${centerLng});
+                way["amenity"="hospital"](around:5000,${centerLat},${centerLng});
+                relation["amenity"="hospital"](around:5000,${centerLat},${centerLng});
+                node["amenity"="clinic"](around:5000,${centerLat},${centerLng});
+                way["amenity"="clinic"](around:5000,${centerLat},${centerLng});
+                node["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
+                way["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
                 );
                 out geom;
             `;
@@ -175,10 +175,13 @@ const PetaRumahSakitPage = () => {
                 }
 
                 const tags = element.tags || {};
-                const name = tags.name ||
+                
+                const rawName = tags.name ||
                     tags['name:id'] ||
                     tags['name:en'] ||
                     (tags.amenity === 'hospital' ? 'Rumah Sakit' : 'Klinik') + ` #${index + 1}`;
+
+                const name = rawName.replace(/[^a-zA-Z0-9\s\-&]/g, '');
 
                 const address = [
                     tags['addr:street'] && tags['addr:housenumber'] ?
