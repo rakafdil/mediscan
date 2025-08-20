@@ -19,9 +19,12 @@ interface Hospital {
     rating?: number;
     isOpen?: boolean;
     distance?: string;
+    phone?: string;
+    website?: string;
+    hospitalType?: string;
 }
 
-const Map = () => {
+const PetaRumahSakitPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const mapRef = useRef<any>(null);
@@ -46,7 +49,7 @@ const Map = () => {
         'Bogor Kota': { lat: -6.5971, lng: 106.8060 },
         'Cibinong': { lat: -6.4818, lng: 106.8540 },
         'Cisarua': { lat: -6.6974, lng: 106.9537 },
-        
+
         // Jawa Tengah
         'Semarang Kota': { lat: -6.9667, lng: 110.4167 },
         'Ungaran': { lat: -7.1397, lng: 110.4058 },
@@ -54,7 +57,7 @@ const Map = () => {
         'Solo Kota': { lat: -7.5697, lng: 110.8281 },
         'Laweyan': { lat: -7.5563, lng: 110.8008 },
         'Banjarsari': { lat: -7.5488, lng: 110.8317 },
-        
+
         // Jawa Timur
         'Surabaya Pusat': { lat: -7.2459, lng: 112.7378 },
         'Surabaya Timur': { lat: -7.3297, lng: 112.8014 },
@@ -62,7 +65,7 @@ const Map = () => {
         'Malang Kota': { lat: -7.9797, lng: 112.6304 },
         'Kepanjen': { lat: -8.1301, lng: 112.5728 },
         'Turen': { lat: -8.1687, lng: 112.7055 },
-        
+
         // DKI Jakarta
         'Menteng': { lat: -6.1944, lng: 106.8229 },
         'Tanah Abang': { lat: -6.1867, lng: 106.8130 },
@@ -73,7 +76,7 @@ const Map = () => {
         'Kebayoran Baru': { lat: -6.2297, lng: 106.7975 },
         'Pasar Minggu': { lat: -6.2854, lng: 106.8419 },
         'Tebet': { lat: -6.2297, lng: 106.8608 },
-        
+
         // DI Yogyakarta
         'Depok': { lat: -7.7628, lng: 110.4317 },
         'Ngaglik': { lat: -7.7375, lng: 110.3653 },
@@ -120,40 +123,118 @@ const Map = () => {
         loadLeaflet();
     }, []);
 
-    // Generate sample hospitals data based on location
-    const generateSampleHospitals = (centerLat: number, centerLng: number): Hospital[] => {
-        const hospitalNames = [
-            'RS Umum Daerah',
-            'RS Swasta Medika',
-            'Klinik 24 Jam',
-            'RS Ibu dan Anak',
-            'RS Jantung',
-            'Klinik Pratama',
-            'RS Ortopedi',
-            'Puskesmas'
-        ];
+    // Fetch real hospitals data from OpenStreetMap Overpass API
+    const fetchRealHospitals = async (centerLat: number, centerLng: number): Promise<Hospital[]> => {
+        try {
+            setIsLoadingHospitals(true);
 
-        const hospitals: Hospital[] = [];
-        
-        for (let i = 0; i < 6; i++) {
-            const offsetLat = (Math.random() - 0.5) * 0.02; // Random offset within ~1km
-            const offsetLng = (Math.random() - 0.5) * 0.02;
-            
-            hospitals.push({
-                id: i + 1,
-                name: hospitalNames[i],
-                address: `Jl. Kesehatan No. ${Math.floor(Math.random() * 999) + 1}, ${kota}`,
-                lat: centerLat + offsetLat,
-                lng: centerLng + offsetLng,
-                rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0 - 5.0
-                isOpen: Math.random() > 0.3, // 70% chance of being open
-                distance: `${(Math.random() * 3 + 0.1).toFixed(1)} km`
+            // Overpass API query untuk mencari rumah sakit dalam radius 5km
+            const overpassQuery = `
+                [out:json][timeout:25];
+                (
+                  node["amenity"="hospital"](around:5000,${centerLat},${centerLng});
+                  way["amenity"="hospital"](around:5000,${centerLat},${centerLng});
+                  relation["amenity"="hospital"](around:5000,${centerLat},${centerLng});
+                  node["amenity"="clinic"](around:5000,${centerLat},${centerLng});
+                  way["amenity"="clinic"](around:5000,${centerLat},${centerLng});
+                  node["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
+                  way["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
+                );
+                out geom;
+            `;
+
+            const response = await fetch('https://overpass-api.de/api/interpreter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: overpassQuery
             });
-        }
 
-        return hospitals;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const hospitals: Hospital[] = [];
+
+            data.elements.forEach((element: any, index: number) => {
+                let lat: number, lng: number;
+
+                // Handle different OSM element types
+                if (element.type === 'node') {
+                    lat = element.lat;
+                    lng = element.lon;
+                } else if (element.type === 'way' && element.geometry) {
+                    // Use center of way
+                    const coords = element.geometry;
+                    lat = coords.reduce((sum: number, coord: any) => sum + coord.lat, 0) / coords.length;
+                    lng = coords.reduce((sum: number, coord: any) => sum + coord.lon, 0) / coords.length;
+                } else {
+                    return; // Skip if no coordinates
+                }
+
+                const tags = element.tags || {};
+                const name = tags.name ||
+                    tags['name:id'] ||
+                    tags['name:en'] ||
+                    (tags.amenity === 'hospital' ? 'Rumah Sakit' : 'Klinik') + ` #${index + 1}`;
+
+                const address = [
+                    tags['addr:street'] && tags['addr:housenumber'] ?
+                        `${tags['addr:street']} No. ${tags['addr:housenumber']}` :
+                        tags['addr:street'],
+                    tags['addr:city'] || tags['addr:village'] || kota
+                ].filter(Boolean).join(', ');
+
+                // Calculate distance
+                const distance = calculateDistance(centerLat, centerLng, lat, lng);
+
+                hospitals.push({
+                    id: element.id || index + 1,
+                    name: name,
+                    address: address || `${kota}, ${kabupaten}`,
+                    lat: lat,
+                    lng: lng,
+                    rating: undefined, // OSM doesn't have ratings
+                    isOpen: tags.opening_hours ? undefined : undefined, // We could parse opening_hours
+                    distance: `${distance.toFixed(1)} km`,
+                    phone: tags.phone,
+                    website: tags.website,
+                    hospitalType: tags.amenity === 'hospital' ? 'Hospital' :
+                        tags.amenity === 'clinic' ? 'Clinic' :
+                            tags.healthcare || 'Medical Facility'
+                });
+            });
+
+            // Sort by distance and limit to 20 results
+            hospitals.sort((a, b) => {
+                const distA = parseFloat(a.distance?.split(' ')[0] || '999');
+                const distB = parseFloat(b.distance?.split(' ')[0] || '999');
+                return distA - distB;
+            });
+
+            return hospitals.slice(0, 20);
+
+        } catch (error) {
+            console.error('Error fetching hospitals from Overpass API:', error);
+        } finally {
+            setIsLoadingHospitals(false);
+        }
     };
 
+    // Calculate distance between two coordinates
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 6371; // Radius of the Earth in kilometers
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
     // Initialize map when Leaflet is loaded
     useEffect(() => {
         if (isMapLoaded && kota && window.L) {
@@ -161,12 +242,10 @@ const Map = () => {
         }
     }, [isMapLoaded, kota]);
 
-    const initializeMap = () => {
+    const initializeMap = async () => {
         const coordinates = locationCoordinates[kota];
-        
         if (!coordinates) {
             setMapError(`Koordinat untuk ${kota} tidak ditemukan`);
-            console.warn(`Koordinat untuk ${kota} tidak ditemukan`);
             return;
         }
 
@@ -177,106 +256,31 @@ const Map = () => {
         }
 
         try {
-            // Clear any existing map
-            if (mapRef.current) {
-                mapRef.current.remove();
-            }
+            if (mapRef.current) mapRef.current.remove();
 
-            // Initialize Leaflet map
             const map = window.L.map('map').setView([coordinates.lat, coordinates.lng], 13);
             mapRef.current = map;
 
-            // Add OpenStreetMap tiles
             window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(map);
 
-            // Custom location icon (red marker)
-            const locationIcon = window.L.divIcon({
-                className: 'custom-location-marker',
-                html: `<div style="
-                    background: #ef4444; 
-                    width: 24px; 
-                    height: 24px; 
-                    border-radius: 50%; 
-                    border: 3px solid white; 
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                ">
-                    <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
-                </div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
+            // Marker lokasi
+            const locationIcon = window.L.divIcon({/* ... */ });
+            window.L.marker([coordinates.lat, coordinates.lng], { icon: locationIcon }).addTo(map);
 
-            // Add marker for selected location
-            window.L.marker([coordinates.lat, coordinates.lng], { icon: locationIcon })
-                .addTo(map)
-                .bindPopup(`<b>${kota}</b><br>${kabupaten}`)
-                .openPopup();
-
-            // Generate and add hospital markers
+            // Fetch rumah sakit dengan await
             setIsLoadingHospitals(true);
-            const sampleHospitals = generateSampleHospitals(coordinates.lat, coordinates.lng);
-            setHospitals(sampleHospitals);
-
-            // Custom hospital icon (green marker)
-            const hospitalIcon = window.L.divIcon({
-                className: 'custom-hospital-marker',
-                html: `<div style="
-                    background: #059669; 
-                    width: 20px; 
-                    height: 20px; 
-                    border-radius: 50%; 
-                    border: 2px solid white; 
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                ">
-                    <div style="width: 6px; height: 6px; background: white; border-radius: 50%;"></div>
-                </div>`,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
-            });
-
-            sampleHospitals.forEach((hospital) => {
-                const marker = window.L.marker([hospital.lat, hospital.lng], { icon: hospitalIcon })
-                    .addTo(map);
-
-                const popupContent = `
-                    <div style="padding: 8px; max-width: 200px; font-family: system-ui, sans-serif;">
-                        <h3 style="margin: 0 0 8px 0; color: #333; font-size: 14px; font-weight: 600;">
-                            ${hospital.name}
-                        </h3>
-                        <p style="margin: 0 0 4px 0; color: #666; font-size: 12px; line-height: 1.3;">
-                            ${hospital.address}
-                        </p>
-                        ${hospital.rating ? 
-                            `<p style="margin: 4px 0; color: #f59e0b; font-size: 12px;">
-                                ⭐ ${hospital.rating}
-                            </p>` : ''
-                        }
-                        ${hospital.isOpen !== undefined ? 
-                            `<p style="margin: 4px 0; color: ${hospital.isOpen ? '#059669' : '#dc2626'}; font-size: 12px; font-weight: 500;">
-                                ${hospital.isOpen ? '🟢 Buka sekarang' : '🔴 Tutup sekarang'}
-                            </p>` : ''
-                        }
-                        ${hospital.distance ? 
-                            `<p style="margin: 4px 0 0 0; color: #6b7280; font-size: 11px;">
-                                📍 ${hospital.distance} dari lokasi Anda
-                            </p>` : ''
-                        }
-                    </div>
-                `;
-
-                marker.bindPopup(popupContent);
-            });
-
+            const realHospitals = await fetchRealHospitals(coordinates.lat, coordinates.lng);
+            setHospitals(realHospitals);
             setIsLoadingHospitals(false);
+
+            // Marker rumah sakit
+            const hospitalIcon = window.L.divIcon({/* ... */ });
+            realHospitals.forEach(hospital => {
+                window.L.marker([hospital.lat, hospital.lng], { icon: hospitalIcon }).addTo(map);
+            });
 
         } catch (error) {
             console.error('Error initializing map:', error);
@@ -293,7 +297,7 @@ const Map = () => {
         setMapError(null);
         setIsMapLoaded(false);
         setHospitals([]);
-        
+
         // Reload the page after a short delay
         setTimeout(() => {
             window.location.reload();
@@ -338,8 +342,8 @@ const Map = () => {
 
                 {/* Map Container */}
                 <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
-                    <div 
-                        id="map" 
+                    <div
+                        id="map"
                         className="w-full h-96 md:h-[500px] lg:h-[600px]"
                         style={{ minHeight: '400px' }}
                     >
@@ -404,11 +408,10 @@ const Map = () => {
                                             </span>
                                         )}
                                         {hospital.isOpen !== undefined && (
-                                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                                hospital.isOpen 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-red-100 text-red-800'
-                                            }`}>
+                                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${hospital.isOpen
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-red-100 text-red-800'
+                                                }`}>
                                                 {hospital.isOpen ? '🟢 Buka' : '🔴 Tutup'}
                                             </span>
                                         )}
@@ -423,4 +426,4 @@ const Map = () => {
     );
 };
 
-export default Map;
+export default PetaRumahSakitPage;
