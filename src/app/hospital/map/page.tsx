@@ -123,121 +123,35 @@ const PetaRumahSakitPage = () => {
         loadLeaflet();
     }, []);
 
-    // Fetch real hospitals data from OpenStreetMap Overpass API
-    const fetchRealHospitals = async (centerLat: number, centerLng: number): Promise<Hospital[]> => {
+    // Fetch hospitals from API
+    const fetchHospitals = async (centerLat: number, centerLng: number): Promise<Hospital[]> => {
         try {
             setIsLoadingHospitals(true);
 
-            // Overpass API query untuk mencari rumah sakit dalam radius 5km
-            const overpassQuery = `
-                [out:json][timeout:25];
-                (
-                node["amenity"="hospital"](around:5000,${centerLat},${centerLng});
-                way["amenity"="hospital"](around:5000,${centerLat},${centerLng});
-                relation["amenity"="hospital"](around:5000,${centerLat},${centerLng});
-                node["amenity"="clinic"](around:5000,${centerLat},${centerLng});
-                way["amenity"="clinic"](around:5000,${centerLat},${centerLng});
-                node["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
-                way["healthcare"="hospital"](around:5000,${centerLat},${centerLng});
-                );
-                out geom;
-            `;
-
-            const response = await fetch('https://overpass-api.de/api/interpreter', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: overpassQuery
-            });
+            const response = await fetch(
+                `/api/hospitals?lat=${centerLat}&lng=${centerLng}&kota=${encodeURIComponent(kota)}`
+            );
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-            const hospitals: Hospital[] = [];
+            const result = await response.json();
 
-            data.elements.forEach((element: any, index: number) => {
-                let lat: number, lng: number;
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to fetch hospitals');
+            }
 
-                // Handle different OSM element types
-                if (element.type === 'node') {
-                    lat = element.lat;
-                    lng = element.lon;
-                } else if (element.type === 'way' && element.geometry) {
-                    // Use center of way
-                    const coords = element.geometry;
-                    lat = coords.reduce((sum: number, coord: any) => sum + coord.lat, 0) / coords.length;
-                    lng = coords.reduce((sum: number, coord: any) => sum + coord.lon, 0) / coords.length;
-                } else {
-                    return; // Skip if no coordinates
-                }
-
-                const tags = element.tags || {};
-                
-                const rawName = tags.name ||
-                    tags['name:id'] ||
-                    tags['name:en'] ||
-                    (tags.amenity === 'hospital' ? 'Rumah Sakit' : 'Klinik') + ` #${index + 1}`;
-
-                const name = rawName.replace(/[^a-zA-Z0-9\s\-&]/g, '');
-
-                const address = [
-                    tags['addr:street'] && tags['addr:housenumber'] ?
-                        `${tags['addr:street']} No. ${tags['addr:housenumber']}` :
-                        tags['addr:street'],
-                    tags['addr:city'] || tags['addr:village'] || kota
-                ].filter(Boolean).join(', ');
-
-                // Calculate distance
-                const distance = calculateDistance(centerLat, centerLng, lat, lng);
-
-                hospitals.push({
-                    id: element.id || index + 1,
-                    name: name,
-                    address: address || `${kota}, ${kabupaten}`,
-                    lat: lat,
-                    lng: lng,
-                    rating: undefined, // OSM doesn't have ratings
-                    isOpen: tags.opening_hours ? undefined : undefined, // We could parse opening_hours
-                    distance: `${distance.toFixed(1)} km`,
-                    phone: tags.phone,
-                    website: tags.website,
-                    hospitalType: tags.amenity === 'hospital' ? 'Hospital' :
-                        tags.amenity === 'clinic' ? 'Clinic' :
-                            tags.healthcare || 'Medical Facility'
-                });
-            });
-
-            // Sort by distance and limit to 20 results
-            hospitals.sort((a, b) => {
-                const distA = parseFloat(a.distance?.split(' ')[0] || '999');
-                const distB = parseFloat(b.distance?.split(' ')[0] || '999');
-                return distA - distB;
-            });
-
-            return hospitals.slice(0, 20);
+            return result.data;
 
         } catch (error) {
-            console.error('Error fetching hospitals from Overpass API:', error);
+            console.error('Error fetching hospitals:', error);
+            return [];
         } finally {
             setIsLoadingHospitals(false);
         }
     };
 
-    // Calculate distance between two coordinates
-    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-        const R = 6371; // Radius of the Earth in kilometers
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    };
     // Initialize map when Leaflet is loaded
     useEffect(() => {
         if (isMapLoaded && kota && window.L) {
@@ -269,26 +183,47 @@ const PetaRumahSakitPage = () => {
                 maxZoom: 19
             }).addTo(map);
 
-            // Marker lokasi
-            const locationIcon = window.L.divIcon({/* ... */ });
-            window.L.marker([coordinates.lat, coordinates.lng], { icon: locationIcon }).addTo(map);
+            // Marker lokasi pengguna
+            const locationIcon = window.L.divIcon({
+                html: '<div style="background-color: #3b82f6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">📍</div>',
+                className: 'custom-location-marker',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
 
-            // Fetch rumah sakit dengan await
-            setIsLoadingHospitals(true);
-            const realHospitals = await fetchRealHospitals(coordinates.lat, coordinates.lng);
-            setHospitals(realHospitals);
-            setIsLoadingHospitals(false);
+            window.L.marker([coordinates.lat, coordinates.lng], { icon: locationIcon })
+                .addTo(map)
+                .bindPopup(`<b>📍 Lokasi Anda</b><br/>${kota}, ${kabupaten}`);
+
+            // Fetch rumah sakit
+            const hospitalsList = await fetchHospitals(coordinates.lat, coordinates.lng);
+            setHospitals(hospitalsList);
 
             // Marker rumah sakit
-            const hospitalIcon = window.L.divIcon({/* ... */ });
-            realHospitals.forEach(hospital => {
-                window.L.marker([hospital.lat, hospital.lng], { icon: hospitalIcon }).addTo(map);
+            const hospitalIcon = window.L.divIcon({
+                html: '<div style="background-color: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">🏥</div>',
+                className: 'custom-hospital-marker',
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            hospitalsList.forEach(hospital => {
+                const marker = window.L.marker([hospital.lat, hospital.lng], { icon: hospitalIcon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width: 200px;">
+                            <b>🏥 ${hospital.name}</b><br/>
+                            <span style="color: #666; font-size: 0.9em;">📍 ${hospital.address}</span><br/>
+                            ${hospital.distance ? `<span style="color: #3b82f6; font-size: 0.9em;">🚗 ${hospital.distance}</span><br/>` : ''}
+                            ${hospital.phone ? `<span style="color: #059669; font-size: 0.9em;">📞 ${hospital.phone}</span><br/>` : ''}
+                            ${hospital.hospitalType ? `<span style="color: #7c3aed; font-size: 0.9em;">🏷️ ${hospital.hospitalType}</span>` : ''}
+                        </div>
+                    `);
             });
 
         } catch (error) {
             console.error('Error initializing map:', error);
             setMapError('Gagal menginisialisasi peta');
-            setIsLoadingHospitals(false);
         }
     };
 
@@ -404,10 +339,20 @@ const PetaRumahSakitPage = () => {
                                     <p className="text-sm text-gray-600 mb-2">
                                         📍 {hospital.address}
                                     </p>
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
                                         {hospital.distance && (
                                             <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
                                                 🚗 {hospital.distance}
+                                            </span>
+                                        )}
+                                        {hospital.hospitalType && (
+                                            <span className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                                                🏷️ {hospital.hospitalType}
+                                            </span>
+                                        )}
+                                        {hospital.phone && (
+                                            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                📞 {hospital.phone}
                                             </span>
                                         )}
                                         {hospital.isOpen !== undefined && (
@@ -422,6 +367,15 @@ const PetaRumahSakitPage = () => {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                )}
+
+                {/* No hospitals found */}
+                {!isLoadingHospitals && hospitals.length === 0 && (
+                    <div className="bg-white rounded-lg shadow-md p-6 text-center">
+                        <div className="text-gray-400 text-4xl mb-4">🏥</div>
+                        <p className="text-gray-600 mb-2">Tidak ada rumah sakit ditemukan</p>
+                        <p className="text-sm text-gray-500">Coba ubah lokasi atau cek koneksi internet Anda</p>
                     </div>
                 )}
             </div>
