@@ -1,17 +1,41 @@
 "use client"
 import { useState } from "react"
 
+interface DataValidate {
+    response_for_user: string,
+    symptoms: string[],
+    symptoms_related: boolean
+}
+
+
 export default function DiagnosisFlow() {
     const [step, setStep] = useState(1)
     const [loading, setLoading] = useState(false)
+    const [symptomInput, setSymptomInput] = useState("");
+    const [showAddSymptom, setshowAddSymptom] = useState(false);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [editValue, setEditValue] = useState("");
+
     const [formData, setFormData] = useState({
         gender: "",
         age: "",
         symptoms: "",
-        result: null,
+        result_validate: {
+            response_for_user: "",
+            symptoms: [""],
+            symptoms_related: false
+        },
+        result_prediction: {
+            disease: "",
+            probability: 0.0,
+            description: "",
+            precautions: [
+                ""
+            ]
+        }
     })
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const validateSymptoms = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         try {
@@ -24,9 +48,17 @@ export default function DiagnosisFlow() {
                     symptoms: formData.symptoms
                 }),
             })
-            const data = await res.json()
-            setFormData((prev) => ({ ...prev, result: data }))
-            setStep(3) // loncat ke hasil diagnosis
+            const data: DataValidate = await res.json()
+            console.log(data)
+            setFormData((prev) => ({
+                ...prev,
+                result_validate: {
+                    ...prev.result_validate,
+                    response_for_user: data.response_for_user,
+                    symptoms: [...prev.result_validate.symptoms, ...data.symptoms],
+                    symptoms_related: data.symptoms_related
+                }
+            }));
         } catch (err) {
             console.error(err)
         } finally {
@@ -34,10 +66,41 @@ export default function DiagnosisFlow() {
         }
     }
 
+    const addSymptoms = () => {
+        if (symptomInput.trim() === "") return;
+
+        setFormData(prev => ({
+            ...prev,
+            result_validate: {
+                ...prev.result_validate,
+                symptoms: [...prev.result_validate.symptoms, symptomInput]
+            }
+        }));
+
+        setSymptomInput("")
+        setshowAddSymptom(false)
+    };
+
     const nextStep = () => setStep((prev) => prev + 1)
     const prevStep = () => setStep((prev) => prev - 1)
 
-    // --- Step 4: Artikel ---
+    const NextButton = () => (
+        <button
+            onClick={nextStep}
+            className="px-4 py-2 bg-purple-500 text-white rounded cursor-pointer"
+        >
+            Next
+        </button>
+    )
+
+    const BackButton = () => (
+        <button
+            onClick={prevStep}
+            className="px-4 py-2 bg-gray-300 rounded cursor-pointer"
+        >
+            Kembali
+        </button>
+    )
     const Step4 = () => (
         <div className="p-6 max-w-md mx-auto">
             <h1 className="text-xl font-bold mb-4">Artikel Kesehatan</h1>
@@ -46,23 +109,12 @@ export default function DiagnosisFlow() {
                 pemulihan.
             </p>
             <div className="flex justify-between">
-                <button
-                    onClick={prevStep}
-                    className="px-4 py-2 bg-gray-300 rounded cursor-pointer"
-                >
-                    Kembali
-                </button>
-                <button
-                    onClick={nextStep}
-                    className="px-4 py-2 bg-purple-500 text-white rounded cursor-pointer"
-                >
-                    Lanjut
-                </button>
+                <BackButton />
+                <NextButton />
             </div>
         </div>
     )
 
-    // --- Step 5: Daftar Rumah Sakit ---
     const Step5 = () => (
         <div className="p-6 max-w-md mx-auto">
             <h1 className="text-xl font-bold mb-4">Rumah Sakit Terdekat</h1>
@@ -103,7 +155,6 @@ export default function DiagnosisFlow() {
                         />
                     </div>
 
-                    {/* Gender */}
                     <div className="py-4">
                         <label className="block text-lg font-medium mb-2">
                             Gender:
@@ -154,7 +205,6 @@ export default function DiagnosisFlow() {
                         </div>
                     </div>
 
-                    {/* Submit */}
                     <button
                         type="submit"
                         disabled={!formData.age || !formData.gender}
@@ -166,31 +216,142 @@ export default function DiagnosisFlow() {
                     >
                         Lanjut
                     </button>
+
                 </div>
             }
             {step === 2 &&
                 <div className="p-6 max-w-md mx-auto">
                     <h1 className="text-xl font-bold mb-4">Input Gejala</h1>
                     <textarea
-                        placeholder="Tuliskan gejala..."
+                        placeholder="Type what happened to you..."
                         value={formData.symptoms}
                         onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
                         className="w-full p-2 mb-3 border rounded min-h-[150px]"
                     />
                     <div className="flex justify-between">
                         <button
-                            onClick={prevStep}
-                            className="px-4 py-2 bg-gray-300 rounded cursor-pointer"
-                        >
-                            Kembali
-                        </button>
-                        <button
-                            onClick={handleSubmit}
+                            onClick={validateSymptoms}
                             disabled={loading}
-                            className="px-4 py-2 bg-green-500 text-white rounded cursor-pointer"
+                            className="w-full py-2 bg-green-500 text-white rounded cursor-pointer"
                         >
                             {loading ? "Menganalisa..." : "Analisa"}
                         </button>
+                    </div>
+
+                    <div id="symptomList" className="">
+
+                        <div className="mt-4">
+                            <h3>Daftar Gejala:</h3>
+                            <ul>
+                                {formData.result_validate.symptoms.map((s, i) => (
+                                    <li key={i} className="flex items-center gap-2">
+                                        {editingIndex === i ? (
+                                            <>
+                                                <input
+                                                    type="text"
+                                                    value={editValue}
+                                                    onChange={(e) => setEditValue(e.target.value)}
+                                                    className="border p-1 rounded"
+                                                />
+                                                <button
+                                                    onClick={() => {
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            result_validate: {
+                                                                ...prev.result_validate,
+                                                                symptoms: prev.result_validate.symptoms.map((sym, idx) =>
+                                                                    idx === i ? editValue : sym
+                                                                )
+                                                            }
+                                                        }));
+                                                        setEditingIndex(null);
+                                                    }}
+                                                    className="border px-2 rounded"
+                                                >
+                                                    Save
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingIndex(null)}
+                                                    className="border px-2 rounded"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span>{s}</span>
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingIndex(i);
+                                                        setEditValue(s);
+                                                    }}
+                                                    className="border px-2 rounded"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            result_validate: {
+                                                                ...prev.result_validate,
+                                                                symptoms: prev.result_validate.symptoms.filter((_, idx) => idx !== i)
+                                                            }
+                                                        }));
+                                                    }}
+                                                    className="border px-2 rounded"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {!showAddSymptom && <button
+                            onClick={() => setshowAddSymptom(true)}
+                            className="border px-3 py-1 rounded"
+                        >
+                            Add Symptom +
+                        </button>}
+
+                        {showAddSymptom && (
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    addSymptoms();
+                                }}
+                                className="flex flex-col gap-2 mt-2"
+                            >
+                                <input
+                                    placeholder="Type the symptom..."
+                                    value={symptomInput}
+                                    onChange={(e) => setSymptomInput(e.target.value)}
+                                    className="w-full p-2 mb-3 border rounded"
+                                />
+                                <div className="flex flex-row justify-between">
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-blue-500 text-white cursor-pointer rounded"
+                                    >
+                                        OK
+                                    </button>
+                                    <button
+                                        onClick={() => setshowAddSymptom(false)}
+                                        className="px-4 py-2 bg-red-500 text-white cursor-pointer rounded"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+
+                        )}
+                    </div>
+                    <div className="flex justify-between">
+                        <BackButton />
+                        <NextButton />
                     </div>
                 </div>
             }
@@ -207,9 +368,9 @@ export default function DiagnosisFlow() {
                         <b>Gejala:</b> {formData.symptoms}
                     </p>
 
-                    {formData.result ? (
+                    {formData.result_prediction ? (
                         <pre className="bg-gray-100 p-3 mt-4 rounded text-sm whitespace-pre-wrap">
-                            {JSON.stringify(formData.result, null, 2)}
+                            {JSON.stringify(formData.result_prediction, null, 2)}
                         </pre>
                     ) : (
                         <p className="mt-4 text-red-500">Tidak ada hasil</p>
