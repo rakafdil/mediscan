@@ -76,7 +76,7 @@ const RumahSakitPage = () => {
             kota: selectedKota,
         });
 
-        router.push(`/rumah-sakit/peta?${searchParams.toString()}`);
+        router.push(`/hospital/map?${searchParams.toString()}`);
     };
 
     const getKabupatenOptions = () => {
