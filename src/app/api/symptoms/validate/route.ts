@@ -2,13 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { main } from "@/app/services/geminiServices";
 
 export async function POST(req: NextRequest) {
-    const { gejala } = await req.json();
-
-    const messages = [
-        {
-            role: "user",
-            content: `{
-        "user_question":"${gejala}"
+    const { symptoms } = await req.json();
+    console.log(symptoms);
+    const messages = `{
+        "user_question":"${symptoms}"
       }
 
       You are a diagnoses validator and specifier. Your only tasks are:
@@ -28,8 +25,7 @@ export async function POST(req: NextRequest) {
     - Do not infer or add unrelated symptoms.
     - Always produce valid JSON with no extra text outside the JSON.
       `
-        }
-    ];
+        ;
 
     try {
         const aiText = await main(messages);
@@ -40,6 +36,7 @@ export async function POST(req: NextRequest) {
         //     .replace(/```$/m, "")
         //     .trim();
         // const parsed = JSON.parse(cleanJson);
+        console.log(aiText);
         return NextResponse.json(aiText);
     } catch (e) {
         console.error("JSON Error:", e);

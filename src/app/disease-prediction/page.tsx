@@ -38,7 +38,7 @@ const SistemPakarPage = () => {
                 <div className="flex-shrink-0 flex flex-col items-center self-center bg-blue-50 rounded-xl shadow-md p-6">
 
 
-                    <Link href="/sistem-pakar/symptoms/#" className="inline-block">
+                    <Link href="/disease-prediction/symptoms/#" className="inline-block">
                         <div
                             className="w-44 h-44 md:w-48 md:h-48 bg-blue-500 rounded-full flex flex-col items-center justify-center text-white font-bold transition-all duration-300 shadow-lg hover:bg-blue-600 hover:scale-110">
                             <div className="text-4xl mb-2">📱</div>
