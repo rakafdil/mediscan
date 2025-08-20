@@ -24,6 +24,12 @@ interface Hospital {
     hospitalType?: string;
 }
 
+interface UserLocation {
+    lat: number;
+    lng: number;
+    accuracy?: number;
+}
+
 const PetaRumahSakitPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -32,12 +38,16 @@ const PetaRumahSakitPage = () => {
     const [mapError, setMapError] = useState<string | null>(null);
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [isLoadingHospitals, setIsLoadingHospitals] = useState(false);
+    const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+    const [locationError, setLocationError] = useState<string | null>(null);
+    const [isGettingLocation, setIsGettingLocation] = useState(false);
+    const [useRealLocation, setUseRealLocation] = useState(false);
 
     const provinsi = searchParams.get('provinsi') || '';
     const kabupaten = searchParams.get('kabupaten') || '';
     const kota = searchParams.get('kota') || '';
 
-    // Koordinat untuk setiap kota/wilayah
+    // Koordinat untuk setiap kota/wilayah (fallback)
     const locationCoordinates: LocationCoordinates = {
         // Jawa Barat
         'Bandung Kota': { lat: -6.9175, lng: 107.6191 },
@@ -89,6 +99,55 @@ const PetaRumahSakitPage = () => {
         'Danurejan': { lat: -7.8017, lng: 110.3658 },
     };
 
+    // Get user's real location
+    const getUserLocation = () => {
+        setIsGettingLocation(true);
+        setLocationError(null);
+
+        if (!navigator.geolocation) {
+            setLocationError('Geolocation tidak didukung oleh browser ini');
+            setIsGettingLocation(false);
+            return;
+        }
+
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000 // 5 minutes cache
+        };
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const location: UserLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy: position.coords.accuracy
+                };
+                setUserLocation(location);
+                setUseRealLocation(true);
+                setIsGettingLocation(false);
+                setLocationError(null);
+            },
+            (error) => {
+                let errorMessage = 'Gagal mendapatkan lokasi';
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'Izin lokasi ditolak. Silakan aktifkan izin lokasi di browser Anda.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'Informasi lokasi tidak tersedia.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'Timeout saat mendapatkan lokasi. Coba lagi.';
+                        break;
+                }
+                setLocationError(errorMessage);
+                setIsGettingLocation(false);
+            },
+            options
+        );
+    };
+
     // Load Leaflet CSS and JS
     useEffect(() => {
         const loadLeaflet = async () => {
@@ -129,7 +188,7 @@ const PetaRumahSakitPage = () => {
             setIsLoadingHospitals(true);
 
             const response = await fetch(
-                `/api/hospitals?lat=${centerLat}&lng=${centerLng}&kota=${encodeURIComponent(kota)}`
+                `/api/hospitals?lat=${centerLat}&lng=${centerLng}&kota=${encodeURIComponent(kota)}&useRealLocation=${useRealLocation}`
             );
 
             if (!response.ok) {
@@ -157,13 +216,24 @@ const PetaRumahSakitPage = () => {
         if (isMapLoaded && kota && window.L) {
             initializeMap();
         }
-    }, [isMapLoaded, kota]);
+    }, [isMapLoaded, kota, userLocation, useRealLocation]);
 
     const initializeMap = async () => {
-        const coordinates = locationCoordinates[kota];
-        if (!coordinates) {
-            setMapError(`Koordinat untuk ${kota} tidak ditemukan`);
-            return;
+        // Determine which coordinates to use
+        let coordinates;
+        let locationLabel;
+
+        if (useRealLocation && userLocation) {
+            coordinates = { lat: userLocation.lat, lng: userLocation.lng };
+            locationLabel = `Lokasi GPS Anda${userLocation.accuracy ? ` (±${Math.round(userLocation.accuracy)}m)` : ''}`;
+        } else {
+            coordinates = locationCoordinates[kota];
+            locationLabel = `${kota}, ${kabupaten}`;
+            
+            if (!coordinates) {
+                setMapError(`Koordinat untuk ${kota} tidak ditemukan`);
+                return;
+            }
         }
 
         const mapElement = document.getElementById('map');
@@ -175,7 +245,7 @@ const PetaRumahSakitPage = () => {
         try {
             if (mapRef.current) mapRef.current.remove();
 
-            const map = window.L.map('map').setView([coordinates.lat, coordinates.lng], 13);
+            const map = window.L.map('map').setView([coordinates.lat, coordinates.lng], useRealLocation ? 15 : 13);
             mapRef.current = map;
 
             window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -185,15 +255,28 @@ const PetaRumahSakitPage = () => {
 
             // Marker lokasi pengguna
             const locationIcon = window.L.divIcon({
-                html: '<div style="background-color: #3b82f6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">📍</div>',
+                html: useRealLocation 
+                    ? '<div style="background-color: #10b981; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); animation: pulse 2s infinite;">📍</div>'
+                    : '<div style="background-color: #3b82f6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">📍</div>',
                 className: 'custom-location-marker',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
+                iconSize: useRealLocation ? [32, 32] : [30, 30],
+                iconAnchor: useRealLocation ? [16, 16] : [15, 15]
             });
 
             window.L.marker([coordinates.lat, coordinates.lng], { icon: locationIcon })
                 .addTo(map)
-                .bindPopup(`<b>📍 Lokasi Anda</b><br/>${kota}, ${kabupaten}`);
+                .bindPopup(`<b>${useRealLocation ? '🎯' : '📍'} ${locationLabel}</b>`);
+
+            // Add accuracy circle if using real location
+            if (useRealLocation && userLocation?.accuracy) {
+                window.L.circle([coordinates.lat, coordinates.lng], {
+                    radius: userLocation.accuracy,
+                    color: '#10b981',
+                    fillColor: '#10b981',
+                    fillOpacity: 0.1,
+                    weight: 2
+                }).addTo(map);
+            }
 
             // Fetch rumah sakit
             const hospitalsList = await fetchHospitals(coordinates.lat, coordinates.lng);
@@ -242,6 +325,17 @@ const PetaRumahSakitPage = () => {
         }, 500);
     };
 
+    const toggleLocationMode = () => {
+        if (useRealLocation) {
+            // Switch back to city coordinates
+            setUseRealLocation(false);
+            setUserLocation(null);
+        } else {
+            // Get real location
+            getUserLocation();
+        }
+    };
+
     return (
         <div className="bg-gray-50 min-h-screen">
             {/* Leaflet CSS fix */}
@@ -255,6 +349,17 @@ const PetaRumahSakitPage = () => {
                     background: transparent !important;
                     border: none !important;
                 }
+                @keyframes pulse {
+                    0% {
+                        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+                    }
+                    70% {
+                        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+                    }
+                    100% {
+                        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+                    }
+                }
             `}</style>
 
             <div className="container mx-auto p-5">
@@ -266,16 +371,48 @@ const PetaRumahSakitPage = () => {
                                 🗺️ Peta Rumah Sakit
                             </h1>
                             <p className="text-gray-600 mt-1">
-                                {kota}, {kabupaten} - {provinsi?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                {useRealLocation && userLocation 
+                                    ? `Lokasi GPS Anda${userLocation.accuracy ? ` (±${Math.round(userLocation.accuracy)}m)` : ''}`
+                                    : `${kota}, ${kabupaten} - ${provinsi?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+                                }
                             </p>
                         </div>
-                        <button
-                            onClick={handleBackToSearch}
-                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 flex items-center gap-2"
-                        >
-                            ← Ubah Lokasi
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={toggleLocationMode}
+                                disabled={isGettingLocation}
+                                className={`px-4 py-2 rounded-lg transition duration-200 flex items-center gap-2 ${
+                                    useRealLocation
+                                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                                        : 'bg-gray-500 hover:bg-gray-600 text-white'
+                                } ${isGettingLocation ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {isGettingLocation ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Mencari...
+                                    </>
+                                ) : useRealLocation ? (
+                                    <>🎯 GPS Aktif</>
+                                ) : (
+                                    <>📍 Gunakan GPS</>
+                                )}
+                            </button>
+                            <button
+                                onClick={handleBackToSearch}
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 flex items-center gap-2"
+                            >
+                                ← Ubah Lokasi
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Location Error */}
+                    {locationError && (
+                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-red-600 text-sm">⚠️ {locationError}</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Map Container */}
@@ -324,6 +461,7 @@ const PetaRumahSakitPage = () => {
                     <div className="bg-white rounded-lg shadow-md p-4 mb-4">
                         <h3 className="text-lg font-semibold text-gray-800 mb-3">
                             🏥 Rumah Sakit Ditemukan ({hospitals.length})
+                            {useRealLocation && <span className="text-sm text-green-600 ml-2">📍 Berdasarkan lokasi GPS</span>}
                         </h3>
                         <div className="grid gap-3 max-h-60 overflow-y-auto">
                             {hospitals.map((hospital) => (
