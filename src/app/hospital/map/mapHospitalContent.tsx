@@ -30,7 +30,7 @@ interface UserLocation {
     accuracy?: number;
 }
 
-const PetaRumahSakitPage = () => {
+const MapHospitalContent = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const mapRef = useRef<any>(null);
@@ -521,4 +521,4 @@ const PetaRumahSakitPage = () => {
     );
 };
 
-export default PetaRumahSakitPage;
+export default MapHospitalContent;
