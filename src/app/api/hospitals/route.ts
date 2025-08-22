@@ -187,132 +187,6 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
     }
 };
 
-// Fallback hospital data for when API fails
-const getFallbackHospitals = (centerLat: number, centerLng: number, kota: string): Hospital[] => {
-    const fallbackData: { [key: string]: Hospital[] } = {
-        'Malang Kota': [
-            {
-                id: 1,
-                name: 'RSUD Dr. Saiful Anwar',
-                address: 'Jl. Jaksa Agung Suprapto No. 2, Malang',
-                lat: -7.9826,
-                lng: 112.6283,
-                hospitalType: 'Rumah Sakit Umum Daerah',
-                phone: '(0341) 362101'
-            },
-            {
-                id: 2,
-                name: 'RS Lavalette',
-                address: 'Jl. WR. Supratman No. 10, Malang',
-                lat: -7.9667,
-                lng: 112.6333,
-                hospitalType: 'Rumah Sakit Swasta'
-            },
-            {
-                id: 3,
-                name: 'RS Panti Nirmala',
-                address: 'Jl. Kebalen Wetan No. 2-8, Malang',
-                lat: -7.9756,
-                lng: 112.6404,
-                hospitalType: 'Rumah Sakit Swasta'
-            }
-        ],
-        'Bandung Kota': [
-            {
-                id: 4,
-                name: 'RSUP Dr. Hasan Sadikin',
-                address: 'Jl. Pasteur No. 38, Bandung',
-                lat: -6.8951,
-                lng: 107.6097,
-                hospitalType: 'Rumah Sakit Umum Pusat',
-                phone: '(022) 2034953'
-            },
-            {
-                id: 5,
-                name: 'RS Advent Bandung',
-                address: 'Jl. Cihampelas No. 161, Bandung',
-                lat: -6.8903,
-                lng: 107.6037,
-                hospitalType: 'Rumah Sakit Swasta'
-            }
-        ],
-        'Surabaya Pusat': [
-            {
-                id: 6,
-                name: 'RSUD Dr. Soetomo',
-                address: 'Jl. Mayjen Prof. Dr. Moestopo No. 6-8, Surabaya',
-                lat: -7.2683,
-                lng: 112.7516,
-                hospitalType: 'Rumah Sakit Umum Daerah',
-                phone: '(031) 5501078'
-            },
-            {
-                id: 7,
-                name: 'RS Premier Surabaya',
-                address: 'Jl. Nginden Intan Timur No. 1, Surabaya',
-                lat: -7.2459,
-                lng: 112.7654,
-                hospitalType: 'Rumah Sakit Swasta'
-            }
-        ],
-        'Semarang Kota': [
-            {
-                id: 8,
-                name: 'RSUP Dr. Kariadi',
-                address: 'Jl. Dr. Sutomo No. 16, Semarang',
-                lat: -6.9667,
-                lng: 110.4167,
-                hospitalType: 'Rumah Sakit Umum Pusat',
-                phone: '(024) 8413476'
-            },
-            {
-                id: 9,
-                name: 'RS Columbia Asia Semarang',
-                address: 'Jl. Siliwangi No. 143, Semarang',
-                lat: -6.9833,
-                lng: 110.4167,
-                hospitalType: 'Rumah Sakit Swasta'
-            }
-        ],
-        'Menteng': [
-            {
-                id: 10,
-                name: 'RSUPN Dr. Cipto Mangunkusumo',
-                address: 'Jl. Diponegoro No. 71, Jakarta Pusat',
-                lat: -6.1944,
-                lng: 106.8313,
-                hospitalType: 'Rumah Sakit Umum Pusat',
-                phone: '(021) 31900001'
-            },
-            {
-                id: 11,
-                name: 'RS Metropolitan Medical Centre',
-                address: 'Jl. HR. Rasuna Said Kav. C-22, Jakarta Selatan',
-                lat: -6.2297,
-                lng: 106.8272,
-                hospitalType: 'Rumah Sakit Swasta'
-            }
-        ]
-    };
-
-    const hospitals = fallbackData[kota] || [
-        {
-            id: 999,
-            name: `Rumah Sakit ${kota}`,
-            address: `Lokasi di ${kota}`,
-            lat: centerLat,
-            lng: centerLng,
-            hospitalType: 'Rumah Sakit Umum'
-        }
-    ];
-    
-    // Calculate distances for fallback data
-    return hospitals.map(hospital => ({
-        ...hospital,
-        distance: `${calculateDistance(centerLat, centerLng, hospital.lat, hospital.lng).toFixed(1)} km`
-    }));
-};
-
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
@@ -363,7 +237,6 @@ export async function GET(request: NextRequest) {
         // If no hospitals found from API, use fallback data
         if (hospitals.length === 0) {
             console.log('Using fallback data as no hospitals found from API');
-            hospitals = getFallbackHospitals(centerLat, centerLng, kota);
         }
 
         return NextResponse.json({
@@ -390,14 +263,10 @@ export async function GET(request: NextRequest) {
         const centerLat = parseFloat(lat || '-6.2');
         const centerLng = parseFloat(lng || '106.8');
         
-        const fallbackHospitals = getFallbackHospitals(centerLat, centerLng, kota);
-        
         return NextResponse.json({
             success: true,
-            data: fallbackHospitals,
-            total: fallbackHospitals.length,
             locationMethod: 'fallback',
-            note: 'Menggunakan data fallback karena error pada API',
+            note: 'API error occurred',
             error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
