@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Josefin_Sans, Montserrat } from "next/font/google";
 import Navbar from "./components/navbar";
+import Footer from "./components/footer";
 import "./globals.css";
 
 const josefin = Josefin_Sans({
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className={`${josefin.variable} ${montserrat.variable} antialiased`}>
         <Navbar />
         {children}
+        <Footer/>
       </body>
     </html>
   );
