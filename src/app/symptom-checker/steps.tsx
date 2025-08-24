@@ -47,16 +47,15 @@ export default function CarouselSlide() {
         setIsTransitioning(true);
         setContentTransitioning(true);
 
-        // Delay content change until card animation is halfway
         setTimeout(() => {
             setDisplayedContent((currentSlide + 1) % slides.length);
-        }, 250);
+        }, 320);
 
         setCurrentSlide((prev) => (prev + 1) % slides.length);
 
         setTimeout(() => {
             setIsTransitioning(false);
-            setTimeout(() => setContentTransitioning(false), 250);
+            setTimeout(() => setContentTransitioning(false), 320);
         }, 500);
     };
 
@@ -68,19 +67,16 @@ export default function CarouselSlide() {
 
         setTimeout(() => {
             setDisplayedContent((currentSlide - 1 + slides.length) % slides.length);
-        }, 250);
+        }, 320);
 
         setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
         setTimeout(() => {
             setIsTransitioning(false);
-            setTimeout(() => setContentTransitioning(false), 250);
+            setTimeout(() => setContentTransitioning(false), 320);
         }, 500);
     };
 
-    const currentSlideData = slides[currentSlide];
-    const prevSlideData = slides[(currentSlide - 1 + slides.length) % slides.length];
-    const nextSlideData = slides[(currentSlide + 1) % slides.length];
     const currentContentData = slides[displayedContent];
     const prevContentData = slides[(displayedContent - 1 + slides.length) % slides.length];
     const nextContentData = slides[(displayedContent + 1) % slides.length];
@@ -136,7 +132,7 @@ export default function CarouselSlide() {
                             ? direction === "right"
                                 ? "scale-70 shadow-lg opacity-0"
                                 : "scale-70 shadow-lg opacity-0"
-                            : "scale-100 shadow-sm relative"
+                            : "scale-110 shadow-sm relative"
                         }`}
                 >
                     {/* Step Indicator */}
