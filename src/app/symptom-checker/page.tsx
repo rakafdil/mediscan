@@ -1,14 +1,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import CarouselSlide from './steps'
 
 const SistemPakarPage = () => {
     return (
         <div className='px-5'>
 
-            <header className="relative font-montserrat py-60 px-20">
+            <header className="relative font-montserrat pt-40 px-20">
                 <div className="relative z-10 max-w-xl ml-20">
-                    <h1 className="font-bold text-6xl text-[#252B42]">
+                    <h1 className="font-bold text-6xl/20 text-[#252B42]">
                         Check Your Symptoms in Seconds
                     </h1>
                     <p className="pr-70 text-[#737373] mt-5">
@@ -32,6 +33,9 @@ const SistemPakarPage = () => {
                 />
             </header>
 
+            <CarouselSlide />
+
+            <h1>TES</h1>
 
             {/* 
             <div className="bg-white rounded-xl shadow-md p-6">
