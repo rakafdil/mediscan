@@ -82,28 +82,27 @@ export default function CarouselSlide() {
     const nextContentData = slides[(displayedContent + 1) % slides.length];
 
     return (
-        <div className="flex items-center justify-center h-96 p-20 bg-gray-50 mt-80">
+        <div className="flex items-center justify-center h-96 p-20 mt-80 overflow-hidden">
             <div className="flex items-center gap-8 max-w-7xl w-full">
 
                 {/* Left Card */}
                 <div
-                    className={`bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-500 ease-in-out transform w-96 z-0
+                    className={`bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-96 z-0
                 ${isTransitioning
                             ? direction === "right"
                                 ? "scale-70 shadow-lg translate-x-[130%] opacity-0"
                                 : "scale-70 shadow-lg translate-x-[130%] opacity-0"
-                            : "scale-70 shadow-sm relative blur-[1px]"
+                            : "scale-70 shadow-sm relative blur-[2.5px]"
                         }`}
                     onClick={prevSlide}
                 >
-                    {/* Step Indicator */}
-                    <div className={`w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center absolute -top-6 left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out ${isTransitioning ? 'scale-110 shadow-lg' : 'scale-100'}`}>
-                        <span className="text-white font-semibold">{prevContentData.step}</span>
-                    </div>
 
-                    <div className={`text-center pt-8 transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-80' : 'opacity-100'
+                    <div className={`text-center transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-80' : 'opacity-100'
                         }`}>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                        <div className={`w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto transition-all duration-500 ease-in-out mb-5 ${isTransitioning ? 'scale-110 shadow-lg' : 'scale-100'}`}>
+                            <span className="text-white font-semibold">{prevContentData.step}</span>
+                        </div>
+                        <h2 className="text-3xl font-medium text-gray-900 mb-4">
                             {prevContentData.title}
                         </h2>
                         <p className="text-gray-600 leading-relaxed tracking-wider">
@@ -127,7 +126,7 @@ export default function CarouselSlide() {
 
                 {/* Main Card */}
                 <div
-                    className={`bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-500 ease-in-out transform w-96 z-10
+                    className={`bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-120 z-10
                 ${isTransitioning
                             ? direction === "right"
                                 ? "scale-70 shadow-lg opacity-0"
@@ -135,15 +134,15 @@ export default function CarouselSlide() {
                             : "scale-110 shadow-sm relative"
                         }`}
                 >
-                    {/* Step Indicator */}
-                    <div className={`w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center absolute -top-6 left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out ${isTransitioning ? 'scale-110 shadow-lg' : 'scale-100'}`}>
-                        <span className="text-white font-semibold">{currentContentData.step}</span>
-                    </div>
 
-                    <div className={`text-center pt-8 transition-all duration-500 ease-in-out 
+                    <div className={`text-center transition-all duration-500 ease-in-out 
     ${contentTransitioning ? 'opacity-80' : 'opacity-100'}`}
                     >
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                        {/* Step Indicator */}
+                        <div className={`w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto transition-all duration-500 ease-in-out mb-5 ${isTransitioning ? 'scale-110 shadow-lg' : 'scale-100'}`}>
+                            <span className="text-white font-semibold">{currentContentData.step}</span>
+                        </div>
+                        <h2 className="text-3xl font-medium text-gray-900 mb-4">
                             {currentContentData.title}
                         </h2>
                         <p className="text-gray-600 leading-relaxed tracking-wider">
@@ -167,22 +166,22 @@ export default function CarouselSlide() {
 
                 {/* Right Card */}
                 <div
-                    className={`bg-white rounded-2xl p-8 shadow-sm border border-gray-100 transition-all duration-500 ease-in-out transform w-96 z-0
+                    className={`bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-96 z-0
                 ${isTransitioning
                             ? direction === "right"
                                 ? "scale-70 blur-[0px] -translate-x-[130%] opacity-0"
                                 : "scale-70 blur-[0px] -translate-x-[130%] opacity-0"
-                            : "scale-70 shadow-sm relative blur-[1px]"
+                            : "scale-70 shadow-sm relative blur-[2.5px]"
                         }`}
                     onClick={nextSlide}
                 >
-                    <div className={`w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center absolute -top-6 left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out ${isTransitioning ? 'scale-110 shadow-lg' : 'scale-100'}`}>
-                        <span className="text-white font-semibold">{nextContentData.step}</span>
-                    </div>
 
-                    <div className={`text-center pt-8 transition-all duration-500 ease-in-out ${contentTransitioning ? 'opacity-80' : 'opacity-100'
+                    <div className={`text-center transition-all duration-500 ease-in-out ${contentTransitioning ? 'opacity-80' : 'opacity-100'
                         }`}>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                        <div className={`w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto transition-all duration-500 ease-in-out mb-5 ${isTransitioning ? 'scale-110 shadow-lg' : 'scale-100'}`}>
+                            <span className="text-white font-semibold">{nextContentData.step}</span>
+                        </div>
+                        <h2 className="text-3xl font-medium text-gray-900 mb-4">
                             {nextContentData.title}
                         </h2>
                         <p className="text-gray-600 leading-relaxed tracking-wider">

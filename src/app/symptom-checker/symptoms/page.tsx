@@ -1,22 +1,41 @@
 "use client"
-import { useState } from "react"
+import React, { useState } from 'react';
+import { FormData } from './types';
+import Step1 from './components/Step1';
+import Step2 from './components/Step2';
+import Step3 from './components/Step3';
+import Step4 from './components/Step4';
+import Step5 from './components/Step5';
+import Link from 'next/link';
 
-interface DataValidate {
-    response_for_user: string,
-    symptoms: string[],
-    symptoms_related: boolean
-}
+const stepName = [
+    {
+        step: 1,
+        name: "Data Input"
+    },
+    {
+        step: 2,
+        name: "Symptoms"
+    },
+    {
+        step: 3,
+        name: "Result"
+    },
+    {
+        step: 4,
+        name: "Articles"
+    },
+    {
+        step: 5,
+        name: "Hospitals"
+    },
+]
 
+const DiagnosisFlow: React.FC = () => {
+    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
 
-export default function DiagnosisFlow() {
-    const [step, setStep] = useState(1)
-    const [loading, setLoading] = useState(false)
-    const [symptomInput, setSymptomInput] = useState("");
-    const [showAddSymptom, setshowAddSymptom] = useState(false);
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const [editValue, setEditValue] = useState("");
-
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormData>({
         gender: "",
         age: "",
         symptoms: "",
@@ -29,404 +48,143 @@ export default function DiagnosisFlow() {
             disease: "",
             probability: 0.0,
             description: "",
-            precautions: [
-                ""
-            ]
+            precautions: [""]
         }
-    })
+    });
 
-    const validateSymptoms = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        try {
-            const res = await fetch("/api/symptoms/validate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    gender: formData.gender,
-                    age: formData.age,
-                    symptoms: formData.symptoms
-                }),
-            })
-            const data: DataValidate = await res.json()
-            console.log(data)
-            setFormData((prev) => ({
-                ...prev,
-                result_validate: {
-                    ...prev.result_validate,
-                    response_for_user: data.response_for_user,
-                    symptoms: [...prev.result_validate.symptoms, ...data.symptoms],
-                    symptoms_related: data.symptoms_related
-                }
-            }));
-        } catch (err) {
-            console.error(err)
-        } finally {
-            setLoading(false)
-        }
-    }
+    const nextStep = () => setStep((prev) => prev + 1);
+    const prevStep = () => setStep((prev) => prev - 1);
 
-    const predictDisease = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        try {
-            const res = await fetch("/api/symptoms/predict", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    gender: formData.gender,
-                    age: formData.age,
-                    symptoms: formData.result_validate.symptoms
-                }),
-            })
-            const data = await res.json()
-            console.log(data)
-            setFormData((prev) => ({
-                ...prev,
-                result_prediction: data
-            }));
+    const handleBack = () => {
+        const hasData = formData.gender !== "" ||
+            formData.age !== "" ||
+            formData.symptoms !== "" ||
+            formData.result_validate.symptoms.some(s => s !== "");
 
-            nextStep()
-        } catch (err) {
-            console.error(err)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const addSymptoms = () => {
-        if (symptomInput.trim() === "") return;
-
-        setFormData(prev => ({
-            ...prev,
-            result_validate: {
-                ...prev.result_validate,
-                symptoms: [...prev.result_validate.symptoms, symptomInput]
+        if (hasData) {
+            const confirmed = window.confirm(
+                "You have unsaved changes. Are you sure you want to leave?"
+            );
+            if (!confirmed) {
+                return;
             }
-        }));
-
-        setSymptomInput("")
-        setshowAddSymptom(false)
+            else {
+                window.location.href = '/symptom-checker';
+            }
+        }
+        window.location.href = '/symptom-checker';
     };
 
-    const nextStep = () => setStep((prev) => prev + 1)
-    const prevStep = () => setStep((prev) => prev - 1)
-
-    const NextButton = () => (
-        <button
-            onClick={nextStep}
-            className="px-4 py-2 bg-purple-500 text-white rounded cursor-pointer"
-        >
-            Next
-        </button>
-    )
-
-    const BackButton = () => (
-        <button
-            onClick={prevStep}
-            className="px-4 py-2 bg-gray-300 rounded cursor-pointer"
-        >
-            Kembali
-        </button>
-    )
-    const Step4 = () => (
-        <div className="p-6 max-w-md mx-auto">
-            <h1 className="text-xl font-bold mb-4">Artikel Kesehatan</h1>
-            <p className="mb-4">
-                Banyak istirahat, minum air putih, dan konsumsi vitamin C dapat membantu
-                pemulihan.
-            </p>
-            <div className="flex justify-between">
-                <BackButton />
-                <NextButton />
-            </div>
-        </div>
-    )
-
-    const Step5 = () => (
-        <div className="p-6 max-w-md mx-auto">
-            <h1 className="text-xl font-bold mb-4">Rumah Sakit Terdekat</h1>
-            <ul className="list-disc pl-6">
-                <li>RSUD Kota Malang</li>
-                <li>RS Saiful Anwar</li>
-                <li>RS Hermina</li>
-            </ul>
-            <button
-                onClick={prevStep}
-                className="mt-4 px-4 py-2 bg-gray-300 rounded cursor-pointer"
-            >
-                Kembali
-            </button>
-        </div>
-    )
+    const renderStep = () => {
+        switch (step) {
+            case 1:
+                return (
+                    <Step1
+                        formData={formData}
+                        setFormData={setFormData}
+                        onNext={nextStep}
+                    />
+                );
+            case 2:
+                return (
+                    <Step2
+                        formData={formData}
+                        setFormData={setFormData}
+                        onNext={nextStep}
+                        onBack={prevStep}
+                        loading={loading}
+                        setLoading={setLoading}
+                    />
+                );
+            case 3:
+                return (
+                    <Step3
+                        formData={formData}
+                        onNext={nextStep}
+                        onBack={prevStep}
+                    />
+                );
+            case 4:
+                return (
+                    <Step4
+                        onNext={nextStep}
+                        onBack={prevStep}
+                    />
+                );
+            case 5:
+                return (
+                    <Step5
+                        onBack={prevStep}
+                    />
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <>
-            {step === 1 &&
-                <div className="p-6 max-w-md mx-auto">
-                    <h1 className="text-xl font-bold mb-4">Data Pengguna</h1>
-                    <div>
-                        <label htmlFor="age" className="block mb-2 pb-1 font-medium">
-                            Age
-                        </label>
-                        <input
-                            type="number"
-                            id="age"
-                            name="age"
-                            required={true}
-                            value={formData.age}
-                            onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                            min={0}
-                            placeholder="Insert your age"
-
-                            className="w-full px-4 py-2 border-2 border-black rounded-lg"
-                        />
-                    </div>
-
-                    <div className="py-4">
-                        <label className="block text-lg font-medium mb-2">
-                            Gender:
-                        </label>
-
-                        <div className="flex gap-4 justify-center">
-                            <div>
-                                <input
-                                    type="radio"
-                                    id="laki-laki"
-                                    name="gender"
-                                    value="Laki-laki"
-                                    checked={formData.gender === "Laki-laki"}
-                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                    className="hidden peer/laki"
-                                    required
-                                />
-                                <label
-                                    htmlFor="laki-laki"
-                                    className="px-6 py-2 border-2 border-gray-400 text-gray-600 rounded-lg cursor-pointer
-                             peer-checked/laki:bg-blue-500 peer-checked/laki:border-blue-500
-                             peer-checked/laki:text-white transition"
-                                >
-                                    Laki-laki
-                                </label>
-                            </div>
-
-                            <div>
-                                <input
-                                    type="radio"
-                                    id="perempuan"
-                                    name="gender"
-                                    value="Perempuan"
-                                    checked={formData.gender === "Perempuan"}
-                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                    className="hidden peer/perempuan"
-                                    required
-                                />
-                                <label
-                                    htmlFor="perempuan"
-                                    className="px-6 py-2 border-2 border-gray-400 text-gray-600 rounded-lg cursor-pointer
-                             peer-checked/perempuan:bg-blue-500 peer-checked/perempuan:border-blue-500
-                             peer-checked/perempuan:text-white transition"
-                                >
-                                    Perempuan
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={!formData.age || !formData.gender}
-                        className={`w-full font-semibold py-2 px-4 rounded-lg transition ${formData.age && formData.gender
-                            ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
-                            : "bg-gray-400 text-white cursor-not-allowed"
-                            }`}
-                        onClick={nextStep}
+            <div className='flex flex-col items-center justify-center p-18 gap-10 relative'>
+                <Link
+                    href="#"
+                    onClick={handleBack}
+                    className="absolute top-8 left-8 p-2 rounded-full hover:bg-gray-100 transition-all duration-200 flex items-center gap-2"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-gray-600"
                     >
-                        Lanjut
-                    </button>
-
-                </div>
-            }
-            {step === 2 &&
-                <div className="p-6 max-w-md mx-auto">
-                    <h1 className="text-xl font-bold mb-4">Input Gejala</h1>
-                    <textarea
-                        placeholder="Type what happened to you..."
-                        value={formData.symptoms}
-                        onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
-                        className="w-full p-2 mb-3 border rounded min-h-[150px]"
+                        <path d="M19 12H5" />
+                        <path d="M12 19l-7-7 7-7" />
+                    </svg>
+                    <span className="text-gray-600">Back</span>
+                </Link>
+                <h1 className='text-6xl font-bold text-gray-900'>
+                    {stepName.find(item => item.step === step)?.name}
+                </h1>
+                <div className='flex flex-row gap-30 relative overflow-hidden px-30'>
+                    <div
+                        style={{ width: `${(step) * 20}%` }}
+                        className='h-2 bg-[#6AC2EA] absolute left-0 top-[36%]  transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
                     />
-                    <div className="flex justify-between">
-                        <button
-                            onClick={validateSymptoms}
-                            disabled={loading}
-                            className="w-full py-2 bg-green-500 text-white rounded cursor-pointer"
+                    <div
+                        className='h-2 w-full bg-[#628EF7] absolute left-0 top-[36%] transform -translate-y-1/2 rounded-full z-[-1]'
+                    />
+                    {stepName.map((item) => (
+                        <div
+                            key={item.step}
+                            className='flex flex-col items-center gap-3 z-10'
                         >
-                            {loading ? "Menganalisa..." : "Analisa"}
-                        </button>
-                    </div>
-
-                    <div id="symptomList" className="">
-
-                        <div className="mt-4">
-                            <h3>Daftar Gejala:</h3>
-                            <ul>
-                                {formData.result_validate.symptoms.map((s, i) => (
-                                    <li key={i} className="flex items-center gap-2">
-                                        {editingIndex === i ? (
-                                            <>
-                                                <input
-                                                    type="text"
-                                                    value={editValue}
-                                                    onChange={(e) => setEditValue(e.target.value)}
-                                                    className="border p-1 rounded"
-                                                />
-                                                <button
-                                                    onClick={() => {
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            result_validate: {
-                                                                ...prev.result_validate,
-                                                                symptoms: prev.result_validate.symptoms.map((sym, idx) =>
-                                                                    idx === i ? editValue : sym
-                                                                )
-                                                            }
-                                                        }));
-                                                        setEditingIndex(null);
-                                                    }}
-                                                    className="border px-2 rounded"
-                                                >
-                                                    Save
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingIndex(null)}
-                                                    className="border px-2 rounded"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>{s}</span>
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingIndex(i);
-                                                        setEditValue(s);
-                                                    }}
-                                                    className="border px-2 rounded"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            result_validate: {
-                                                                ...prev.result_validate,
-                                                                symptoms: prev.result_validate.symptoms.filter((_, idx) => idx !== i)
-                                                            }
-                                                        }));
-                                                    }}
-                                                    className="border px-2 rounded"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </>
-                                        )}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {!showAddSymptom && <button
-                            onClick={() => setshowAddSymptom(true)}
-                            className="border px-3 py-1 rounded"
-                        >
-                            Add Symptom +
-                        </button>}
-
-                        {showAddSymptom && (
-                            <form
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    addSymptoms();
-                                }}
-                                className="flex flex-col gap-2 mt-2"
+                            <button
+                                key={item.step}
+                                className={`flex justify-center items-center w-22 h-22 rounded-full text-2xl duration-200
+                                ${step >= item.step
+                                        ? 'bg-[#6AC2EA] hover:bg-[#ccebf9] hover:text-black text-white'
+                                        : 'bg-white border-[#628EF7] border-4 hover:bg-[#ccebf9] hover:text-white'
+                                    }
+                                `}
+                                onClick={() => setStep(item.step)}
                             >
-                                <input
-                                    placeholder="Type the symptom..."
-                                    value={symptomInput}
-                                    onChange={(e) => setSymptomInput(e.target.value)}
-                                    className="w-full p-2 mb-3 border rounded"
-                                />
-                                <div className="flex flex-row justify-between">
-                                    <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-blue-500 text-white cursor-pointer rounded"
-                                    >
-                                        OK
-                                    </button>
-                                    <button
-                                        onClick={() => setshowAddSymptom(false)}
-                                        className="px-4 py-2 bg-red-500 text-white cursor-pointer rounded"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-
-                        )}
-                    </div>
-                    <div className="flex justify-between">
-                        <BackButton />
-                        <button
-                            onClick={predictDisease}
-                            className="px-4 py-2 bg-indigo-500 text-white rounded cursor-pointer"
-                        >
-                            Next
-                        </button>
-                    </div>
+                                {item.step}
+                            </button>
+                            <span>
+                                {item.name}
+                            </span>
+                        </div>
+                    ))}
                 </div>
-            }
-            {step === 3 &&
-                <div className="p-6 max-w-md mx-auto">
-                    <h1 className="text-xl font-bold mb-4">Hasil Diagnosis</h1>
-                    <p>
-                        <b>Gender:</b> {formData.gender}
-                    </p>
-                    <p>
-                        <b>Age:</b> {formData.age}
-                    </p>
-                    <p>
-                        <b>Hasil:</b>
-                    </p>
-
-                    {formData.result_prediction ? (
-                        <pre className="bg-gray-100 p-3 mt-4 rounded text-sm whitespace-pre-wrap">
-                            {formData.result_prediction.description}
-                        </pre>
-                    ) : (
-                        <p className="mt-4 text-red-500">Tidak ada hasil</p>
-                    )}
-
-                    <div className="flex justify-between mt-4">
-                        <button
-                            onClick={prevStep}
-                            className="px-4 py-2 bg-gray-300 rounded cursor-pointer"
-                        >
-                            Kembali
-                        </button>
-                        <button
-                            onClick={nextStep}
-                            className="px-4 py-2 bg-indigo-500 text-white rounded cursor-pointer"
-                        >
-                            Lanjut
-                        </button>
-                    </div>
-                </div>
-            }
-            {step === 4 && <Step4 />}
-            {step === 5 && <Step5 />}
+            </div>
+            {renderStep()}
         </>
-    )
-}
+    );
+};
+
+export default DiagnosisFlow;

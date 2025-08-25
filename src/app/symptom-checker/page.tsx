@@ -15,7 +15,7 @@ const SistemPakarPage = () => {
                     <p className="pr-70 text-[#737373] mt-5">
                         Scan your symptoms early and get AI-powered insights.
                     </p>
-                    <Link href="/disease-prediction/symptoms/#" className="inline-block">
+                    <Link href="/symptom-checker/symptoms/#" className="inline-block">
                         <button
                             className="bg-[#628EF7] py-3 px-30 text-white font-semibold rounded-lg mt-6 cursor-pointer w-fit">
                             Start Checking Now

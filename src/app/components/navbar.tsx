@@ -35,9 +35,11 @@ const Navbar = () => {
                     <li key={link.href}>
                         <Link
                             href={link.href}
-                            className={`px-5 py-4 rounded-xl transition-colors duration-200 ${pathname === link.href
+                            className={`px-5 py-4 rounded-xl transition-colors duration-200 ${pathname.startsWith(link.href) && link.href !== "/"
                                 ? "bg-[#217BFF] text-white"
-                                : "text-gray-700 hover:bg-[#5b9dff] hover:text-white"
+                                : pathname === "/" && link.href === "/"
+                                    ? "bg-[#217BFF] text-white"
+                                    : "text-gray-700 hover:bg-[#5b9dff] hover:text-white"
                                 }`}
                         >
                             {link.label}
