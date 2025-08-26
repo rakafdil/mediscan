@@ -1,7 +1,15 @@
 import { DataValidate, PredictionResult } from '../symptom-checker/symptoms/types';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+const BASE_URL = isDevelopment
+    ? 'http://localhost:3000'
+    : process.env.NEXT_PUBLIC_API_URL;
+
 export const validateSymptoms = async (gender: string, age: string, symptoms: string): Promise<DataValidate> => {
-    const res = await fetch("/api/symptoms/validate", {
+    const apiUrl = `${BASE_URL}/api/symptoms/validate`;
+    console.log(`Calling API: ${apiUrl} in ${process.env.NODE_ENV} mode`);
+
+    const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -19,7 +27,10 @@ export const validateSymptoms = async (gender: string, age: string, symptoms: st
 };
 
 export const predictDisease = async (gender: string, age: string, symptoms: string[]): Promise<PredictionResult> => {
-    const res = await fetch("/api/symptoms/predict", {
+    const apiUrl = `${BASE_URL}/api/symptoms/predict`;
+    console.log(`Calling API: ${apiUrl} in ${process.env.NODE_ENV} mode`);
+
+    const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

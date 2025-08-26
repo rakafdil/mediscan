@@ -1,4 +1,3 @@
-// SymptomList.tsx
 import React, { useState } from 'react';
 import { FormData } from '../types';
 
@@ -55,91 +54,88 @@ const SymptomList: React.FC<SymptomListProps> = ({ formData, setFormData }) => {
         <div className="mt-4">
             <h3>Daftar Gejala:</h3>
             <ul>
-                {formData.result_validate.symptoms.map((s, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                        {editingIndex === i ? (
-                            <>
-                                <input
-                                    type="text"
-                                    value={editValue}
-                                    onChange={(e) => setEditValue(e.target.value)}
-                                    className="border p-1 rounded"
-                                />
-                                <button
-                                    onClick={() => updateSymptom(i, editValue)}
-                                    className="border px-2 rounded"
-                                >
-                                    Save
-                                </button>
-                                <button
-                                    onClick={() => setEditingIndex(null)}
-                                    className="border px-2 rounded"
-                                >
-                                    Cancel
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <span>{s}</span>
-                                <button
-                                    onClick={() => {
-                                        setEditingIndex(i);
-                                        setEditValue(s);
-                                    }}
-                                    className="border px-2 rounded"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => deleteSymptom(i)}
-                                    className="border px-2 rounded"
-                                >
-                                    Delete
-                                </button>
-                            </>
-                        )}
-                    </li>
-                ))}
+                {formData.result_validate.symptoms
+                    .filter(symptom => symptom.trim() !== "")
+                    .map((s, i) => (
+                        <li key={i} className="flex items-center gap-2">
+                            {(editingIndex === i) ? (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={editValue}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        className="border p-1 rounded"
+                                    />
+                                    <button
+                                        onClick={() => updateSymptom(i, editValue)}
+                                        className="border px-2 rounded"
+                                    >
+                                        Save
+                                    </button>
+                                    <button
+                                        onClick={() => setEditingIndex(null)}
+                                        className="border px-2 rounded"
+                                    >
+                                        Cancel
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <span>{s}</span>
+                                    <button
+                                        onClick={() => {
+                                            setEditingIndex(i);
+                                            setEditValue(s);
+                                        }}
+                                        className="border px-2 rounded"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => deleteSymptom(i)}
+                                        className="border px-2 rounded"
+                                    >
+                                        Delete
+                                    </button>
+                                </>
+                            )}
+                        </li>
+                    ))}
             </ul>
 
             {!showAddSymptom && (
                 <button
                     onClick={() => setShowAddSymptom(true)}
-                    className="border px-3 py-1 rounded"
+                    className="border px-2 rounded"
                 >
-                    Add Symptom +
+                    Add Symptom
                 </button>
             )}
 
             {showAddSymptom && (
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        addSymptoms();
-                    }}
-                    className="flex flex-col gap-2 mt-2"
-                >
+                <>
                     <input
-                        placeholder="Type the symptom..."
+                        type="text"
                         value={symptomInput}
                         onChange={(e) => setSymptomInput(e.target.value)}
-                        className="w-full p-2 mb-3 border rounded"
+                        className="border p-1 rounded"
                     />
-                    <div className="flex flex-row justify-between">
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white cursor-pointer rounded"
-                        >
-                            OK
-                        </button>
-                        <button
-                            onClick={() => setShowAddSymptom(false)}
-                            className="px-4 py-2 bg-red-500 text-white cursor-pointer rounded"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </form>
+                    <button
+                        onClick={addSymptoms}
+                        className="border px-2 rounded"
+                    >
+                        Save
+                    </button>
+                    <button
+                        onClick={() => {
+                            setShowAddSymptom(false);
+                            setSymptomInput("");
+                        }}
+                        className="border px-2 rounded"
+                    >
+                        Cancel
+                    </button>
+                </>
             )}
         </div>
     );
