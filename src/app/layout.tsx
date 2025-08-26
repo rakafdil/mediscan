@@ -3,6 +3,7 @@ import { Josefin_Sans, Montserrat } from "next/font/google";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const josefin = Josefin_Sans({
   subsets: ["latin"],
@@ -33,7 +34,8 @@ export default function RootLayout({
         <main>
           {children}
         </main>
-        <Footer/>
+        <Footer />
+        <Analytics />
       </body>
     </html>
   );

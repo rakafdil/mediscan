@@ -3,7 +3,7 @@ import React from 'react';
 import { StepContainer, BackButton } from './CommonComponents';
 import SymptomList from './SymptomList';
 import { FormData } from '../types';
-import * as apiService from '@/app/services/apiService';
+import * as apiService from '@/app/api/symptoms/apiService';
 
 interface Step2Props {
     formData: FormData;

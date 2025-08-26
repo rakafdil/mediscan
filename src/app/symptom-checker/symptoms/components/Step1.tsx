@@ -1,4 +1,3 @@
-// Step1.tsx
 import React from 'react';
 import { StepContainer } from './CommonComponents';
 import { FormData } from '../types';
