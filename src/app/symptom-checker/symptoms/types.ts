@@ -3,12 +3,15 @@ export interface DataValidate {
     symptoms: string[];
     symptoms_related: boolean;
 }
-
-export interface PredictionResult {
+export interface Disease {
     disease: string;
     probability: number;
     description: string;
     precautions: string[];
+}
+
+export interface PredictionResult {
+    result: Disease[];
 }
 
 export interface ValidateResult {
@@ -24,7 +27,7 @@ export interface FormData {
     histories: string[];
     location: string;
     result_validate: ValidateResult;
-    result_prediction: PredictionResult;
+    result_prediction: PredictionResult | null;
 }
 
 export interface UserComplication {

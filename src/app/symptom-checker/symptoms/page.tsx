@@ -47,10 +47,14 @@ const DiagnosisFlow: React.FC = () => {
             symptoms_related: false
         },
         result_prediction: {
-            disease: "",
-            probability: 0.0,
-            description: "",
-            precautions: [""]
+            result: [
+                {
+                    disease: "",
+                    probability: 0.0,
+                    description: "",
+                    precautions: [""]
+                }
+            ]
         }
     });
 

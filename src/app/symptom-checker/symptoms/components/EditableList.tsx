@@ -93,14 +93,14 @@ const EditableList: React.FC<EditableListProps> = ({
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleUpdate(i, editValue)}
-                                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105"
+                                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
                                             >
                                                 <FontAwesomeIcon icon={faCheck} size="sm" />
                                                 <span className="font-medium">Save</span>
                                             </button>
                                             <button
                                                 onClick={() => setEditingIndex(null)}
-                                                className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105"
+                                                className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
                                             >
                                                 <FontAwesomeIcon icon={faTimes} size="sm" />
                                                 <span className="font-medium">Cancel</span>
@@ -115,7 +115,7 @@ const EditableList: React.FC<EditableListProps> = ({
                                         </div>
                                         <div className='flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
                                             <button
-                                                className='p-2 rounded-lg hover:bg-blue-50 transition-all duration-200 transform hover:scale-110'
+                                                className='p-2 rounded-lg hover:bg-blue-50 transition-all duration-200 transform hover:scale-110 cursor-pointer'
                                                 onClick={() => {
                                                     setEditingIndex(i);
                                                     setEditValue(item);
@@ -129,7 +129,7 @@ const EditableList: React.FC<EditableListProps> = ({
                                                 />
                                             </button>
                                             <button
-                                                className='p-2 rounded-lg hover:bg-red-50 transition-all duration-200 transform hover:scale-110'
+                                                className='p-2 rounded-lg hover:bg-red-50 transition-all duration-200 transform hover:scale-110 cursor-pointer'
                                                 onClick={() => handleDelete(i)}
                                                 title="Delete"
                                             >
@@ -178,7 +178,7 @@ const EditableList: React.FC<EditableListProps> = ({
                     <div className="flex gap-2">
                         <button
                             onClick={handleAdd}
-                            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105"
+                            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
                         >
                             <FontAwesomeIcon icon={faCheck} size="1x" />
                             Save
@@ -188,7 +188,7 @@ const EditableList: React.FC<EditableListProps> = ({
                                 setShowAdd(false);
                                 setInput("");
                             }}
-                            className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105"
+                            className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
                         >
                             <FontAwesomeIcon icon={faTimes} size="1x" />
                             Cancel

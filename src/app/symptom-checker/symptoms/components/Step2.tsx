@@ -4,7 +4,7 @@ import EditableList from './EditableList';
 import { FormData } from '../types';
 import * as apiService from '@/app/api/symptoms/apiService';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faArrowRight, faStethoscope } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 interface Step2Props {
     formData: FormData;

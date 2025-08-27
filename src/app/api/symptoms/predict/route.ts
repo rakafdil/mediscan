@@ -50,16 +50,19 @@ Rules:
         ;
 
     try {
-        const aiText = await main(messages);
+        const aiText = (await main(messages));
 
-        // // Bersihin JSON (kalau AI masih ngereturn pake ```json ... ``` )
-        // let cleanJson = aiText
-        //     .replace(/```(json)?\s*/gi, "")
-        //     .replace(/```$/m, "")
-        //     .trim();
-        // const parsed = JSON.parse(cleanJson);
-        console.log(aiText);
-        return NextResponse.json(aiText);
+        if (aiText === undefined) return NextResponse.json({ error: "Response is empty" }, { status: 500 })
+        else if (typeof aiText !== 'string') return NextResponse.json({ error: "Invalid response type" }, { status: 500 })
+        else {
+            const cleanJson = aiText
+                .replace(/```(json)?\s*/gi, "")
+                .replace(/```$/m, "")
+                .trim();
+            const parsed = JSON.parse(cleanJson);
+            console.log("Parsed JSON:", parsed);
+            return NextResponse.json(parsed);
+        }
     } catch (e) {
         console.error("JSON Error:", e);
         return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
