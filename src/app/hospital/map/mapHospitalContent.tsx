@@ -105,7 +105,7 @@ const MapHospitalContent = () => {
         setLocationError(null);
 
         if (!navigator.geolocation) {
-            setLocationError('Geolocation tidak didukung oleh browser ini');
+            setLocationError('Geolocation is not supported by this browser');
             setIsGettingLocation(false);
             return;
         }
@@ -129,16 +129,16 @@ const MapHospitalContent = () => {
                 setLocationError(null);
             },
             (error) => {
-                let errorMessage = 'Gagal mendapatkan lokasi';
+                let errorMessage = 'Failed to get location';
                 switch (error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMessage = 'Izin lokasi ditolak. Silakan aktifkan izin lokasi di browser Anda.';
+                        errorMessage = 'Location permission denied. Please enable location access in your browser';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        errorMessage = 'Informasi lokasi tidak tersedia.';
+                        errorMessage = 'Location information not available';
                         break;
                     case error.TIMEOUT:
-                        errorMessage = 'Timeout saat mendapatkan lokasi. Coba lagi.';
+                        errorMessage = 'Timeout while retrieving location. Please try again';
                         break;
                 }
                 setLocationError(errorMessage);
@@ -166,7 +166,7 @@ const MapHospitalContent = () => {
                     leafletJS.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
                     leafletJS.onload = () => setIsMapLoaded(true);
                     leafletJS.onerror = () => {
-                        setMapError('Gagal memuat library peta');
+                        setMapError('Failed to load map library');
                         console.error('Failed to load Leaflet');
                     };
                     document.head.appendChild(leafletJS);
@@ -175,7 +175,7 @@ const MapHospitalContent = () => {
                 }
             } catch (error) {
                 console.error('Error loading Leaflet:', error);
-                setMapError('Gagal memuat library peta');
+                setMapError('Failed to load map library');
             }
         };
 
@@ -229,16 +229,16 @@ const MapHospitalContent = () => {
         } else {
             coordinates = locationCoordinates[kota];
             locationLabel = `${kota}, ${kabupaten}`;
-            
+
             if (!coordinates) {
-                setMapError(`Koordinat untuk ${kota} tidak ditemukan`);
+                setMapError(`Coordinates for ${kota} not found`);
                 return;
             }
         }
 
         const mapElement = document.getElementById('map');
         if (!mapElement) {
-            setMapError('Element peta tidak ditemukan');
+            setMapError('Map element not found');
             return;
         }
 
@@ -255,12 +255,10 @@ const MapHospitalContent = () => {
 
             // Marker lokasi pengguna
             const locationIcon = window.L.divIcon({
-                html: useRealLocation 
-                    ? '<div style="background-color: #10b981; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); animation: pulse 2s infinite;">📍</div>'
-                    : '<div style="background-color: #3b82f6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">📍</div>',
+                html: `<img src="/assets/Vector.png" alt="Address" style="width:25px; height:30px;" />`,
                 className: 'custom-location-marker',
-                iconSize: useRealLocation ? [32, 32] : [30, 30],
-                iconAnchor: useRealLocation ? [16, 16] : [15, 15]
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
             });
 
             window.L.marker([coordinates.lat, coordinates.lng], { icon: locationIcon })
@@ -284,7 +282,7 @@ const MapHospitalContent = () => {
 
             // Marker rumah sakit
             const hospitalIcon = window.L.divIcon({
-                html: '<div style="background-color: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">🏥</div>',
+                html: `<img src="/assets/HopitalMap.png" alt="Hospital" style="width:50px; height:50px;" />`,
                 className: 'custom-hospital-marker',
                 iconSize: [28, 28],
                 iconAnchor: [14, 14]
@@ -295,23 +293,42 @@ const MapHospitalContent = () => {
                     .addTo(map)
                     .bindPopup(`
                         <div style="min-width: 200px;">
-                            <b>🏥 ${hospital.name}</b><br/>
-                            <span style="color: #666; font-size: 0.9em;">📍 ${hospital.address}</span><br/>
-                            ${hospital.distance ? `<span style="color: #3b82f6; font-size: 0.9em;">🚗 ${hospital.distance}</span><br/>` : ''}
-                            ${hospital.phone ? `<span style="color: #059669; font-size: 0.9em;">📞 ${hospital.phone}</span><br/>` : ''}
-                            ${hospital.hospitalType ? `<span style="color: #7c3aed; font-size: 0.9em;">🏷️ ${hospital.hospitalType}</span>` : ''}
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <img src="/assets/HopitalMap.png" alt="Hospital" style="width: 40px; height: 40px;" />
+                            <b>${hospital.name}</b>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                            <img src="/assets/Vector.png" alt="Address" style="width: 15px; height: 20px;" />
+                            <span style="color: #666; font-size: 0.9em;">${hospital.address}</span>
+                        </div>
+
+                        ${hospital.distance ? `
+                            <div style="color: #3b82f6; font-size: 0.9em; margin-top: 4px;">
+                            🚗 ${hospital.distance}
+                            </div>` : ''}
+
+                        ${hospital.phone ? `
+                            <div style="color: #059669; font-size: 0.9em; margin-top: 4px;">
+                            📞 ${hospital.phone}
+                            </div>` : ''}
+
+                        ${hospital.hospitalType ? `
+                            <div style="color: #7c3aed; font-size: 0.9em; margin-top: 4px;">
+                            🏷️ ${hospital.hospitalType}
+                            </div>` : ''}
                         </div>
                     `);
             });
 
         } catch (error) {
             console.error('Error initializing map:', error);
-            setMapError('Gagal menginisialisasi peta');
+            setMapError('Error initializing map');
         }
     };
 
     const handleBackToSearch = () => {
-        router.push('/hospital');
+        router.push('/hospital/choose');
     };
 
     const retryInitialization = () => {
@@ -364,56 +381,56 @@ const MapHospitalContent = () => {
 
             <div className="container mx-auto p-5">
                 {/* Header */}
-                <div className="bg-white rounded-lg shadow-md p-4 mb-4">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-800">
-                                🗺️ Peta Rumah Sakit
-                            </h1>
-                            <p className="text-gray-600 mt-1">
-                                {useRealLocation && userLocation 
-                                    ? `Lokasi GPS Anda${userLocation.accuracy ? ` (±${Math.round(userLocation.accuracy)}m)` : ''}`
-                                    : `${kota}, ${kabupaten} - ${provinsi?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
-                                }
-                            </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={toggleLocationMode}
-                                disabled={isGettingLocation}
-                                className={`px-4 py-2 rounded-lg transition duration-200 flex items-center gap-2 ${
-                                    useRealLocation
-                                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                                        : 'bg-gray-500 hover:bg-gray-600 text-white'
-                                } ${isGettingLocation ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                                {isGettingLocation ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                        Mencari...
-                                    </>
-                                ) : useRealLocation ? (
-                                    <>🎯 GPS Aktif</>
-                                ) : (
-                                    <>📍 Gunakan GPS</>
-                                )}
-                            </button>
-                            <button
-                                onClick={handleBackToSearch}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 flex items-center gap-2"
-                            >
-                                ← Ubah Lokasi
-                            </button>
-                        </div>
+                <div className="bg-[#5C7598] rounded-lg shadow-md p-6 mb-4 flex flex-col items-center text-center gap-6">
+                    {/* Judul */}
+                    <h1 className="text-5xl font-bold text-white">
+                        Hospitals Map
+                    </h1>
+
+                    {/* Lokasi */}
+                    <p className="text-white">
+                        {useRealLocation && userLocation
+                            ? `Lokasi GPS Anda${userLocation.accuracy ? ` (±${Math.round(userLocation.accuracy)}m)` : ''}`
+                            : `${kota}, ${kabupaten} - ${provinsi?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+                        }
+                    </p>
+
+                    {/* Tombol */}
+                    <div className="flex gap-4 justify-center">
+                        <button
+                            onClick={toggleLocationMode}
+                            disabled={isGettingLocation}
+                            className={`px-6 py-2 rounded-full transition duration-200 flex items-center gap-2 shadow-lg shadow-blue-400/50 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-medium hover:scale-105 ${isGettingLocation ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                        >
+                            {isGettingLocation ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Search...
+                                </>
+                            ) : useRealLocation ? (
+                                <>🎯 GPS Active</>
+                            ) : (
+                                <>📍 Use GPS</>
+                            )}
+                        </button>
+
+                        <button
+                            onClick={handleBackToSearch}
+                            className="px-6 py-2 rounded-full transition duration-200 flex items-center gap-2 shadow-lg shadow-blue-400/50 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-medium hover:scale-105"
+                        >
+                            ← Change Location
+                        </button>
                     </div>
 
                     {/* Location Error */}
                     {locationError && (
-                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg w-full text-center">
                             <p className="text-red-600 text-sm">⚠️ {locationError}</p>
                         </div>
                     )}
                 </div>
+
 
                 {/* Map Container */}
                 <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
@@ -426,7 +443,7 @@ const MapHospitalContent = () => {
                             <div className="flex items-center justify-center h-full bg-gray-100">
                                 <div className="text-center">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                                    <p className="text-gray-600">Memuat peta...</p>
+                                    <p className="text-gray-600">Loading map...</p>
                                 </div>
                             </div>
                         ) : mapError ? (
@@ -441,7 +458,7 @@ const MapHospitalContent = () => {
                                         onClick={retryInitialization}
                                         className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
                                     >
-                                        🔄 Coba Lagi
+                                        🔄 Try Again
                                     </button>
                                 </div>
                             </div>
@@ -454,14 +471,28 @@ const MapHospitalContent = () => {
                     <div className="bg-white rounded-lg shadow-md p-6 mb-4">
                         <div className="flex items-center justify-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
-                            <p className="text-gray-600">Mencari rumah sakit terdekat...</p>
+                            <p className="text-gray-600">Searching for nearby hospitals...</p>
                         </div>
                     </div>
                 ) : hospitals.length > 0 && (
-                    <div className="bg-white rounded-lg shadow-md p-4 mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                            🏥 Rumah Sakit Ditemukan ({hospitals.length})
-                            {useRealLocation && <span className="text-sm text-green-600 ml-2">📍 Berdasarkan lokasi GPS</span>}
+                    <div className="bg-[#D9D9D9] rounded-lg shadow-md p-4 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <img
+                                src="/assets/HopitalMap.png"
+                                alt="Hospital"
+                                style={{ width: '90px', height: '90px' }}
+                            />
+                            Hospitals Found ({hospitals.length})
+                            {useRealLocation && (
+                                <span className="text-sm text-green-600 ml-2 flex items-center gap-1">
+                                    <img
+                                        src="/assets/Vector.png"
+                                        alt="Location"
+                                        style={{ width: '16px', height: '16px' }}
+                                    />
+                                    Based on GPS location``
+                                </span>
+                            )}
                         </h3>
                         <div className="grid gap-3 max-h-60 overflow-y-auto">
                             {hospitals.map((hospital) => (
@@ -512,8 +543,8 @@ const MapHospitalContent = () => {
                 {!isLoadingHospitals && hospitals.length === 0 && (
                     <div className="bg-white rounded-lg shadow-md p-6 text-center">
                         <div className="text-gray-400 text-4xl mb-4">🏥</div>
-                        <p className="text-gray-600 mb-2">Tidak ada rumah sakit ditemukan</p>
-                        <p className="text-sm text-gray-500">Coba ubah lokasi atau cek koneksi internet Anda</p>
+                        <p className="text-gray-600 mb-2">No hospitals found</p>
+                        <p className="text-sm text-gray-500">Try changing the location or check your internet connection</p>
                     </div>
                 )}
             </div>

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const RumahSakitPage = () => {
+const chooseHospital = () => {
     const router = useRouter();
     const [selectedProvinsi, setSelectedProvinsi] = useState('');
     const [selectedKabupaten, setSelectedKabupaten] = useState('');
@@ -90,58 +90,56 @@ const RumahSakitPage = () => {
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen">
-            <div className="container mx-auto p-5 max-w-lg">
-                <h2 className="text-center text-xl font-bold text-gray-800 my-5">
-                    Pilih Lokasi Rumah Sakit
-                </h2>
+        <div className="bg-gradient-to-b from-white to-gray-50 min-h-screen flex items-center justify-center">
+            <div className="w-full max-w-md p-6">
+                <h1 className="text-3xl font-bold text-center text-gray-800 mb-3">
+                    Share Your Location
+                </h1>
+                <p className="text-center text-gray-500 mb-8 text-sm">
+                    By adding your detailed location, we can help you quickly discover the nearest hospitals around you
+                </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                        <select
-                            className="w-full p-4 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                            value={selectedProvinsi}
-                            onChange={handleProvinsiChange}
-                        >
-                            <option value="">Pilih Provinsi</option>
-                            <option value="jawa_barat">Jawa Barat</option>
-                            <option value="jawa_tengah">Jawa Tengah</option>
-                            <option value="jawa_timur">Jawa Timur</option>
-                            <option value="dki_jakarta">DKI Jakarta</option>
-                            <option value="di_yogyakarta">DI Yogyakarta</option>
-                        </select>
-                    </div>
+                    <select
+                        className="w-full p-3 rounded-md border border-gray-300 bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedProvinsi}
+                        onChange={handleProvinsiChange}
+                    >
+                        <option value="">Province</option>
+                        <option value="jawa_barat">Jawa Barat</option>
+                        <option value="jawa_tengah">Jawa Tengah</option>
+                        <option value="jawa_timur">Jawa Timur</option>
+                        <option value="dki_jakarta">DKI Jakarta</option>
+                        <option value="di_yogyakarta">DI Yogyakarta</option>
+                    </select>
 
-                    <div>
-                        <select
-                            className="w-full p-4 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                            value={selectedKabupaten}
-                            onChange={handleKabupatenChange}
-                        >
-                            <option value="">Pilih Kabupaten</option>
-                            {getKabupatenOptions().map((kabupaten) => (
-                                <option key={kabupaten} value={kabupaten}>
-                                    {kabupaten}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <select
+                        className="w-full p-3 rounded-md border border-gray-300 bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedKabupaten}
+                        onChange={handleKabupatenChange}
+                    >
+                        <option value="">Regency</option>
+                        {getKabupatenOptions().map((kabupaten) => (
+                            <option key={kabupaten} value={kabupaten}>
+                                {kabupaten}
+                            </option>
+                        ))}
+                    </select>
 
-                    <div>
-                        <select
-                            className="w-full p-4 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                            value={selectedKota}
-                            onChange={handleKotaChange}
-                        >
-                            <option value="">Pilih Kota</option>
-                            {getKotaOptions().map((kota: string) => (
-                                <option key={kota} value={kota}>
-                                    {kota}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <select
+                        className="w-full p-3 rounded-md border border-gray-300 bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedKota}
+                        onChange={handleKotaChange}
+                    >
+                        <option value="">City</option>
+                        {getKotaOptions().map((kota) => (
+                            <option key={kota} value={kota}>
+                                {kota}
+                            </option>
+                        ))}
+                    </select>
 
+                    {/* Tambahan button Telusuri */}
                     <button
                         type="submit"
                         className="w-full py-4 px-6 rounded-lg font-medium text-base transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-white hover:bg-blue-700 focus:ring-blue-500"
@@ -161,4 +159,4 @@ const RumahSakitPage = () => {
     );
 };
 
-export default RumahSakitPage;
+export default chooseHospital;
