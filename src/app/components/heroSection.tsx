@@ -129,8 +129,120 @@ const LandingPage = () => {
                         </div>
                     </div>
 
-                    <div className='h-200'></div>
+                    {/* The Tech Behind mediScan Section */}
+                    <div className="relative min-h-screen py-20">
+                        <div className="container mx-auto px-4">
+                            {/* Header */}
+                            <div className="text-center mb-16">
+                                <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-4">
+                                    The Tech Behind <span className="text-blue-500">mediScan</span>
+                                </h2>
+                                <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
+                                    MediScan is powered by Google Gemini AI and enhanced with<br />
+                                    advanced artificial engineering to deliver accurate, reliable health<br />
+                                    insights instantly.
+                                </p>
+                            </div>
 
+                            {/* Tech Features */}
+                            <div className="relative max-w-6xl mx-auto">
+
+                                {/* Content Grid */}
+                                <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                                    {/* Symptom Checker */}
+                                    <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                                        <img src="/assets/symptom.png" alt="Symptom" className="mx-auto w-20 h-20 object-contain mb-4" />
+                                        <h3 className="text-xl font-bold text-gray-800 mb-4">Symptom Checker</h3>
+                                        <p className="text-gray-600 leading-relaxed text-sm">
+                                            Instantly analyze symptoms and<br />
+                                            provide comprehensive health insights
+                                        </p>
+                                    </div>
+
+                                    {/* AI Driven Accuracy */}
+                                    <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                                        <img src="/assets/AIessentials.png" alt="AI Driven Accuracy" className="mx-auto w-20 h-20 object-contain mb-4" />
+                                        <h3 className="text-xl font-bold text-gray-800 mb-4">AI Driven Accuracy</h3>
+                                        <p className="text-gray-600 leading-relaxed text-sm">
+                                            Powered by Google Gemini for<br />
+                                            precise analysis and reliable<br />
+                                            interpretations
+                                        </p>
+                                    </div>
+
+                                    {/* Real-Time Guidance */}
+                                    <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                                        <img src="/assets/realtime.png" alt="AI Driven Accuracy" className="mx-auto w-20 h-20 object-contain mb-4" />
+                                        <h3 className="text-xl font-bold text-gray-800 mb-4">Real-Time Guidance</h3>
+                                        <p className="text-gray-600 leading-relaxed text-sm">
+                                            Receive immediate recommendations<br />
+                                            on what steps to take next
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Care Around You Section */}
+                    <div className="relative py-20">
+                        <div className="container mx-auto px-4">
+                            <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+                                {/* Left Side - Title */}
+                                <div className="lg:w-1/3">
+                                    <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 leading-tight">
+                                        Care Around You
+                                    </h2>
+                                </div>
+
+                                {/* Center - Image */}
+                                <div className="lg:w-1/3 flex justify-center">
+                                    {/* Replace this div with your Image component */}
+                                    <Image
+                                        src="/assets/section4.png"
+                                        alt="Care Around You"
+                                        width={320}
+                                        height={240}
+                                        className="rounded-2xl"
+                                    />
+                                </div>
+
+                                {/* Right Side - Description */}
+                                <div className="lg:w-1/3">
+                                    <p className="text-gray-600 text-lg leading-relaxed">
+                                        Locate hospitals in your area and connect with trusted healthcare professionals to validate your condition.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Knowledge is Care Section */}
+                    <div className="relative py-20">
+                        <div className="container mx-auto px-4">
+                            <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+                                {/* Left Side - Content */}
+                                <div className="lg:w-1/2">
+                                    <h2 className="text-4xl lg:text-5xl font-bold text-blue-500 mb-8 leading-tight">
+                                        Knowledge is Care
+                                    </h2>
+                                    <p className="text-gray-600 text-lg leading-relaxed max-w-md">
+                                        The more you know about your condition, the better you can take care of yourself
+                                    </p>
+                                </div>
+
+                                {/* Right Side - Image */}
+                                <div className="lg:w-1/2 flex justify-center">
+                                <Image 
+                                    src="/assets/section5.png" 
+                                    alt="Knowledge is Care" 
+                                    width={384} 
+                                    height={256} 
+                                    className="rounded-2xl"
+                                />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </>
