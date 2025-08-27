@@ -37,7 +37,7 @@ export const NextButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 export const BackButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <Button
         onClick={onClick}
-        className="px-4 py-2 bg-gray-300 rounded cursor-pointer"
+        className="flex-1 max-w-xs px-4 py-2 bg-gray-300 rounded cursor-pointer"
     >
         Kembali
     </Button>
@@ -45,12 +45,21 @@ export const BackButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 
 interface ContainerProps {
     children: React.ReactNode;
-    title: string;
+    title?: string;
+    className?: string;
+    titleClassName?: string;
+    containerClassName?: string;
 }
 
-export const StepContainer: React.FC<ContainerProps> = ({ children, title }) => (
-    <div className="p-6 max-w-md mx-auto">
-        <h1 className="text-xl font-bold mb-4">{title}</h1>
+export const StepContainer: React.FC<ContainerProps> = ({
+    children,
+    title,
+    className = "",
+    titleClassName = "",
+    containerClassName = ""
+}) => (
+    <div className={`${containerClassName} ${className}`}>
+        <h1 className={`${titleClassName} text-gray-800 mb-4`}>{title}</h1>
         {children}
     </div>
 );

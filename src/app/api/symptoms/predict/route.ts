@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { main } from "@/app/services/geminiServices";
-
-interface UserComplication {
-    gender: string
-    age: string
-    symptoms: string
-}
+import { UserComplication } from "@/app/symptom-checker/symptoms/types";
 
 export async function POST(req: NextRequest) {
     const body = await req.json()
@@ -13,10 +8,13 @@ export async function POST(req: NextRequest) {
     const userComplication: UserComplication = {
         gender: body.gender,
         age: body.age,
-        symptoms: body.symptoms
+        symptoms: body.symptoms,
+        histories: body.histories,
+        location: body.location
     }
 
     const messages = `{
+    "user_data": {age: "${userComplication.age}", gender: "${userComplication.gender}", location: "${userComplication.location}", histories: "${userComplication.histories}"},
         "user_question":"saya merupakan ${userComplication.gender} yang berumur ${userComplication.age}. saya memiliki beberapa gejala, yaitu: ${userComplication.symptoms}"
       }
 

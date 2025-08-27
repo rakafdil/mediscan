@@ -1,12 +1,14 @@
 import { DataValidate, PredictionResult } from '../../symptom-checker/symptoms/types';
 
-export const validateSymptoms = async (gender: string, age: string, symptoms: string): Promise<DataValidate> => {
+export const validateSymptoms = async (gender: string, age: string, symptoms: string, histories: string[], location: string): Promise<DataValidate> => {
     const res = await fetch("/api/symptoms/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             gender,
             age,
+            histories,
+            location,
             symptoms
         }),
     });
@@ -18,13 +20,15 @@ export const validateSymptoms = async (gender: string, age: string, symptoms: st
     return res.json();
 };
 
-export const predictDisease = async (gender: string, age: string, symptoms: string[]): Promise<PredictionResult> => {
+export const predictDisease = async (gender: string, age: string, symptoms: string[], histories: string[], location: string): Promise<PredictionResult> => {
     const res = await fetch("/api/symptoms/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             gender,
             age,
+            histories,
+            location,
             symptoms
         }),
     });

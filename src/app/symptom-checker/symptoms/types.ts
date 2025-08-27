@@ -21,6 +21,16 @@ export interface FormData {
     gender: string;
     age: string;
     symptoms: string;
+    histories: string[];
+    location: string;
     result_validate: ValidateResult;
     result_prediction: PredictionResult;
+}
+
+export interface UserComplication {
+    gender: string
+    age: string
+    symptoms: string
+    histories: string
+    location: string
 }

@@ -39,6 +39,8 @@ const DiagnosisFlow: React.FC = () => {
         gender: "",
         age: "",
         symptoms: "",
+        histories: [""],
+        location: "",
         result_validate: {
             response_for_user: "",
             symptoms: [""],
@@ -153,7 +155,7 @@ const DiagnosisFlow: React.FC = () => {
                 <div className='flex flex-row gap-30 relative overflow-hidden px-30'>
                     <div
                         style={{ width: `${(step) * 20}%` }}
-                        className='h-2 bg-[#6AC2EA] absolute left-0 top-[36%]  transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
+                        className='h-2 bg-[#6AC2EA] absolute left-0 top-[36%] transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
                     />
                     <div
                         className='h-2 w-full bg-[#628EF7] absolute left-0 top-[36%] transform -translate-y-1/2 rounded-full z-[-1]'
@@ -165,7 +167,7 @@ const DiagnosisFlow: React.FC = () => {
                         >
                             <button
                                 key={item.step}
-                                className={`flex justify-center items-center w-22 h-22 rounded-full text-2xl duration-200
+                                className={`flex justify-center items-center w-22 h-22 rounded-full text-2xl duration-200 cursor-pointer
                                 ${step >= item.step
                                         ? 'bg-[#6AC2EA] hover:bg-[#ccebf9] hover:text-black text-white'
                                         : 'bg-white border-[#628EF7] border-4 hover:bg-[#ccebf9] hover:text-white'
