@@ -13,8 +13,8 @@ export default function HeroSection() {
                     <Image
                         src="/assets/Pharmacist.png" // ganti dengan file kamu di /public
                         alt="Doctor Illustration"
-                        width={400}
-                        height={400}
+                        width={900}
+                        height={900}
                         className="object-contain"
                     />
                 </div>

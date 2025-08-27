@@ -96,7 +96,7 @@ const HealthInsightsDashboard = () => {
                     <img
                         src="/assets/HumanArticle.png"
                         alt="Human body illustration"
-                        className="w-130 h-100 object-contain"
+                        className="w-200 h-200"
                     />
 
                     {/* Content */}

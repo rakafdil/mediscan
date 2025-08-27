@@ -400,7 +400,7 @@ const MapHospitalContent = () => {
                         <button
                             onClick={toggleLocationMode}
                             disabled={isGettingLocation}
-                            className={`px-6 py-2 rounded-full transition duration-200 flex items-center gap-2 shadow-lg shadow-blue-400/50 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-medium hover:scale-105 ${isGettingLocation ? 'opacity-50 cursor-not-allowed' : ''
+                            className={`px-6 py-2 rounded-full transition duration-200 flex items-center gap-2 shadow-lg shadow-blue-400/50 bg-[#628EF7] text-white font-medium hover:scale-105 ${isGettingLocation ? 'opacity-50 cursor-not-allowed' : ''
                                 }`}
                         >
                             {isGettingLocation ? (
@@ -417,7 +417,7 @@ const MapHospitalContent = () => {
 
                         <button
                             onClick={handleBackToSearch}
-                            className="px-6 py-2 rounded-full transition duration-200 flex items-center gap-2 shadow-lg shadow-blue-400/50 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-medium hover:scale-105"
+                            className="px-6 py-2 rounded-full transition duration-200 flex items-center gap-2 shadow-lg shadow-blue-400/50 bg-[#628EF7] text-white font-medium hover:scale-105"
                         >
                             ← Change Location
                         </button>
