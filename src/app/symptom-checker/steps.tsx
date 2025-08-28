@@ -82,7 +82,7 @@ export default function CarouselSlide() {
     const nextContentData = slides[(displayedContent + 1) % slides.length];
 
     return (
-        <div className="flex items-center justify-center h-96 p-20 mt-80 overflow-hidden">
+        <div className="flex items-center justify-center h-96 p-20 mt-80 mb-40 overflow-hidden">
             <div className="flex items-center gap-8 max-w-7xl w-full">
 
                 {/* Left Card */}
@@ -118,7 +118,7 @@ export default function CarouselSlide() {
                     className={`p-2 rounded-full transition-all duration-300 ease-in-out ${isTransitioning
                         ? 'opacity-50 cursor-not-allowed'
                         : 'hover:bg-gray-100 hover:scale-110'
-                        }`}
+                        } cursor-pointer`}
                     aria-label="Previous slide"
                 >
                     <ChevronLeft className="w-6 h-6 text-gray-400" />
@@ -158,7 +158,7 @@ export default function CarouselSlide() {
                     className={`p-2 rounded-full transition-all duration-300 ease-in-out ${isTransitioning
                         ? 'opacity-50 cursor-not-allowed'
                         : 'hover:bg-gray-100 hover:scale-110'
-                        }`}
+                        } cursor-pointer`}
                     aria-label="Next slide"
                 >
                     <ChevronRight className="w-6 h-6 text-gray-400" />
