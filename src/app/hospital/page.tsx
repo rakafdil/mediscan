@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function HeroSection() {
     return (
-        <div className="bg-[#FAFAF8] min-h-screen flex flex-col">
+        <div className="bg-gradient-to-b from-white to-blue-50 min-h-screen flex flex-col">
             {/* Bagian Hero */}
             <section className="flex flex-col md:flex-row items-center justify-between px-8 md:px-16 lg:px-24 py-16">
                 {/* Gambar utama */}
@@ -20,11 +20,11 @@ export default function HeroSection() {
                 </div>
 
                 {/* Teks Hero */}
-                <div className="w-full md:w-1/2 mt-8 md:mt-0 text-center md:text-left">
+                <div className="w-full md:w-1/2 mt-10 md:mt-0 text-center md:text-right font-montserrat">
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-snug">
                         Find Care Around <br /> the Corner
                     </h1>
-                    <p className="text-gray-600 mt-4 text-lg">
+                    <p className="text-gray-600 mt-2 text-lg">
                         Easily discover trusted hospitals and clinics just steps away from where you are
                     </p>
                     <a href="/hospital/choose">
@@ -36,23 +36,23 @@ export default function HeroSection() {
             </section>
 
             {/* Bagian Info Box */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8 md:px-16 lg:px-24 pb-16">
-                <div className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-lg transition">
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8 md:px-16 lg:px-24 pb-20">
+                <div className="bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition">
                     <div className="flex justify-center mb-3">
                         ⭐⭐⭐⭐⭐
                     </div>
                     <p className="text-gray-600">Finding the best hospitals in the nearest area</p>
                 </div>
 
-                <div className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-lg transition">
-                    <h3 className="text-2xl font-bold text-blue-600">3.155 +</h3>
+                <div className="bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition">
+                    <h3 className="text-2xl font-bold text-blue-600 font-montserrat">3.155 +</h3>
                     <p className="text-gray-600">
                         More than 3,155 good hospitals in Indonesia are already registered
                     </p>
                 </div>
 
-                <div className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-lg transition">
-                    <h3 className="text-2xl font-bold text-blue-600">24/7</h3>
+                <div className="bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition">
+                    <h3 className="text-2xl font-bold text-blue-600 font-montserrat">24/7</h3>
                     <p className="text-gray-600">
                         Thanks for all the services, no doubt it is the best hospital
                     </p>

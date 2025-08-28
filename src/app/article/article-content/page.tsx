@@ -51,7 +51,7 @@ export default function SearchPage() {
         <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 text-gray-800 p-6">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <header className="text-center mb-8">
+                <header className="text-center mb-8 font-montserrat">
                     <h1 className="text-3xl font-bold text-gray-900">Search</h1>
                 </header>
 

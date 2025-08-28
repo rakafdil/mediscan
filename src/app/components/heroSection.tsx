@@ -10,9 +10,9 @@ const LandingPage = () => {
                 <div className="relative bg-gradient-to-b from-white to-blue-50 min-h-screen">
                     {/* Hero Section */}
                     {/* Wrapper utama tetap relative biar absolute bisa nempel */}
-                    <div className="relative bg-gradient-to-b from-white to-blue-50 min-h-screen">
+                    <div className="relative  min-h-screen">
                         {/* Hero Section */}
-                        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-8 relative z-10">
+                        <div className="container font-montserrat mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-8 relative z-10">
                             <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-0">
                                 {/* Left Content */}
                                 <div className="w-full lg:w-1/2 text-center lg:text-left lg:relative lg:-top-25">
@@ -93,7 +93,7 @@ const LandingPage = () => {
                     {/* Video Section */}
                     <div className="min-h-[400px] sm:min-h-[500px] lg:h-160 w-full flex flex-col lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-30 py-10 gap-8 lg:gap-0">
                         {/* Left side - Text */}
-                        <div className="w-full lg:max-w-md text-center lg:text-left">
+                        <div className="w-full lg:max-w-md font-montserrat text-center lg:text-left">
                             <div className='my-6 sm:my-8 lg:my-10 mt-5'>
                                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#252B42] mb-3">
                                     How to Use Symptom Scan in 4 Easy Steps
@@ -141,7 +141,7 @@ const LandingPage = () => {
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                             {/* Header */}
                             <div className="text-center mb-12 sm:mb-16">
-                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-4">
+                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-bold text-gray-800 mb-4">
                                     The Tech Behind <span className="text-blue-500">mediScan</span>
                                 </h2>
                                 <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed px-4 sm:px-0">
@@ -196,7 +196,7 @@ const LandingPage = () => {
                             <div className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16">
                                 {/* Left Side - Title */}
                                 <div className="w-full lg:w-1/3 text-center lg:text-left">
-                                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight">
+                                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-bold text-gray-800 leading-tight">
                                         Care Around You
                                     </h2>
                                 </div>
@@ -213,7 +213,7 @@ const LandingPage = () => {
                                 </div>
 
                                 {/* Right Side - Description */}
-                                <div className="w-full lg:w-1/3 text-center lg:text-left">
+                                <div className="w-full lg:w-1/3 text-center font-montserrat lg:text-left">
                                     <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
                                         Locate hospitals in your area and connect with trusted healthcare professionals to validate your condition.
                                     </p>
@@ -227,7 +227,7 @@ const LandingPage = () => {
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16">
                                 {/* Left Side - Content */}
-                                <div className="w-full lg:w-1/2 text-center lg:text-left">
+                                <div className="w-full lg:w-1/2 text-center lg:text-left font-montserrat">
                                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-500 mb-6 sm:mb-8 leading-tight">
                                         Knowledge is Care
                                     </h2>

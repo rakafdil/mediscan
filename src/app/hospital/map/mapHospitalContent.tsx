@@ -383,7 +383,7 @@ const MapHospitalContent = () => {
                 {/* Header */}
                 <div className="bg-[#5C7598] rounded-lg shadow-md p-6 mb-4 flex flex-col items-center text-center gap-6">
                     {/* Judul */}
-                    <h1 className="text-5xl font-bold text-white">
+                    <h1 className="text-5xl font-bold text-white font-montserrat">
                         Hospitals Map
                     </h1>
 
@@ -396,7 +396,7 @@ const MapHospitalContent = () => {
                     </p>
 
                     {/* Tombol */}
-                    <div className="flex gap-4 justify-center">
+                    <div className="flex gap-4 justify-center font-montserrat">
                         <button
                             onClick={toggleLocationMode}
                             disabled={isGettingLocation}
