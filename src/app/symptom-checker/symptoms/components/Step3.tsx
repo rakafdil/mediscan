@@ -172,7 +172,7 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
 
                     {formData.result_prediction?.result && formData.result_prediction.result.length > 0 ? (
                         <div className="space-y-3">
-                            {formData.result_prediction.result.map((disease: Disease, index: number) => (
+                            {formData.result_prediction.result.filter(item => item.disease.trim() !== "").map((disease: Disease, index: number) => (
                                 <DiagnosisCard
                                     key={index}
                                     probability={disease.probability}
@@ -202,7 +202,7 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
             </StepContainer>
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between items-center w-full max-w-2xl gap-6">
+            <div className="flex justify-between items-center w-full gap-6 mt-8">
                 <BackButton
                     onClick={onBack}
                 />

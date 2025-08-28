@@ -1,11 +1,12 @@
 "use client"
 import React, { useState } from 'react';
 import { FormData } from './types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Step1 from './components/Step1';
 import Step2 from './components/Step2';
 import Step3 from './components/Step3';
 import Step4 from './components/Step4';
-import Step5 from './components/Step5';
 import Link from 'next/link';
 
 const stepName = [
@@ -138,22 +139,16 @@ const DiagnosisFlow: React.FC = () => {
                         onBack={prevStep}
                     />
                 );
-            case 4:
+            default:
                 return (
                     <Step4
                         onNext={nextStep}
                         onBack={prevStep}
+                        setStep={setStep}
                         result={formData.result_prediction?.result}
+
                     />
                 );
-            case 5:
-                return (
-                    <Step5
-                        onBack={prevStep}
-                    />
-                );
-            default:
-                return null;
         }
     };
 
@@ -163,24 +158,13 @@ const DiagnosisFlow: React.FC = () => {
                 <Link
                     href="#"
                     onClick={handleBack}
-                    className="absolute top-8 left-8 p-2 rounded-full hover:bg-gray-100 transition-all duration-200 flex items-center gap-2"
+                    className="absolute top-8 left-8 p-2 rounded-full hover:bg-gray-100 transition-all duration-200 flex items-center align-center gap-2"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-gray-600"
-                    >
-                        <path d="M19 12H5" />
-                        <path d="M12 19l-7-7 7-7" />
-                    </svg>
-                    <span className="text-gray-600">Back</span>
+                    <FontAwesomeIcon
+                        icon={faArrowLeft}
+                        className={`text-gray-600 text-4xl`}
+                    />
+                    <span className="text-gray-600 text-2xl mt-1">Back</span>
                 </Link>
                 <h1 className='text-6xl font-bold text-gray-900'>
                     {stepName.find(item => item.step === step)?.name}
@@ -206,7 +190,7 @@ const DiagnosisFlow: React.FC = () => {
                                         ? 'bg-[#6AC2EA] hover:bg-[#ccebf9] hover:text-black text-white cursor-pointer'
                                         : isStepAccessible(item.step)
                                             ? 'bg-white border-[#628EF7] border-4 hover:bg-[#ccebf9] hover:text-white cursor-pointer'
-                                            : 'bg-gray-200 border-gray-300 border-4 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white border-[#628EF7] border-4 cursor-not-allowed'
                                     }
             `}
                                 // onClick={() => isStepAccessible(item.step) && setStep(item.step)}

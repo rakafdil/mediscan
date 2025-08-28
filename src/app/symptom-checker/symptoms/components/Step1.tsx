@@ -116,7 +116,7 @@ const Step1: React.FC<Step1Props> = ({
                 type="submit"
                 disabled={!formData.age || !formData.gender}
                 className={`w-[80%] text-xl font-bold py-3 px-4 rounded-lg transition ${formData.age && formData.gender
-                    ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
+                    ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600 hover:scale-105 shadow-lg hover:shadow-xl"
                     : "bg-gray-400 text-white cursor-not-allowed"
                     }`}
                 onClick={onNext}

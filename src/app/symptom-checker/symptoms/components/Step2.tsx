@@ -178,7 +178,7 @@ const Step2: React.FC<Step2Props> = ({
                 </StepContainer>
             )}
 
-            <div className="flex justify-between items-center w-full max-w-2xl gap-6 mt-8">
+            <div className="flex justify-between items-center w-full gap-6 mt-8">
                 <BackButton
                     onClick={onBack}
                 />
@@ -186,9 +186,9 @@ const Step2: React.FC<Step2Props> = ({
                 <button
                     onClick={predictDisease}
                     disabled={loading || formData.result_validate.symptoms.length === 0}
-                    className={`flex-1 max-w-xs py-4 px-8 rounded-xl font-semibold text-xl flex items-center justify-center gap-3 transition-all duration-300 transform ${loading || formData.result_validate.symptoms.length === 0
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-indigo-500 text-white hover:bg-indigo-600 hover:scale-105 shadow-lg hover:shadow-xl'
+                    className={`w-[30%] text-xl font-bold py-3 px-4 rounded-lg transition ${loading || formData.result_validate.symptoms.length === 0
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600 hover:scale-105 shadow-lg hover:shadow-xl'
                         }`}
                 >
                     {loading ? (
@@ -198,8 +198,7 @@ const Step2: React.FC<Step2Props> = ({
                         </>
                     ) : (
                         <>
-                            Get Diagnosis
-                            <FontAwesomeIcon icon={faArrowRight} />
+                            Next
                         </>
                     )}
                 </button>

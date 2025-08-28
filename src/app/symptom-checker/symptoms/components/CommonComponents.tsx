@@ -28,7 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
 export const NextButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <Button
         onClick={onClick}
-        className="px-4 py-2 bg-purple-500 text-white rounded cursor-pointer"
+        className="w-[30%] text-xl font-bold py-3 px-4 rounded-lg transition cursor-pointer bg-blue-500 text-white hover:bg-blue-600 hover:scale-105 shadow-lg hover:shadow-xl"
     >
         Next
     </Button>
@@ -37,9 +37,9 @@ export const NextButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 export const BackButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <Button
         onClick={onClick}
-        className="flex-1 max-w-xs px-4 py-2 bg-gray-300 rounded cursor-pointer"
+        className="w-[30%] text-xl font-bold py-3 px-4 rounded-lg transition cursor-pointer bg-blue-500 text-white hover:bg-blue-600 hover:scale-105 shadow-lg hover:shadow-xl"
     >
-        Kembali
+        Back
     </Button>
 );
 
