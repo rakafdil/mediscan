@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StepContainer, BackButton, NextButton } from './CommonComponents';
 import { Disease } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faNewspaper, faHospital, faSearch, faExternalLinkAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faNewspaper, faHospital, faSearch, faExternalLinkAlt, faSpinner, faMapMarkerAlt, faPhone, faGlobe } from '@fortawesome/free-solid-svg-icons';
 
 interface Step4Props {
     onNext: () => void;
@@ -19,13 +19,31 @@ interface SearchResult {
     source: string;
 }
 
+interface Hospital {
+    id: number;
+    name: string;
+    address: string;
+    lat: number;
+    lng: number;
+    rating?: number;
+    isOpen?: boolean;
+    distance?: string;
+    phone?: string;
+    website?: string;
+    hospitalType?: string;
+}
+
 const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
     const [isArticle, setIsArticle] = useState(true);
     const [selectedDisease, setSelectedDisease] = useState<string>('');
     const [results, setResults] = useState<SearchResult[]>([]);
     const [loadingArticle, setLoadingArticle] = useState(false);
 
-    // Initialize with the first disease if available
+    // hospital states
+    const [loadingHospital, setLoadingHospital] = useState(false);
+    const [hospitals, setHospitals] = useState<Hospital[]>([]);
+    const [errorHospital, setErrorHospital] = useState<string | null>(null);
+
     useEffect(() => {
         if (result && result.length > 0 && !selectedDisease) {
             setSelectedDisease(result[0].disease);
@@ -33,6 +51,7 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
         }
     }, [result]);
 
+    // fetch articles
     const handleSearch = async (disease: string) => {
         if (!disease) return;
 
@@ -53,66 +72,86 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
         }
     };
 
+    // fetch hospitals
+    const fetchHospitals = () => {
+        setLoadingHospital(true);
+        setHospitals([]);
+        setErrorHospital(null);
+
+        if (!navigator.geolocation) {
+            setErrorHospital("Geolocation is not supported by this browser.");
+            setLoadingHospital(false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                try {
+                    const res = await fetch(`/api/hospitals?lat=${latitude}&lng=${longitude}&useRealLocation=true`);
+                    if (!res.ok) throw new Error('Failed to fetch hospitals');
+                    const data = await res.json();
+                    setHospitals(data.data || []);
+                } catch (err: any) {
+                    console.error("Hospital fetch error:", err);
+                    setErrorHospital("Failed to fetch hospitals");
+                } finally {
+                    setLoadingHospital(false);
+                }
+            },
+            (err) => {
+                console.error("Geolocation error:", err);
+                setErrorHospital("Unable to get your location.");
+                setLoadingHospital(false);
+            }
+        );
+    };
+
     const handleTabSwitch = (isArticleTab: boolean) => {
         setIsArticle(isArticleTab);
         setStep(isArticleTab ? 4 : 5);
+        if (!isArticleTab && hospitals.length === 0 && !loadingHospital) {
+            fetchHospitals();
+        }
     };
 
-    const truncateText = (text: string, maxLength: number) => {
-        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-    };
+    const truncateText = (text: string, maxLength: number) =>
+        text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 
     return (
         <div className='flex items-center flex-col gap-8 pb-20 w-full max-w-7xl mx-auto px-4'>
-            {/* Tab Navigation */}
+            {/* Tabs */}
             <div className='flex flex-row w-full max-w-4xl bg-gray-100 rounded-2xl p-2 shadow-inner'>
                 <button
-                    className={`flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${isArticle
-                        ? 'bg-white text-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-gray-800'
-                        }`}
+                    className={`flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${isArticle ? 'bg-white text-blue-600 shadow-md' : 'text-gray-600 hover:text-gray-800'}`}
                     onClick={() => handleTabSwitch(true)}
                 >
-                    <FontAwesomeIcon icon={faNewspaper} />
-                    Articles
+                    <FontAwesomeIcon icon={faNewspaper} /> Articles
                 </button>
                 <button
-                    className={`flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${!isArticle
-                        ? 'bg-white text-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-gray-800'
-                        }`}
+                    className={`flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${!isArticle ? 'bg-white text-blue-600 shadow-md' : 'text-gray-600 hover:text-gray-800'}`}
                     onClick={() => handleTabSwitch(false)}
                 >
-                    <FontAwesomeIcon icon={faHospital} />
-                    Hospitals
+                    <FontAwesomeIcon icon={faHospital} /> Hospitals
                 </button>
             </div>
 
             {isArticle ? (
+                // === Articles ===
                 <div className='w-full flex gap-8'>
-                    {/* Disease Selection Sidebar */}
-                    <StepContainer
-                        className='w-1/3 bg-white shadow-lg rounded-2xl p-6'
-                        title='Select Disease'
-                        titleClassName='text-xl font-bold mb-6 text-gray-800'
-                    >
+                    {/* Disease Sidebar */}
+                    <StepContainer className='w-1/3 bg-white shadow-lg rounded-2xl p-6' title='Select Disease'>
                         <div className='space-y-3'>
                             {result && result.filter(item => item.disease.trim() !== "").length > 0 ? (
                                 result.filter(item => item.disease.trim() !== "").map((disease, index) => (
                                     <button
                                         key={disease.disease}
                                         onClick={() => handleSearch(disease.disease)}
-                                        className={`w-full py-4 px-5 text-left rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${selectedDisease === disease.disease
-                                            ? 'bg-blue-500 text-white shadow-lg'
-                                            : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                                            }`}
+                                        className={`w-full py-4 px-5 text-left rounded-xl font-medium transition-all duration-300 ${selectedDisease === disease.disease ? 'bg-blue-500 text-white' : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'}`}
                                     >
                                         <div className="flex items-center justify-between">
                                             <span className="truncate">{disease.disease}</span>
-                                            <span className={`text-sm ${selectedDisease === disease.disease ? 'text-blue-100' : 'text-gray-500'
-                                                }`}>
-                                                {(disease.probability * 100).toFixed(0)}%
-                                            </span>
+                                            <span className="text-sm">{(disease.probability * 100).toFixed(0)}%</span>
                                         </div>
                                     </button>
                                 ))
@@ -120,97 +159,70 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
                                 <div className="text-center py-8 text-gray-500">
                                     <FontAwesomeIcon icon={faSearch} className="text-3xl mb-4" />
                                     <p>No diseases available</p>
-                                    <p className="text-sm">Complete diagnosis first</p>
                                 </div>
                             )}
                         </div>
                     </StepContainer>
 
-                    {/* Articles Content */}
-                    <StepContainer
-                        className='flex-1 bg-white shadow-lg rounded-2xl p-6'
-                        title={`Articles about ${selectedDisease || 'Selected Disease'}`}
-                        titleClassName='text-xl font-bold mb-6 text-gray-800 flex items-center gap-3'
-                    >
+                    {/* Articles */}
+                    <StepContainer className='flex-1 bg-white shadow-lg rounded-2xl p-6' title={`Articles about ${selectedDisease || 'Selected Disease'}`}>
                         {loadingArticle ? (
-                            <div className="flex flex-col items-center justify-center py-16">
-                                <FontAwesomeIcon
-                                    icon={faSpinner}
-                                    className="text-4xl text-blue-500 animate-spin mb-4"
-                                />
-                                <p className="text-gray-600 font-medium">Searching for articles...</p>
+                            <div className="flex flex-col items-center py-16">
+                                <FontAwesomeIcon icon={faSpinner} className="text-4xl text-blue-500 animate-spin mb-4" />
+                                <p>Searching for articles...</p>
                             </div>
                         ) : results.length > 0 ? (
                             <div className='space-y-4 max-h-96 overflow-y-auto'>
                                 {results.map((article, index) => (
-                                    <div
-                                        key={article.id || index}
-                                        className="bg-gray-50 rounded-xl p-5 border border-gray-200 hover:shadow-md transition-all duration-300 hover:border-blue-200"
-                                    >
-                                        <div className="flex justify-between items-start gap-4">
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-lg text-gray-800 mb-2 leading-tight">
-                                                    {article.judul}
-                                                </h3>
-                                                <p className="text-gray-600 text-sm mb-3 leading-relaxed">
-                                                    {truncateText(article.isi, 150)}
-                                                </p>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
-                                                        {article.source}
-                                                    </span>
-                                                    <a
-                                                        href={article.link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center gap-2 text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
-                                                    >
-                                                        Read More
-                                                        <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
-                                                    </a>
-                                                </div>
-                                            </div>
+                                    <div key={article.id || index} className="bg-gray-50 rounded-xl p-5 border hover:shadow-md transition">
+                                        <h3 className="font-semibold text-lg">{article.judul}</h3>
+                                        <p className="text-gray-600 text-sm mb-2">{truncateText(article.isi, 150)}</p>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs bg-gray-200 px-2 py-1 rounded">{article.source}</span>
+                                            <a href={article.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm flex items-center gap-1">
+                                                Read More <FontAwesomeIcon icon={faExternalLinkAlt} />
+                                            </a>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                        ) : selectedDisease ? (
-                            <div className="text-center py-16">
-                                <FontAwesomeIcon icon={faNewspaper} className="text-4xl text-gray-400 mb-4" />
-                                <p className="text-gray-600 font-medium">No articles found</p>
-                                <p className="text-gray-500 text-sm">Try selecting a different disease</p>
-                            </div>
                         ) : (
-                            <div className="text-center py-16">
-                                <FontAwesomeIcon icon={faSearch} className="text-4xl text-gray-400 mb-4" />
-                                <p className="text-gray-600 font-medium">Select a disease to view articles</p>
-                            </div>
+                            <p className="text-center text-gray-500 py-16">No articles found</p>
                         )}
                     </StepContainer>
                 </div>
             ) : (
-                <StepContainer
-                    className='w-full bg-white shadow-lg rounded-2xl p-8'
-                    title='Nearby Hospitals'
-                    titleClassName='text-2xl font-bold mb-8 text-gray-800 text-center flex items-center justify-center gap-3'
-                >
-                    <div className="text-center py-16">
-                        <FontAwesomeIcon icon={faHospital} className="text-6xl text-blue-500 mb-6" />
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Hospital Directory</h3>
-                        <p className="text-gray-600 text-lg">
-                            Find nearby hospitals and medical facilities for your condition
-                        </p>
-                        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                            <p className="text-yellow-800 font-medium">
-                                🚧 Hospital directory feature coming soon!
-                            </p>
+                // === Hospitals ===
+                <StepContainer className='w-full bg-white shadow-lg rounded-2xl p-8' title='Nearby Hospitals'>
+                    {loadingHospital ? (
+                        <div className="flex flex-col items-center py-16">
+                            <FontAwesomeIcon icon={faSpinner} className="text-4xl text-blue-500 animate-spin mb-4" />
+                            <p>Searching for nearby hospitals...</p>
                         </div>
-                    </div>
+                    ) : errorHospital ? (
+                        <p className="text-red-500 text-center">{errorHospital}</p>
+                    ) : hospitals.length > 0 ? (
+                        <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                            {hospitals.map(h => (
+                                <div key={h.id} className="p-4 border rounded-lg bg-gray-50 hover:shadow-md transition">
+                                    <h3 className="font-bold text-lg text-blue-700">{h.name}</h3>
+                                    <p className="text-gray-600 flex items-center gap-2">
+                                        <FontAwesomeIcon icon={faMapMarkerAlt} /> {h.address}
+                                    </p>
+                                    {h.distance && <p className="text-sm text-gray-500">📍 {h.distance}</p>}
+                                    {h.phone && <p className="text-sm">📞 {h.phone}</p>}
+                                    {h.website && <a href={h.website} target="_blank" className="text-sm text-blue-500">🌐 Website</a>}
+                                    <p className="text-xs text-gray-500 mt-1">{h.hospitalType}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-gray-600 text-center py-16">No hospitals found nearby</p>
+                    )}
                 </StepContainer>
             )}
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between items-center w-full gap-6 mt-8">
+            <div className="flex justify-between items-center w-full mt-8">
                 <BackButton onClick={onBack} />
                 <NextButton onClick={onNext} />
             </div>

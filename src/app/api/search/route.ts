@@ -25,7 +25,6 @@ export async function GET(req: Request) {
     }
 }
 
-
 async function searchWithGoogleAPI(keyword: string): Promise<SearchResult[]> {
     const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
     const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
@@ -35,7 +34,9 @@ async function searchWithGoogleAPI(keyword: string): Promise<SearchResult[]> {
     }
 
     const res = await fetch(
-        `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(keyword)}&num=5`
+        `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(
+            keyword
+        )}&num=5`
     );
 
     if (!res.ok) {
