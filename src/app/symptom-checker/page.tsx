@@ -17,7 +17,7 @@ const SistemPakarPage = () => {
                     </p>
                     <Link href="/symptom-checker/symptoms/#" className="inline-block">
                         <button
-                            className="bg-[#628EF7] py-3 px-30 text-white font-semibold rounded-lg mt-6 cursor-pointer w-fit">
+                            className="bg-[#628EF7] py-3 px-30 text-white font-semibold rounded-lg mt-6 cursor-pointer w-fit hover:scale-105 transition-all duration-200">
                             Start Checking Now
                         </button>
                     </Link>

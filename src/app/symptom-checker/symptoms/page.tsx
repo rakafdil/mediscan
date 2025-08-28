@@ -81,6 +81,34 @@ const DiagnosisFlow: React.FC = () => {
         window.location.href = '/symptom-checker';
     };
 
+    // Add this validation function
+    const isStepAccessible = (targetStep: number) => {
+        switch (targetStep) {
+            case 1:
+                return true; // Step 1 is always accessible
+            case 2:
+                return formData.gender !== "" && formData.age !== ""; // Requires gender and age
+            case 3:
+                return formData.gender !== "" && formData.age !== "" &&
+                    formData.symptoms !== "" &&
+                    formData.result_validate.symptoms.some(s => s.trim() !== "");
+            case 4:
+                return formData.gender !== "" && formData.age !== "" &&
+                    formData.symptoms !== "" &&
+                    formData.result_validate.symptoms.some(s => s.trim() !== "") &&
+                    formData.result_prediction?.result &&
+                    formData.result_prediction.result.length > 0;
+            case 5:
+                return formData.gender !== "" && formData.age !== "" &&
+                    formData.symptoms !== "" &&
+                    formData.result_validate.symptoms.some(s => s.trim() !== "") &&
+                    formData.result_prediction?.result &&
+                    formData.result_prediction.result.length > 0;
+            default:
+                return false;
+        }
+    };
+
     const renderStep = () => {
         switch (step) {
             case 1:
@@ -115,6 +143,7 @@ const DiagnosisFlow: React.FC = () => {
                     <Step4
                         onNext={nextStep}
                         onBack={prevStep}
+                        result={formData.result_prediction?.result}
                     />
                 );
             case 5:
@@ -167,21 +196,34 @@ const DiagnosisFlow: React.FC = () => {
                     {stepName.map((item) => (
                         <div
                             key={item.step}
-                            className='flex flex-col items-center gap-3 z-10'
+                            className='flex flex-col items-center gap-3 z-10 relative group'
                         >
                             <button
                                 key={item.step}
-                                className={`flex justify-center items-center w-22 h-22 rounded-full text-2xl duration-200 cursor-pointer
-                                ${step >= item.step
-                                        ? 'bg-[#6AC2EA] hover:bg-[#ccebf9] hover:text-black text-white'
-                                        : 'bg-white border-[#628EF7] border-4 hover:bg-[#ccebf9] hover:text-white'
+                                // disabled={!isStepAccessible(item.step)}
+                                className={`flex justify-center items-center w-22 h-22 rounded-full text-2xl duration-200 relative
+                ${step >= item.step
+                                        ? 'bg-[#6AC2EA] hover:bg-[#ccebf9] hover:text-black text-white cursor-pointer'
+                                        : isStepAccessible(item.step)
+                                            ? 'bg-white border-[#628EF7] border-4 hover:bg-[#ccebf9] hover:text-white cursor-pointer'
+                                            : 'bg-gray-200 border-gray-300 border-4 text-gray-400 cursor-not-allowed'
                                     }
-                                `}
+            `}
+                                // onClick={() => isStepAccessible(item.step) && setStep(item.step)}
                                 onClick={() => setStep(item.step)}
+                                title={!isStepAccessible(item.step) ? "Complete previous steps first" : ""}
                             >
                                 {item.step}
                             </button>
-                            <span>
+
+                            {/* Tooltip for locked steps */}
+                            {!isStepAccessible(item.step) && (
+                                <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
+                                    Complete previous steps first
+                                </div>
+                            )}
+
+                            <span className={`text-center ${!isStepAccessible(item.step) ? 'text-gray-400' : 'text-black'}`}>
                                 {item.name}
                             </span>
                         </div>
