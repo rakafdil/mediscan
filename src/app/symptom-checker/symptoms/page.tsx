@@ -154,7 +154,7 @@ const DiagnosisFlow: React.FC = () => {
 
     return (
         <>
-            <div className='flex flex-col items-center justify-center p-18 gap-10 relative'>
+            <div className='flex flex-col items-center justify-center pt-18 gap-10 relative'>
                 <Link
                     href="#"
                     onClick={handleBack}
@@ -162,30 +162,30 @@ const DiagnosisFlow: React.FC = () => {
                 >
                     <FontAwesomeIcon
                         icon={faArrowLeft}
-                        className={`text-gray-600 text-4xl`}
+                        className={`text-gray-600 md:text-4xl text-sm`}
                     />
-                    <span className="text-gray-600 text-2xl mt-1">Back</span>
+                    <span className="text-gray-600 md:text-2xl text-sm mt-1">Back</span>
                 </Link>
-                <h1 className='text-6xl font-bold text-gray-900'>
+                <h1 className='md:text-6xl text-3xl font-bold text-gray-900 text-center'>
                     {stepName.find(item => item.step === step)?.name}
                 </h1>
-                <div className='flex flex-row gap-30 relative overflow-hidden px-30'>
+                <div className='flex flex-row md:min-h-[200px] min-h-[120px] xl:gap-30 md:gap-20 sm:gap-8 gap-2 relative overflow-hidden md:px-30 px-10'>
                     <div
                         style={{ width: `${(step) * 20}%` }}
-                        className='h-2 bg-[#6AC2EA] absolute left-0 top-[36%] transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
+                        className='h-2 bg-[#6AC2EA] absolute left-0 md:top-[28%] lg:top-[22%] top-[21%] transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
                     />
                     <div
-                        className='h-2 w-full bg-[#628EF7] absolute left-0 top-[36%] transform -translate-y-1/2 rounded-full z-[-1]'
+                        className='h-2 w-full bg-[#628EF7] absolute left-0 md:top-[28%] lg:top-[22%] top-[21%] transform -translate-y-1/2 rounded-full z-[-1]'
                     />
                     {stepName.map((item) => (
                         <div
                             key={item.step}
-                            className='flex flex-col items-center gap-3 z-10 relative group'
+                            className='flex flex-col items-center md:gap-3 gap-1 z-10 relative group'
                         >
                             <button
                                 key={item.step}
                                 disabled={!isStepAccessible(item.step)}
-                                className={`flex justify-center items-center w-22 h-22 rounded-full text-2xl duration-200 relative
+                                className={`flex justify-center items-center w-14 h-14 md:w-22 md:h-22 rounded-full md:text-2xl text-sm duration-200 relative
                 ${step >= item.step
                                         ? 'bg-[#6AC2EA] hover:bg-[#ccebf9] hover:text-black text-white cursor-pointer'
                                         : isStepAccessible(item.step)
@@ -207,7 +207,7 @@ const DiagnosisFlow: React.FC = () => {
                                 </div>
                             )}
 
-                            <span className={`text-center ${!isStepAccessible(item.step) ? 'text-gray-400' : 'text-black'}`}>
+                            <span className={`md:text-2xl text-sm text-center ${!isStepAccessible(item.step) ? 'text-gray-400' : 'text-black'}`}>
                                 {item.name}
                             </span>
                         </div>

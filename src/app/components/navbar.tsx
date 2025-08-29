@@ -36,13 +36,16 @@ const mobileMenuVariants = {
 
 const Navigation: React.FC<NavigationProps> = ({ linkTo, text, isMobile = false, onClick }) => {
     const pathname = usePathname();
-    const isActive = pathname === linkTo;
+    const isActive = linkTo === "/"
+        ? pathname === "/"
+        : pathname.startsWith(linkTo);
+
 
     return (
         <Link
             href={linkTo}
             onClick={onClick}
-            className={`px-5 py-4 rounded-xl transition-colors duration-200 block 
+            className={`md:text-xl sm:text-lg px-5 py-4 rounded-xl transition-colors duration-200 block 
                 ${isMobile ? 'py-2 px-4 w-full' : ''
                 } ${isActive
                     ? 'bg-[#217BFF] text-white font-bold after:scale-x-100'
@@ -82,7 +85,7 @@ const Navbar: React.FC = () => {
             <nav className="text-black px-4 sm:px-10 py-4">
                 <div className="container mx-auto flex justify-between items-center">
                     {/* Logo */}
-                    <Link href="/" className="flex flex-col items-center gap-2">
+                    <Link href="/" className="flex md:flex-col flex-row items-center gap-2">
                         <Image
                             src={Logo}
                             alt="Logo Mediscan"

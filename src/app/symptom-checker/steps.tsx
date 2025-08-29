@@ -82,12 +82,12 @@ export default function CarouselSlide() {
     const nextContentData = slides[(displayedContent + 1) % slides.length];
 
     return (
-        <div className="flex items-center justify-center h-96 p-20 mt-80 mb-40 overflow-hidden">
-            <div className="flex items-center gap-8 max-w-7xl w-full">
+        <div className="flex items-center justify-center min-h-[60vh] px-4 sm:px-10 md:px-20 mt-10 sm:mt-30 lg:mt-50 overflow-hidden">
+            <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 max-w-7xl w-full">
 
                 {/* Left Card */}
                 <div
-                    className={`bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-96 z-0
+                    className={`cursor-pointer bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-96 z-0
                 ${isTransitioning
                             ? direction === "right"
                                 ? "scale-70 shadow-lg translate-x-[130%] opacity-0"
@@ -126,7 +126,7 @@ export default function CarouselSlide() {
 
                 {/* Main Card */}
                 <div
-                    className={`bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-120 z-10
+                    className={`bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform sm:w-120 z-10
                 ${isTransitioning
                             ? direction === "right"
                                 ? "scale-70 shadow-lg opacity-0"
@@ -166,7 +166,7 @@ export default function CarouselSlide() {
 
                 {/* Right Card */}
                 <div
-                    className={`bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-96 z-0
+                    className={`cursor-pointer bg-white rounded-2xl p-8 shadow-sm border border-[#A3A3A3] transition-all duration-500 ease-in-out transform w-96 z-0
                 ${isTransitioning
                             ? direction === "right"
                                 ? "scale-70 blur-[0px] -translate-x-[130%] opacity-0"

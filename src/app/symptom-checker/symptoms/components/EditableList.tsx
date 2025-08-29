@@ -159,14 +159,14 @@ const EditableList: React.FC<EditableListProps> = ({
 
             {!showAdd ? (
                 <button
-                    className='bg-[#628EF7] hover:bg-blue-600 text-white font-bold w-[40%] p-5 cursor-pointer rounded-2xl flex justify-center gap-3 items-center transform transition-all duration-300 ease-in-out hover:scale-110'
+                    className='bg-[#628EF7] hover:bg-blue-600 text-white font-bold lg:w-[40%] w-full p-5 cursor-pointer rounded-2xl flex justify-center gap-3 items-center transform transition-all duration-300 ease-in-out hover:scale-110'
                     onClick={() => setShowAdd(true)}
                 >
-                    <span className='text-xl'>{addButtonText}</span>
+                    <span className='md:text-xl text-sm'>{addButtonText}</span>
                     <FontAwesomeIcon icon={faPlusSquare} size='lg' />
                 </button>
             ) : (
-                <div className='flex justify-between rounded-br-2xl rounded-l-2xl border-b-2 p-5 w-full bg-white gap-2 transform transition-all duration-300 ease-in-out hover:shadow-md'>
+                <div className='flex md:flex-row flex-col justify-between rounded-br-2xl rounded-l-2xl border-b-2 p-5 w-full bg-white gap-2 transform transition-all duration-300 ease-in-out hover:shadow-md'>
                     <input
                         type="text"
                         value={input}
@@ -175,7 +175,7 @@ const EditableList: React.FC<EditableListProps> = ({
                         className="w-full outline-none transition-all duration-300 focus:border-blue-500"
                         placeholder={placeholder}
                     />
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 justify-between">
                         <button
                             onClick={handleAdd}
                             className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
@@ -188,7 +188,7 @@ const EditableList: React.FC<EditableListProps> = ({
                                 setShowAdd(false);
                                 setInput("");
                             }}
-                            className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
+                            className="px-4 py-2 bg-red-400 text-white rounded-lg hover:bg-gray-500 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"
                         >
                             <FontAwesomeIcon icon={faTimes} size="1x" />
                             Cancel
