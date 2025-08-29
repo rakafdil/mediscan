@@ -7,7 +7,7 @@ const LandingPage = () => {
     return (
         <>
             <section>
-                <div className="relative bg-gradient-to-b from-white to-blue-50 min-h-screen">
+                <div className="relative min-h-screen">
                     {/* Hero Section */}
                     {/* Wrapper utama tetap relative biar absolute bisa nempel */}
                     <div className="relative  min-h-screen">
@@ -39,10 +39,10 @@ const LandingPage = () => {
                                 {/* Right Image */}
                                 <div className="w-full lg:w-1/2 relative flex justify-center mt-8 lg:mt-0">
                                     <div className='absolute top-4 sm:top-6 lg:top-10 left-8 sm:left-12 lg:left-20 w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 bg-blue-200 rounded-full z-0'></div>
-                                    <img 
-                                        src="../assets/Section1.png" 
-                                        alt="Hero Image" 
-                                        className="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-4xl xl:w-[1050px] h-auto relative z-10" 
+                                    <img
+                                        src="../assets/Section1.png"
+                                        alt="Hero Image"
+                                        className="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-4xl xl:w-[1050px] h-auto relative z-10"
                                     />
                                 </div>
                             </div>
@@ -94,55 +94,57 @@ const LandingPage = () => {
                     <div className="min-h-[400px] sm:min-h-[500px] lg:h-160 w-full flex flex-col lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-30 py-10 gap-8 lg:gap-0">
                         {/* Left side - Text */}
                         <div className="w-full lg:max-w-md font-montserrat text-center lg:text-left">
-                            <div className='my-6 sm:my-8 lg:my-10 mt-5'>
+                            <div className="my-6 sm:my-8 lg:my-10 mt-5">
                                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#252B42] mb-3">
                                     How to Use Symptom Scan in 4 Easy Steps
                                 </h2>
                             </div>
-                            <div className='my-6 sm:my-8 lg:my-10'></div>
+
                             <p className="text-[#737373] text-sm mb-4">
                                 Watch this quick video to learn how to scan your symptoms and get instant insights.
                             </p>
-                            <div className='my-12 sm:my-16 lg:my-20'>
+
+                            <div className="my-12 sm:my-16 lg:my-20">
                                 <a
                                     href="#"
                                     className="text-[#252B42] font-medium hover:underline flex items-center justify-center lg:justify-start gap-1"
                                 >
-                                    Learn More
-                                    <span>›</span>
+                                    Learn More <span>›</span>
                                 </a>
                             </div>
                         </div>
 
-                        {/* Background element - hidden on mobile */}
-                        <div className="hidden lg:block w-40 h-40 mr-20 relative">
+                        {/* Right side - Video with background element */}
+                        <div className="relative w-full max-w-lg sm:max-w-xl lg:w-160 flex items-center justify-center">
+                            {/* Background element */}
                             <img
                                 src="/assets/element2.png"
                                 alt="Background Shape"
-                                className="absolute inset-0 w-full h-full object-cover"
+                                className="absolute w-[100%] h-[100%] -top-9 -left-60 lg:-top-15 lg:-left-16 z-0"
                             />
-                        </div>
 
-                        {/* Right side - YouTube video */}
-                        <div className="w-full max-w-sm sm:max-w-md lg:w-140 h-48 sm:h-64 lg:h-80 rounded-lg overflow-hidden shadow-md">
-                            <iframe
-                                src="https://www.youtube.com/embed/VIDEO_ID"
-                                title="YouTube video player"
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                className="w-full h-full"
-                            ></iframe>
+                            {/* Video */}
+                            <div className="h-56 sm:h-72 lg:h-96 w-full rounded-lg overflow-hidden shadow-md relative z-10 bg-gray-200 ml-6 sm:ml-10 lg:ml-14">
+                                <iframe
+                                    src="https://www.youtube.com/embed/VIDEO_ID"
+                                    title="YouTube video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    className="w-full h-full"
+                                ></iframe>
+                            </div>
                         </div>
                     </div>
+
 
                     {/* The Tech Behind mediScan Section */}
                     <div className="relative min-h-screen py-12 sm:py-16 lg:py-20">
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                             {/* Header */}
                             <div className="text-center mb-12 sm:mb-16">
-                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-bold text-gray-800 mb-4">
-                                    The Tech Behind <span className="text-blue-500">mediScan</span>
+                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-bold text-[#252B42] mb-4">
+                                    The Tech Behind <span className="text-[#6B8FC4]">mediScan</span>
                                 </h2>
                                 <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed px-4 sm:px-0">
                                     MediScan is powered by Google Gemini AI and enhanced with<br className="hidden sm:block" />
@@ -193,62 +195,85 @@ const LandingPage = () => {
                     {/* Care Around You Section */}
                     <div className="relative py-12 sm:py-16 lg:py-20">
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 items-center gap-8 sm:gap-12 lg:gap-16">
+
                                 {/* Left Side - Title */}
-                                <div className="w-full lg:w-1/3 text-center lg:text-left">
-                                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-bold text-gray-800 leading-tight">
+                                <div className="text-center lg:text-left">
+                                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-montserrat font-bold text-gray-800 leading-snug">
                                         Care Around You
                                     </h2>
                                 </div>
 
                                 {/* Center - Image */}
-                                <div className="w-full lg:w-1/3 flex justify-center">
+                                <div className="flex justify-center">
                                     <Image
                                         src="/assets/section4.png"
                                         alt="Care Around You"
-                                        width={320}
-                                        height={240}
-                                        className="rounded-2xl w-full max-w-xs sm:max-w-sm lg:max-w-none lg:w-80 lg:h-60"
+                                        width={400}
+                                        height={300}
+                                        className="w-full max-w-xs sm:max-w-sm lg:max-w-md object-contain"
                                     />
                                 </div>
 
                                 {/* Right Side - Description */}
-                                <div className="w-full lg:w-1/3 text-center font-montserrat lg:text-left">
-                                    <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
+                                <div className="text-center font-montserrat lg:text-left">
+                                    <p className="text-gray-600 text-base sm:text-lg leading-relaxed mb-4">
                                         Locate hospitals in your area and connect with trusted healthcare professionals to validate your condition.
                                     </p>
+
+                                    {/* Tambahan biar tidak sepi */}
+                                    <a
+                                        href="/hospital"
+                                        className="inline-flex items-center px-5 py-3 border border-[#252B42] text-[#252B42] font-semibold rounded-xl hover:bg-[#252B42] hover:text-white transition duration-300 gap-2"
+                                    >
+                                        Find Hospitals Near You
+                                        <span className="text-lg">›</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+
+                    {/* Knowledge is Care Section */}
                     {/* Knowledge is Care Section */}
                     <div className="relative py-12 sm:py-16 lg:py-20">
                         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-16">
+
                                 {/* Left Side - Content */}
-                                <div className="w-full lg:w-1/2 text-center lg:text-left font-montserrat">
-                                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-500 mb-6 sm:mb-8 leading-tight">
+                                <div className="font-montserrat text-center lg:text-left">
+                                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#6B8FC4] mb-4 sm:mb-6 leading-tight">
                                         Knowledge is Care
                                     </h2>
-                                    <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0">
+                                    <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0 mb-6">
                                         The more you know about your condition, the better you can take care of yourself
                                     </p>
+
+                                    {/* Tambahan CTA */}
+                                    <a
+                                        href="/article"
+                                        className="inline-flex items-center px-5 py-3 bg-[#6B8FC4] text-white font-semibold rounded-xl shadow-md hover:bg-blue-600 transition duration-300 gap-2"
+                                    >
+                                        Learn More
+                                        <span className="text-lg">›</span>
+                                    </a>
                                 </div>
 
                                 {/* Right Side - Image */}
-                                <div className="w-full lg:w-1/2 flex justify-center">
-                                    <Image 
-                                        src="/assets/section5.png" 
-                                        alt="Knowledge is Care" 
-                                        width={384} 
-                                        height={256} 
-                                        className="rounded-2xl w-full max-w-sm sm:max-w-md lg:max-w-none lg:w-96 lg:h-64"
-                                    />  
+                                <div className="flex justify-center lg:justify-end">
+                                    <Image
+                                        src="/assets/section5.png"
+                                        alt="Knowledge is Care"
+                                        width={400}
+                                        height={300}
+                                        className="w-full max-w-sm sm:max-w-md lg:max-w-lg object-contain"
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </section>
         </>

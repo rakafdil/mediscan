@@ -82,7 +82,7 @@ const HealthInsightsDashboard = () => {
     }, [selectedCategory]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
+        <div className="min-h-screen">
             {/* Header */}
             <div className="container mx-auto px-6 py-16 flex flex-col lg:flex-row items-center justify-between gap-16">
                 <img
@@ -91,7 +91,7 @@ const HealthInsightsDashboard = () => {
                     className="w-200 h-200"
                 />
 
-                <div className="flex-1 max-w-md text-center lg:text-left font-montserrat">
+                <div className="flex-3 max-w-md text-center lg:text-left font-montserrat">
                     <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
                         Find Health
                         <br />
@@ -109,8 +109,8 @@ const HealthInsightsDashboard = () => {
                         <button
                             onClick={() => setSelectedCategory('general')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedCategory === 'general'
-                                    ? 'bg-blue-500 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-blue-500 text-white shadow-lg'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             General Health
@@ -118,8 +118,8 @@ const HealthInsightsDashboard = () => {
                         <button
                             onClick={() => setSelectedCategory('brain')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedCategory === 'brain'
-                                    ? 'bg-blue-500 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-blue-500 text-white shadow-lg'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             Brain Health
@@ -135,7 +135,7 @@ const HealthInsightsDashboard = () => {
             </div>
 
             {/* Articles */}
-            <div className="container mx-auto px-6 py-16 bg-white/50 backdrop-blur-sm">
+            <div className="container mx-auto px-6 py-16 backdrop-blur-sm">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold font-montserrat text-gray-900 mb-4">
                         Featured {selectedCategory === 'general' ? 'Health' : 'Brain Health'} Articles
@@ -149,17 +149,29 @@ const HealthInsightsDashboard = () => {
                         onClick={prevSlide}
                         className="p-4 bg-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-40 hover:scale-110 border border-gray-100"
                         disabled={articles.length <= 1}
+                        aria-label="Previous slide"
                     >
-                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        <svg
+                            className="w-6 h-6 text-gray-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true" // SVG ini dikecualikan dari screen reader
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                            />
                         </svg>
                     </button>
 
                     {/* Article Card */}
                     {articles.length > 0 && (
-                        <div className="w-96 transition-all duration-500 transform hover:scale-105">
-                            <div className="bg-white rounded-2xl shadow-2xl p-8 h-96 flex flex-col border border-gray-100 hover:border-blue-200 transition-all duration-300">
-                                <div className="w-full h-48 rounded-xl mb-6 overflow-hidden relative">
+                        <div className="w-110 transition-all duration-500 transform hover:scale-105">
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 h-136 flex flex-col border border-gray-100 hover:border-blue-200 transition-all duration-300">
+                                <div className="w-full h-60 rounded-xl mb-6 overflow-hidden relative">
                                     <img
                                         src={articles[currentSlide].image}
                                         alt={articles[currentSlide].judul}
@@ -201,9 +213,21 @@ const HealthInsightsDashboard = () => {
                         onClick={nextSlide}
                         className="p-4 bg-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-40 hover:scale-110 border border-gray-100"
                         disabled={articles.length <= 1}
+                        aria-label="Next slide"
                     >
-                        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg
+                            className="w-6 h-6 text-gray-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -215,8 +239,8 @@ const HealthInsightsDashboard = () => {
                             key={index}
                             onClick={() => setCurrentSlide(index)}
                             className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide
-                                    ? 'bg-blue-500 scale-125'
-                                    : 'bg-gray-300 hover:bg-gray-400'
+                                ? 'bg-blue-500 scale-125'
+                                : 'bg-gray-300 hover:bg-gray-400'
                                 }`}
                         >
                             <span className="sr-only">Slide {index + 1}</span>

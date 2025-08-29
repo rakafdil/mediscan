@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function HeroSection() {
     return (
-        <div className="bg-gradient-to-b from-white to-blue-50 min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col">
             {/* Bagian Hero */}
             <section className="flex flex-col md:flex-row items-center justify-between px-8 md:px-16 lg:px-24 py-16">
                 {/* Gambar utama */}

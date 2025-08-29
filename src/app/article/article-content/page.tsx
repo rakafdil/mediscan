@@ -48,7 +48,7 @@ export default function SearchPage() {
     const totalPages = Math.ceil(results.length / itemsPerPage);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 text-gray-800 p-6">
+        <div className="min-h-screen text-gray-800 p-6">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <header className="text-center mb-8 font-montserrat">
