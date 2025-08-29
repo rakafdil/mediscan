@@ -12,6 +12,7 @@ interface Hospital {
     phone?: string;
     website?: string;
     hospitalType?: string;
+    mapsByName: string;
 }
 
 // Calculate distance between two coordinates
@@ -165,7 +166,8 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
                 website: tags.website || tags.contact?.website,
                 hospitalType: hospitalType,
                 isOpen: isOpen,
-                rating: tags.rating ? parseFloat(tags.rating) : undefined
+                rating: tags.rating ? parseFloat(tags.rating) : undefined,
+                mapsByName: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hospitalName + " " + address)}`
             });
         });
 
