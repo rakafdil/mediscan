@@ -68,7 +68,7 @@ const SistemPakarPage = () => {
             <CarouselSlide />
 
             {/* FAQ Section */}
-            <div className="flex flex-col items-center py-20 px-10 bg-gray-50">
+            <div className="flex flex-col items-center py-20 px-10 bg-gray-50 my-40">
                 <div className="max-w-4xl w-full">
                     {/* FAQ Header */}
                     <div className="text-center mb-12">

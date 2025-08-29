@@ -184,7 +184,7 @@ const DiagnosisFlow: React.FC = () => {
                         >
                             <button
                                 key={item.step}
-                                // disabled={!isStepAccessible(item.step)}
+                                disabled={!isStepAccessible(item.step)}
                                 className={`flex justify-center items-center w-22 h-22 rounded-full text-2xl duration-200 relative
                 ${step >= item.step
                                         ? 'bg-[#6AC2EA] hover:bg-[#ccebf9] hover:text-black text-white cursor-pointer'
@@ -193,8 +193,8 @@ const DiagnosisFlow: React.FC = () => {
                                             : 'bg-white border-[#628EF7] border-4 cursor-not-allowed'
                                     }
             `}
-                                // onClick={() => isStepAccessible(item.step) && setStep(item.step)}
-                                onClick={() => setStep(item.step)}
+                                onClick={() => isStepAccessible(item.step) && setStep(item.step)}
+                                // onClick={() => setStep(item.step)}
                                 title={!isStepAccessible(item.step) ? "Complete previous steps first" : ""}
                             >
                                 {item.step}

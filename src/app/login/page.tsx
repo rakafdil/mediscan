@@ -1,15 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { login, signup } from './actions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash, faEnvelope, faLock, faUser, faStethoscope } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faEnvelope, faLock, faUser, faStethoscope, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 
 export default function LoginPage() {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const searchParams = useSearchParams();
+
+    const error = searchParams.get('error');
+    const message = searchParams.get('message');
+    const success = searchParams.get('success');
+
+    const getErrorMessage = (error: string | null) => {
+        switch (error) {
+            case 'invalid_credentials':
+                return 'Invalid email or password. Please try again.';
+            case 'email_not_confirmed':
+                return 'Please check your email and click the confirmation link.';
+            case 'user_exists':
+                return 'An account with this email already exists. Please sign in instead.';
+            case 'password_too_short':
+                return 'Password must be at least 6 characters long.';
+            case 'validation':
+                return message ? decodeURIComponent(message) : 'Please check your input and try again.';
+            case 'auth_error':
+                return 'Authentication failed. Please try again.';
+            case 'unexpected_error':
+                return 'An unexpected error occurred. Please try again later.';
+            default:
+                return null;
+        }
+    };
+
+    const getSuccessMessage = (success: string | null) => {
+        switch (success) {
+            case 'check_email':
+                return 'Please check your email for a confirmation link to complete your registration.';
+            default:
+                return null;
+        }
+    };
 
     const handleSubmit = async (formData: FormData) => {
         setIsLoading(true);
@@ -29,6 +65,20 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 py-40">
             <div className="w-full max-w-md">
+                {/* Error/Success Messages */}
+                {getErrorMessage(error) && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+                        <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500" />
+                        <p className="text-red-700 text-sm">{getErrorMessage(error)}</p>
+                    </div>
+                )}
+
+                {getSuccessMessage(success) && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                        <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
+                        <p className="text-green-700 text-sm">{getSuccessMessage(success)}</p>
+                    </div>
+                )}
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4">
