@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const VideoSection = () => {
     return (
-        <div className="min-h-[400px] sm:min-h-[500px] lg:h-160 w-full flex flex-col lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-30 py-10 gap-8 lg:gap-0">
+        <div className="min-h-[400px] sm:min-h-[500px] lg:min-h-[700px] w-full flex flex-col lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-30 pb-10 pt-20 gap-8 lg:gap-0">
             {/* Left side - Text */}
             <div className="w-full lg:max-w-md font-montserrat text-center lg:text-left">
                 <div className="my-6 sm:my-8 lg:my-10 mt-5">
@@ -29,18 +29,18 @@ const VideoSection = () => {
             </div>
 
             {/* Right side - Video with background element */}
-            <div className="relative w-full max-w-lg sm:max-w-xl lg:w-160 flex items-center justify-center">
+            <div className="relative w-full lg:w-160 flex items-center justify-center">
                 {/* Background element */}
                 <Image
-                    src="/assets/element2.png"
+                    src="/assets/element2.svg"
                     alt="Background Shape"
-                    className="absolute w-[100%] h-[100%] -top-9 -left-60 lg:-top-15 lg:-left-16 z-0"
-                    width={400}
-                    height={400}
+                    className="absolute w-full h-[130%] lg:h-[120%] -top-10 -right-32 lg:-top-8 md:-left-42 z-[-1]"
+                    width={900}
+                    height={900}
                 />
 
                 {/* Video */}
-                <div className="h-56 sm:h-72 lg:h-96 w-full rounded-lg overflow-hidden shadow-md relative z-10 bg-gray-200 ml-6 sm:ml-10 lg:ml-14">
+                <div className="h-56 sm:h-72 md:w-full w-[80%] lg:h-96 rounded-lg overflow-hidden shadow-md relative z-10 bg-gray-200 lg:ml-14">
                     <iframe
                         src="https://www.youtube.com/embed/VIDEO_ID"
                         title="YouTube video player"
