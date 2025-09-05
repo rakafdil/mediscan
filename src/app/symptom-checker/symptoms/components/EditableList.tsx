@@ -76,17 +76,17 @@ const EditableList: React.FC<EditableListProps> = ({
                         .map((item, i) => (
                             <li
                                 key={i}
-                                className='w-full transform transition-all duration-300 hover:scale-[1.02]'
+                                className='w-[100%] transform transition-all duration-300 hover:scale-[1.02]'
                                 style={{ animationDelay: `${i * 0.1}s` }}
                             >
                                 {(editingIndex === i) ? (
-                                    <div className='flex items-center justify-between bg-white rounded-xl shadow-lg border-2 border-blue-200 p-4 gap-4'>
+                                    <div className='flex md:flex-row flex-col items-center justify-between bg-white rounded-xl shadow-lg border-2 border-blue-200 p-4 gap-4'>
                                         <input
                                             type="text"
                                             value={editValue}
                                             onChange={(e) => setEditValue(e.target.value)}
                                             onKeyDown={(e) => handleEditKeyDown(e, i)}
-                                            className="flex-1 text-lg px-4 py-3 border-2 border-gray-200 rounded-lg outline-none transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                            className="flex-1 text-lg px-4 py-3 border-2 border-gray-200 rounded-lg outline-none transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 w-full"
                                             placeholder={placeholder}
                                             autoFocus
                                         />
@@ -109,11 +109,13 @@ const EditableList: React.FC<EditableListProps> = ({
                                     </div>
                                 ) : (
                                     <div className='flex items-center justify-between bg-white rounded-xl shadow-md border border-gray-100 p-4 transition-all duration-300 hover:shadow-lg hover:border-blue-200 group'>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
                                             <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                                            <span className="text-lg font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300">{item}</span>
+                                            <span className="text-lg font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-300 truncate">
+                                                {item}
+                                            </span>
                                         </div>
-                                        <div className='flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+                                        <div className='flex md:gap-3 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
                                             <button
                                                 className='p-2 rounded-lg hover:bg-blue-50 transition-all duration-200 transform hover:scale-110 cursor-pointer'
                                                 onClick={() => {
@@ -166,7 +168,7 @@ const EditableList: React.FC<EditableListProps> = ({
                     <FontAwesomeIcon icon={faPlusSquare} size='lg' />
                 </button>
             ) : (
-                <div className='flex md:flex-row flex-col justify-between rounded-br-2xl rounded-l-2xl border-b-2 p-5 w-full bg-white gap-2 transform transition-all duration-300 ease-in-out hover:shadow-md'>
+                <div className='flex md:flex-row flex-col justify-between rounded-2xl border-b-2 p-5 w-full bg-white gap-2 transform transition-all duration-300 ease-in-out hover:shadow-md'>
                     <input
                         type="text"
                         value={input}
@@ -175,7 +177,7 @@ const EditableList: React.FC<EditableListProps> = ({
                         className="w-full outline-none transition-all duration-300 focus:border-blue-500"
                         placeholder={placeholder}
                     />
-                    <div className="flex gap-2 justify-between">
+                    <div className="flex gap-3 justify-center md:justify-between">
                         <button
                             onClick={handleAdd}
                             className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer"

@@ -3,17 +3,19 @@ import { main } from "@/app/services/geminiServices";
 import { UserComplication } from "@/app/symptom-checker/symptoms/types";
 
 export async function POST(req: NextRequest) {
-    const body = await req.json()
-    console.log(body)
-    const userComplication: UserComplication = {
-        gender: body.gender,
-        age: body.age,
-        symptoms: body.symptoms,
-        histories: body.histories,
-        location: body.location
-    }
+    try {
+        const body = await req.json();
+        console.log(body);
 
-    const messages = `{
+        const userComplication: UserComplication = {
+            gender: body.gender,
+            age: body.age,
+            symptoms: body.symptoms,
+            histories: body.histories,
+            location: body.location
+        };
+
+        const messages = `{
     "user_data": {age: "${userComplication.age}", gender: "${userComplication.gender}", location: "${userComplication.location}", histories: "${userComplication.histories}"},
         "user_question":"saya merupakan ${userComplication.gender} yang berumur ${userComplication.age}. saya memiliki beberapa gejala, yaitu: ${userComplication.symptoms}"
       }
@@ -46,25 +48,34 @@ Rules:
 - All predictions must be relevant to the symptoms provided by the user.
 - Do not add unrelated diseases or information.
 - Do not output anything outside of the JSON.
-      `
-        ;
+      `;
 
-    try {
-        const aiText = (await main(messages));
+        const aiText = await main(messages);
+        console.log("AI Response:", aiText);
 
-        if (aiText === undefined) return NextResponse.json({ error: "Response is empty" }, { status: 500 })
-        else if (typeof aiText !== 'string') return NextResponse.json({ error: "Invalid response type" }, { status: 500 })
-        else {
-            const cleanJson = aiText
-                .replace(/```(json)?\s*/gi, "")
-                .replace(/```$/m, "")
-                .trim();
-            const parsed = JSON.parse(cleanJson);
-            console.log("Parsed JSON:", parsed);
-            return NextResponse.json(parsed);
+        if (!aiText) {
+            return NextResponse.json({ error: "No response from AI service" }, { status: 500 });
         }
-    } catch (e) {
-        console.error("JSON Error:", e);
-        return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
+
+        const cleanJson = aiText
+            .replace(/```(json)?\s*/gi, "")
+            .replace(/```$/m, "")
+            .trim();
+
+        const parsed = JSON.parse(cleanJson);
+        console.log("Parsed JSON:", parsed);
+        return NextResponse.json(parsed);
+
+    } catch (error) {
+        console.error("API Error:", error);
+
+        if (error instanceof SyntaxError) {
+            return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
+        }
+
+        return NextResponse.json({
+            error: "Internal server error",
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
     }
 }

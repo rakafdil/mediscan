@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const VideoSection = () => {
     return (
-        <div className="min-h-[400px] sm:min-h-[500px] lg:min-h-[700px] w-full flex flex-col lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-30 pb-10 pt-20 gap-8 lg:gap-0">
+        <div className="min-h-[400px] sm:min-h-[500px] lg:min-h-[700px] w-full flex flex-col lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-30 pb-10 pt-20 gap-8 lg:gap-0 overflow-hidden">
             {/* Left side - Text */}
             <div className="w-full lg:max-w-md font-montserrat text-center lg:text-left">
                 <div className="my-6 sm:my-8 lg:my-10 mt-5">
@@ -40,7 +40,7 @@ const VideoSection = () => {
                 />
 
                 {/* Video */}
-                <div className="h-56 sm:h-72 md:w-full w-[80%] lg:h-96 rounded-lg overflow-hidden shadow-md relative z-10 bg-gray-200 lg:ml-14">
+                <div className="h-56 sm:h-72 md:w-full w-[80%] lg:h-96 rounded-lg shadow-md relative z-10 bg-gray-200 lg:ml-14">
                     <iframe
                         src="https://www.youtube.com/embed/Z4MoEsYqrxQ?autoplay=1&mute=1&loop=1&playlist=Z4MoEsYqrxQ"
                         title="YouTube video player"

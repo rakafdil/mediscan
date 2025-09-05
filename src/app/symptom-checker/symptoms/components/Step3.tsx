@@ -16,6 +16,8 @@ interface DiagnosisCardProps {
     description: string;
     precautions: string[] | string;
     index: number;
+    isOpen: boolean;
+    onToggle: () => void;
 }
 
 const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
@@ -23,10 +25,10 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
     disease,
     description,
     precautions,
-    index
+    index,
+    isOpen,
+    onToggle
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
-
     // Parse precautions if it's a string
     const parsedPrecautions = typeof precautions === 'string'
         ? JSON.parse(precautions)
@@ -58,14 +60,14 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
     }
 
     return (
-        <div className={`mb-4 border-2 ${borderColor} rounded-xl shadow-sm transition-all duration-300 hover:shadow-md`}>
+        <div className={`w-full mb-4 border-2 ${bgColor} ${borderColor} rounded-xl shadow-sm transition-all duration-300 hover:shadow-md justify-center`}>
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`w-full text-left px-6 py-5 ${bgColor} hover:opacity-80 transition-all duration-300 rounded-t-xl ${!isOpen ? 'rounded-b-xl' : ''} flex justify-between items-center`}
+                onClick={onToggle}
+                className={`w-full text-left px-6 py-5 hover:opacity-80 transition-all duration-300 rounded-t-xl ${!isOpen ? 'rounded-b-xl' : ''} flex justify-between items-center`}
             >
-                <div className="flex flex-col w-full pr-4">
-                    <div className="flex items-center gap-3 mb-2">
-                        <span className="text-lg font-semibold text-gray-800 truncate flex-1">
+                <div className="flex flex-col pr-4 w-[90%]">
+                    <div className="flex justify-between gap-3 mb-2 w-full">
+                        <span className="text-lg font-semibold text-gray-800 truncate">
                             {disease}
                         </span>
                         <span className={`text-2xl font-bold ${textColor}`}>
@@ -73,7 +75,7 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
                         </span>
                     </div>
 
-                    <div className="w-full bg-white rounded-full h-3 mt-2 shadow-inner">
+                    <div className="bg-white rounded-full h-3 mt-2 shadow-inner w-full">
                         <div
                             className={`${barColor} h-3 rounded-full transition-all duration-500 ease-out`}
                             style={{ width: `${percentage}%` }}
@@ -83,7 +85,7 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
 
                 <FontAwesomeIcon
                     icon={faChevronDown}
-                    className={`ml-4 transform transition-transform duration-300 text-gray-600 ${isOpen ? 'rotate-180' : ''}`}
+                    className={`transform transition-transform duration-300 text-gray-600 ${isOpen ? 'rotate-180' : ''}`}
                 />
             </button>
 
@@ -129,6 +131,11 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
 };
 
 const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
+    const [openCardIndex, setOpenCardIndex] = useState<number | null>(null);
+
+    const handleCardToggle = (index: number) => {
+        setOpenCardIndex(openCardIndex === index ? null : index);
+    };
     return (
         <div className='flex items-center flex-col gap-8 pb-20 w-full max-w-4xl mx-auto px-4'>
             <StepContainer
@@ -160,13 +167,12 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
                     <p className="text-lg font-semibold text-gray-800 mb-0.2">Selected Symptoms</p>
                     {formData.result_validate.symptoms
                         .filter(item => item.trim() !== "")
-                        .map((symptom) => (
-                            <>
-                                <span
-                                    className="inline-block bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full">
-                                    {symptom}
-                                </span>
-                            </>
+                        .map((symptom, index) => (
+                            <span
+                                key={index}
+                                className="inline-block bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full">
+                                {symptom}
+                            </span>
                         ))
                     }
 
@@ -180,6 +186,8 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
                                     description={disease.description}
                                     precautions={disease.precautions}
                                     index={index}
+                                    isOpen={openCardIndex === index}
+                                    onToggle={() => handleCardToggle(index)}
                                 />
                             ))}
                         </div>
@@ -193,8 +201,8 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
                 </div>
 
                 {/* Disclaimer */}
-                <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
+                <div className="mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800 leading-relaxed">
                         <strong>Important:</strong> This diagnosis is for informational purposes only and should not replace professional medical advice.
                         Please consult with a healthcare provider for proper diagnosis and treatment.
                     </p>

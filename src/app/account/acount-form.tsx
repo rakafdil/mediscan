@@ -189,8 +189,8 @@ export default function AccountForm({ user }: { user: User | null }) {
                             <button
                                 onClick={() => setActiveTab('personal')}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'personal'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 <FiUser className="w-5 h-5 inline mr-2" />
@@ -199,8 +199,8 @@ export default function AccountForm({ user }: { user: User | null }) {
                             <button
                                 onClick={() => setActiveTab('location')}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'location'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 <FiMapPin className="w-5 h-5 inline mr-2" />
@@ -209,8 +209,8 @@ export default function AccountForm({ user }: { user: User | null }) {
                             <button
                                 onClick={() => setActiveTab('medical')}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'medical'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 <FiHeart className="w-5 h-5 inline mr-2" />
