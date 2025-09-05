@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
     const closeMenu = () => setIsOpen(false);
 
     return (
-        <div ref={navbarRef} className='sticky top-0 w-full z-50 bg-white shadow-md'>
+        <div ref={navbarRef} className='sticky top-0 w-full z-50 shadow-md bg-white/30 backdrop-blur-sm'>
             <nav className="text-black px-4 sm:px-10 py-4">
                 <div className="container mx-auto flex justify-between items-center">
                     {/* Logo */}
@@ -153,7 +153,7 @@ const Navbar: React.FC = () => {
                         >
                             <ul className="flex flex-col items-center py-4 space-y-2">
                                 {navLinks.map((link) => (
-                                    <li key={link.href} className="w-full text-center">
+                                    <li key={link.href} className="w-[45%] text-center">
                                         <Navigation
                                             linkTo={link.href}
                                             text={link.label}
@@ -162,7 +162,7 @@ const Navbar: React.FC = () => {
                                         />
                                     </li>
                                 ))}
-                                <li className="w-full text-center">
+                                <li className="w-[45%] text-center">
                                     <Navigation
                                         linkTo='/login'
                                         text='Login'

@@ -39,7 +39,7 @@ const SistemPakarPage = () => {
 
     return (
         <div className='px-5'>
-            <header className="relative font-montserrat py-40 px-4 sm:px-8 lg:px-20 md:flex lg:justify-start justify-center">
+            <header className="relative font-montserrat sm:py-40 py-20 px-4 sm:px-8 lg:px-20 md:flex lg:justify-start justify-center">
                 <div className="flex flex-col-reverse lg:flex-row items-center lg:items-end gap-8 lg:gap-0">
                     {/* Text Content */}
                     <div className="relative z-10 max-w-xl lg:ml-20 text-center lg:text-left">

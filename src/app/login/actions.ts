@@ -53,7 +53,7 @@ function validateName(name: string): boolean {
 }
 
 // Error handling function
-function handleAuthError(error: any): never {
+function handleAuthError(error: { message?: string }): never {
     console.error('Auth error:', error);
 
     // Map specific Supabase errors to user-friendly messages
@@ -69,7 +69,6 @@ function handleAuthError(error: any): never {
         redirect('/login?error=auth_error');
     }
 }
-
 export async function login(formData: FormData) {
     const supabase = await createClient();
 
@@ -102,19 +101,15 @@ export async function login(formData: FormData) {
         password,
     };
 
-    try {
-        const { error } = await supabase.auth.signInWithPassword(data);
+    const { error } = await supabase.auth.signInWithPassword(data);
 
-        if (error) {
-            handleAuthError(error);
-        }
-
-        revalidatePath('/', 'layout');
-        redirect('/'); // Changed from /account to /dashboard
-    } catch (error) {
-        console.error('Unexpected error during login:', error);
-        redirect('/login?error=unexpected_error');
+    if (error) {
+        handleAuthError(error);
     }
+
+    // Success - revalidate and redirect
+    revalidatePath('/', 'layout');
+    redirect('/account');
 }
 
 export async function signup(formData: FormData) {
@@ -171,29 +166,24 @@ export async function signup(formData: FormData) {
         name: name.trim(),
     };
 
-    try {
-        const { error } = await supabase.auth.signUp({
-            email: data.email,
-            password: data.password,
-            options: {
-                data: {
-                    full_name: data.name,
-                    display_name: data.name,
-                }
+    const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+            data: {
+                full_name: data.name,
+                display_name: data.name,
             }
-        });
-
-        if (error) {
-            handleAuthError(error);
         }
+    });
 
-        revalidatePath('/', 'layout');
-        // Redirect to email confirmation page
-        redirect('/login?success=check_email');
-    } catch (error) {
-        console.error('Unexpected error during signup:', error);
-        redirect('/login?error=unexpected_error');
+    if (error) {
+        handleAuthError(error);
     }
+
+    revalidatePath('/profile', 'layout');
+    redirect('/login?success=check_email');
+
 }
 
 // Additional utility function for logout

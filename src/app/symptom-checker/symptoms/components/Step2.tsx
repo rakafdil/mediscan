@@ -82,7 +82,7 @@ const Step2: React.FC<Step2Props> = ({
                 className='w-full bg-white shadow-lg rounded-2xl p-8 animate-fadeInUp'
             >
                 <div className="flex items-center justify-center gap-3 mb-4">
-                    <h2 className="text-3xl font-bold text-gray-800">Describe Your Symptoms</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 text-center">Describe Your Symptoms</h2>
                 </div>
 
                 <div className="space-y-6">
@@ -138,7 +138,7 @@ const Step2: React.FC<Step2Props> = ({
                 </StepContainer>
             )}
 
-            {formData.result_validate.symptoms.length > 0 && (
+            {formData.result_validate.symptoms.length > -1 && (
                 <StepContainer
                     className='w-full rounded-2xl animate-fadeInUp delay-200'
                     title='Identified Symptoms'
