@@ -42,7 +42,7 @@ const VideoSection = () => {
                 {/* Video */}
                 <div className="h-56 sm:h-72 md:w-full w-[80%] lg:h-96 rounded-lg overflow-hidden shadow-md relative z-10 bg-gray-200 lg:ml-14">
                     <iframe
-                        src="https://www.youtube.com/embed/VIDEO_ID"
+                        src="https://www.youtube.com/embed/Z4MoEsYqrxQ?autoplay=1&mute=1&loop=1&playlist=Z4MoEsYqrxQ"
                         title="YouTube video player"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Josefin_Sans, Montserrat } from "next/font/google";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
+import ThemeSwitch from "./components/ThemeSwitch";
 import "./globals.css";
+import { DarkModeProvider } from "./ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 
 const josefin = Josefin_Sans({
@@ -33,13 +35,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${josefin.variable} ${montserrat.variable} antialiased`}>
+        <DarkModeProvider>
         <Navbar />
         <main>
           {children}
         </main>
+        <ThemeSwitch />
         <Footer />
+        </DarkModeProvider>
         <Analytics />
       </body>
     </html>

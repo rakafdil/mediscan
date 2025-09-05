@@ -90,7 +90,7 @@ const chooseHospital = () => {
     };
 
     return (
-        <div className="bg-gradient-to-b from-white to-gray-50 min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="w-full max-w-md p-2 font-montserrat">
                 <h1 className="text-5xl font-bold text-center text-gray-800 mb-4">
                     Share Your Location

@@ -21,6 +21,10 @@
     --background: #ffffff;
     --foreground: #ededed;
   }
+  .dark{
+    --background: #645c5c;
+    --foreground: #ededed;
+  }
 }
 
 body {
