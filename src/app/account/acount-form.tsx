@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { type User } from '@supabase/supabase-js'
 import { FiUser, FiMapPin, FiHeart, FiShield, FiPlus, FiTrash2 } from 'react-icons/fi'
+import { redirect } from 'next/navigation'
 
 interface ProfileData {
     full_name: string | null
@@ -77,6 +78,7 @@ export default function AccountForm({ user }: { user: User | null }) {
             }
         } catch (error) {
             console.error('Error loading user data:', error)
+            redirect('/login')
         } finally {
             setLoading(false)
         }

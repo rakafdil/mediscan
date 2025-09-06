@@ -21,14 +21,15 @@
     --background: #ffffff;
     --foreground: #ededed;
   }
-  .dark{
+
+  .dark {
     --background: #645c5c;
     --foreground: #ededed;
   }
 }
 
 body {
-  background: var(--background);
+  /* background: var(--background); */
   color: var(--foreground);
   font-family: var(--font-josefin)
 }
@@ -71,6 +72,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

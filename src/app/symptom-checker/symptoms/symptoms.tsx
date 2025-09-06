@@ -50,8 +50,7 @@ const DiagnosisFlow: React.FC = () => {
             symptoms_related: false
         },
         result_prediction: {
-            result: [
-            ]
+            result: []
         }
     });
 
@@ -86,7 +85,8 @@ const DiagnosisFlow: React.FC = () => {
             case 2:
                 return formData.gender !== "" && formData.age !== "";
             case 3:
-                return formData.result_prediction?.result;
+                return formData.result_prediction?.result &&
+                    formData.result_prediction.result.length > 0;
             case 4:
                 return formData.gender !== "" && formData.age !== "" &&
                     formData.symptoms !== "" &&

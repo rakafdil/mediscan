@@ -1,13 +1,15 @@
-"use client";
+// src/app/components/navbar.tsx
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faTimes, faUser } from '@fortawesome/free-solid-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from "../../../public/assets/Logo.png";
+import { useAuth } from '@/hooks/useAuth';
 
 interface NavLink {
     href: string;
@@ -40,7 +42,6 @@ const Navigation: React.FC<NavigationProps> = ({ linkTo, text, isMobile = false,
         ? pathname === "/"
         : pathname.startsWith(linkTo);
 
-
     return (
         <Link
             href={linkTo}
@@ -63,6 +64,8 @@ const Navbar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const navbarRef = useRef<HTMLDivElement>(null);
 
+    const { isLoggedIn, loading, user, profile } = useAuth();
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (isOpen && navbarRef.current && !navbarRef.current.contains(event.target as Node)) {
@@ -71,7 +74,6 @@ const Navbar: React.FC = () => {
         };
 
         document.addEventListener('mousedown', handleClickOutside);
-
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
@@ -106,12 +108,33 @@ const Navbar: React.FC = () => {
                             ))}
                         </ul>
                     </div>
-                    <Link
-                        href="/login"
-                        className="hidden md:flex bg-[#496687] text-white px-5 py-4 rounded-xl hover:bg-[#3a526c] transition-colors duration-200 font-semibold"
-                    >
-                        Login
-                    </Link>
+
+                    {loading ? (
+                        <div className="hidden md:flex md:text-xl sm:text-lg px-5 py-4">
+                            <div className="animate-pulse bg-gray-300 rounded-xl w-20 h-12"></div>
+                        </div>
+                    ) : !isLoggedIn ? (
+                        <Link
+                            href="/login"
+                            className="hidden md:flex md:text-xl sm:text-lg px-5 py-4 rounded-xl transition-colors duration-200 bg-[#496687] text-white hover:bg-[#3a526c] font-semibold"
+                        >
+                            Login
+                        </Link>
+                    ) : (
+                        <div className="hidden md:flex flex-col items-center gap-1">
+                            <Link
+                                href="/account"
+                                className="text-center md:text-xl sm:text-lg h-12 w-12 rounded-full transition-colors duration-200 bg-[#496687] text-white hover:bg-[#3a526c] font-semibold"
+                            >
+                                <FontAwesomeIcon icon={faUser} className='mt-3' />
+                            </Link>
+                            {user && (
+                                <span className="text-gray-700">
+                                    Hi, {profile?.username || user.email?.split('@')[0] || 'User'}!
+                                </span>
+                            )}
+                        </div>
+                    )}
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden">
@@ -128,54 +151,66 @@ const Navbar: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            </nav>
+            </nav >
 
             {/* Mobile Menu */}
             <AnimatePresence>
-                {isOpen && (
-                    <>
-                        {/* Overlay */}
-                        <motion.div
-                            className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={closeMenu}
-                        />
+                {
+                    isOpen && (
+                        <>
+                            {/* Overlay */}
+                            <motion.div
+                                className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={closeMenu}
+                            />
 
-                        {/* Menu Content */}
-                        <motion.div
-                            className="md:hidden bg-white shadow-lg absolute w-full z-50"
-                            variants={mobileMenuVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                        >
-                            <ul className="flex flex-col items-center py-4 space-y-2">
-                                {navLinks.map((link) => (
-                                    <li key={link.href} className="w-[45%] text-center">
-                                        <Navigation
-                                            linkTo={link.href}
-                                            text={link.label}
-                                            isMobile={true}
-                                            onClick={closeMenu}
-                                        />
+                            {/* Menu Content */}
+                            <motion.div
+                                className="md:hidden bg-white shadow-lg absolute w-full z-50"
+                                variants={mobileMenuVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                            >
+                                <ul className="flex flex-col items-center py-4 space-y-2">
+                                    {navLinks.map((link) => (
+                                        <li key={link.href} className="w-[45%] text-center">
+                                            <Navigation
+                                                linkTo={link.href}
+                                                text={link.label}
+                                                isMobile={true}
+                                                onClick={closeMenu}
+                                            />
+                                        </li>
+                                    ))}
+                                    <li className="w-[45%] text-center">
+                                        {/* ✅ Mobile auth menu - using hook data */}
+                                        {!isLoggedIn ? (
+                                            <Navigation
+                                                linkTo='/login'
+                                                text='Login'
+                                                isMobile={true}
+                                                onClick={closeMenu}
+                                            />
+                                        ) : (
+                                            <Navigation
+                                                linkTo='/account'
+                                                text='Account'
+                                                isMobile={true}
+                                                onClick={closeMenu}
+                                            />
+                                        )}
                                     </li>
-                                ))}
-                                <li className="w-[45%] text-center">
-                                    <Navigation
-                                        linkTo='/login'
-                                        text='Login'
-                                        isMobile={true}
-                                        onClick={closeMenu}
-                                    />
-                                </li>
-                            </ul>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-        </div>
+                                </ul>
+                            </motion.div>
+                        </>
+                    )
+                }
+            </AnimatePresence >
+        </div >
     );
 };
 

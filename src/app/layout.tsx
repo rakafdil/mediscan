@@ -36,14 +36,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${josefin.variable} ${montserrat.variable} antialiased`}>
+      <body className={`${josefin.variable} ${montserrat.variable} antialiased bg-gradient-to-br from-blue-50 via-white to-indigo-50`}>
         <DarkModeProvider>
-        <Navbar />
-        <main>
-          {children}
-        </main>
-        <ThemeSwitch />
-        <Footer />
+          <Navbar />
+          <main>
+            {children}
+          </main>
+          <ThemeSwitch />
+          <Footer />
         </DarkModeProvider>
         <Analytics />
       </body>

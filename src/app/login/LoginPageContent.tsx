@@ -17,6 +17,12 @@ export default function LoginPageContent() {
     const message = searchParams.get('message');
     const success = searchParams.get('success');
 
+    useEffect(() => {
+        if (error || success) {
+            setIsLoading(false);
+        }
+    }, [error, success]);
+
     const getErrorMessage = (error: string | null) => {
         switch (error) {
             case 'invalid_credentials':
@@ -63,7 +69,7 @@ export default function LoginPageContent() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 py-40">
+        <div className="min-h-screen flex items-center justify-center p-4 py-40">
             <div className="w-full max-w-md">
                 {/* Error/Success Messages */}
                 {getErrorMessage(error) && (
