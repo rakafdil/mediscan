@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
-import { validateEmail, validatePassword, validateName } from '@/utils/auth/validation'
-import { mapAuthErrorMessage } from '@/utils/auth/errors'
+import { createClient } from '@/app/utils/supabase/server'
+import { validateEmail, validatePassword, validateName } from '@/app/utils/auth/validation'
+import { mapAuthErrorMessage } from '@/app/utils/auth/errors'
 
 export async function login(formData: FormData) {
     const supabase = await createClient();
@@ -29,11 +29,6 @@ export async function login(formData: FormData) {
     if (error) {
         redirect(`/login?error=${mapAuthErrorMessage(error.message)}`);
     }
-
-    revalidatePath('/', 'layout');
-    revalidatePath('/account', 'page');
-    revalidatePath('/symptom-checker/symptoms', 'page');
-    redirect('/');
 }
 
 export async function signup(formData: FormData) {

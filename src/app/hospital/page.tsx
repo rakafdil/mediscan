@@ -2,6 +2,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function HeroSection() {
     return (
@@ -27,11 +28,11 @@ export default function HeroSection() {
                     <p className="text-gray-600 mt-2 text-lg">
                         Easily discover trusted hospitals and clinics just steps away from where you are
                     </p>
-                    <a href="/hospital/choose">
-                    <button className="mt-6 px-6 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition">
-                        Start Checking Now
-                    </button>
-                    </a>
+                    <Link href="/hospital/choose">
+                        <button className="mt-6 px-6 py-3 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition">
+                            Search Hospital
+                        </button>
+                    </Link>
                 </div>
             </section>
 

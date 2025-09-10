@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 interface Article {
@@ -128,11 +129,11 @@ const HealthInsightsDashboard = () => {
                         </button>
                     </div>
 
-                    <a href="/article/article-content" className="inline-block w-full sm:w-auto">
+                    <Link href="/article/article-content" className="inline-block w-full sm:w-auto">
                         <button className="w-full sm:w-auto bg-[#6B8FC4] hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base">
                             Start Exploring Now →
                         </button>
-                    </a>
+                    </Link>
                 </div>
             </div>
 

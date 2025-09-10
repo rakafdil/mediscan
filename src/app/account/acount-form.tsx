@@ -1,10 +1,10 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/app/utils/supabase/client'
 import { type User } from '@supabase/supabase-js'
 import { FiUser, FiMapPin, FiHeart, FiShield, FiPlus, FiTrash2 } from 'react-icons/fi'
-import { redirect } from 'next/navigation'
-
+import { redirect, useRouter } from 'next/navigation'
+import { LOGIN_PATH } from "@/constant/common";
 interface ProfileData {
     full_name: string | null
     username: string | null
@@ -21,6 +21,7 @@ interface ProfileData {
 }
 
 export default function AccountForm({ user }: { user: User | null }) {
+    const router = useRouter();
     const supabase = createClient()
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -157,6 +158,11 @@ export default function AccountForm({ user }: { user: User | null }) {
         setProfile(prev => ({ ...prev, [field]: value }))
     }
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        Promise.resolve().then(() => window.location.href = '/login');
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -169,7 +175,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br py-8 px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
@@ -178,7 +184,7 @@ export default function AccountForm({ user }: { user: User | null }) {
                             <FiUser className="w-8 h-8 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 font-montserrat">My Profile</h1>
+                            <h1 className="text-3xl font-bold text-gray-900 font-montserrat">Hello {profile.username}!</h1>
                             <p className="text-gray-600 mt-1">Manage your account information and medical history</p>
                         </div>
                     </div>
@@ -481,14 +487,14 @@ export default function AccountForm({ user }: { user: User | null }) {
                     {/* Action Buttons */}
                     <div className="border-t px-8 py-6 bg-gray-50 rounded-b-2xl">
                         <div className="flex justify-between items-center">
-                            <form action="api/auth/signout" method="post">
-                                <button
-                                    type="submit"
-                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
-                                >
-                                    Sign Out
-                                </button>
-                            </form>
+
+                            <button
+                                onClick={handleLogout}
+                                type="submit"
+                                className="px-6 py-3 border bg-red-600 border-gray-300 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                            >
+                                Sign Out
+                            </button>
                             <button
                                 onClick={updateProfile}
                                 disabled={saving}

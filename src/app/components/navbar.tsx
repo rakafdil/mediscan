@@ -1,4 +1,3 @@
-// src/app/components/navbar.tsx
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -9,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes, faUser } from '@fortawesome/free-solid-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from "../../../public/assets/Logo.png";
-import { useAuth } from '@/hooks/useAuth';
+import AuthButton from './auth-buttons'
 
 interface NavLink {
     href: string;
@@ -64,8 +63,6 @@ const Navbar: React.FC = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const navbarRef = useRef<HTMLDivElement>(null);
 
-    const { isLoggedIn, loading, user, profile } = useAuth();
-
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (isOpen && navbarRef.current && !navbarRef.current.contains(event.target as Node)) {
@@ -109,32 +106,8 @@ const Navbar: React.FC = () => {
                         </ul>
                     </div>
 
-                    {loading ? (
-                        <div className="hidden md:flex md:text-xl sm:text-lg px-5 py-4">
-                            <div className="animate-pulse bg-gray-300 rounded-xl w-20 h-12"></div>
-                        </div>
-                    ) : !isLoggedIn ? (
-                        <Link
-                            href="/login"
-                            className="hidden md:flex md:text-xl sm:text-lg px-5 py-4 rounded-xl transition-colors duration-200 bg-[#496687] text-white hover:bg-[#3a526c] font-semibold"
-                        >
-                            Login
-                        </Link>
-                    ) : (
-                        <div className="hidden md:flex flex-col items-center gap-1">
-                            <Link
-                                href="/account"
-                                className="text-center md:text-xl sm:text-lg h-12 w-12 rounded-full transition-colors duration-200 bg-[#496687] text-white hover:bg-[#3a526c] font-semibold"
-                            >
-                                <FontAwesomeIcon icon={faUser} className='mt-3' />
-                            </Link>
-                            {user && (
-                                <span className="text-gray-700">
-                                    Hi, {profile?.username || user.email?.split('@')[0] || 'User'}!
-                                </span>
-                            )}
-                        </div>
-                    )}
+                    <AuthButton />
+
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden">
@@ -187,22 +160,7 @@ const Navbar: React.FC = () => {
                                         </li>
                                     ))}
                                     <li className="w-[45%] text-center">
-                                        {/* ✅ Mobile auth menu - using hook data */}
-                                        {!isLoggedIn ? (
-                                            <Navigation
-                                                linkTo='/login'
-                                                text='Login'
-                                                isMobile={true}
-                                                onClick={closeMenu}
-                                            />
-                                        ) : (
-                                            <Navigation
-                                                linkTo='/account'
-                                                text='Account'
-                                                isMobile={true}
-                                                onClick={closeMenu}
-                                            />
-                                        )}
+                                        <AuthButton />
                                     </li>
                                 </ul>
                             </motion.div>
