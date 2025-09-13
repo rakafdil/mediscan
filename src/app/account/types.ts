@@ -1,0 +1,31 @@
+export interface ScanHistory {
+    scan_id: string
+    scan_timestamp: string
+    probability: number
+    precautions?: string
+    disease?: { disease_name: string }
+    scan_history_symptoms?: { symptom: { symptom_name: string } }[]
+}
+
+export interface ProfileData {
+    full_name: string | null
+    username: string | null
+}
+
+export interface LocationData {
+    street: string | null
+    city: string | null
+    state: string | null
+    country: string | null
+    lon: number | null
+    lat: number | null
+}
+
+export interface MedicalHistoryData {
+    allergies: string[]
+    diseases: string[]
+}
+
+export interface CompleteProfile extends ProfileData, LocationData, MedicalHistoryData {
+    scan_history: ScanHistory[]
+}
