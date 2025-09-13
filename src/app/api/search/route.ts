@@ -6,6 +6,7 @@ interface SearchResult {
     isi: string;
     link: string;
     source: string;
+    image?: string; // optional
 }
 
 export async function GET(req: Request) {
@@ -17,7 +18,7 @@ export async function GET(req: Request) {
     }
 
     try {
-        const results = await searchWithGoogleAPI(keyword);
+        const results = await searchWithWikipedia(keyword);
         return NextResponse.json(results);
     } catch (error) {
         console.error("Search error:", error);
@@ -25,33 +26,54 @@ export async function GET(req: Request) {
     }
 }
 
-async function searchWithGoogleAPI(keyword: string): Promise<SearchResult[]> {
-    const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-    const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
+async function searchWithWikipedia(keyword: string): Promise<SearchResult[]> {
+    // Tambahkan kata kunci health secara paksa pada query agar hasil relevan
+    const healthQuery = `${keyword} AND (health OR medicine OR medical OR treatment OR hospital)`;
 
-    if (!GOOGLE_API_KEY || !GOOGLE_CSE_ID) {
-        throw new Error("Google API credentials not configured");
+    const searchRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+            healthQuery
+        )}&format=json&origin=*`
+    );
+    if (!searchRes.ok) throw new Error(`Wikipedia search returned status: ${searchRes.status}`);
+    const searchData = await searchRes.json();
+
+    const results: SearchResult[] = [];
+
+    const pageIds = searchData.query.search.map((item: any) => item.pageid).join("|");
+    if (!pageIds) return [];
+
+    // Ambil gambar thumbnail
+    const imageRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&pageids=${pageIds}&prop=pageimages&piprop=thumbnail&pithumbsize=300&format=json&origin=*`
+    );
+    if (!imageRes.ok) throw new Error(`Wikipedia images returned status: ${imageRes.status}`);
+    const imageData = await imageRes.json();
+
+    const healthKeywords = [
+        "health", "medicine", "medical", "wellness", "care", "clinic", "hospital", "doctor", "nurse",
+        "disease", "infection", "virus", "bacteria", "cancer", "diabetes", "stroke", "obesity", "asthma",
+        "allergy", "cardiovascular", "respiratory", "mental health", "depression", "anxiety",
+        "neurology", "psychiatry", "treatment", "surgery", "therapy", "rehabilitation", "vaccine"
+    ];
+
+    for (const [index, item] of searchData.query.search.entries()) {
+        const page = imageData.query.pages[item.pageid];
+
+        const textToCheck = (item.title + " " + item.snippet).toLowerCase();
+        const isHealthRelated = healthKeywords.some((kw) => textToCheck.includes(kw));
+
+        if (!isHealthRelated) continue; // skip jika bukan kesehatan
+
+        results.push({
+            id: `wikipedia-${index}-${Date.now()}`,
+            judul: item.title,
+            isi: item.snippet.replace(/<\/?[^>]+(>|$)/g, ""),
+            link: `https://en.wikipedia.org/wiki/${encodeURIComponent(item.title)}`,
+            source: "Wikipedia",
+            image: page?.thumbnail?.source,
+        });
     }
 
-    const res = await fetch(
-        `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(
-            keyword
-        )}&num=5`
-    );
-
-    if (!res.ok) {
-        throw new Error(`Google API returned status: ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    return (
-        data.items?.map((item: any, index: number) => ({
-            id: `google-api-${index}-${Date.now()}`,
-            judul: item.title || "No title",
-            isi: item.snippet || "No description",
-            link: item.link,
-            source: "google-api",
-        })) || []
-    );
+    return results;
 }

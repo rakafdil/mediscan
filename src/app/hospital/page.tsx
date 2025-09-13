@@ -1,10 +1,51 @@
-// app/page.tsx (atau komponen HeroSection.tsx)
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function HeroSection() {
+    const [counters, setCounters] = useState({
+        hospitals: 0,
+        isVisible: false
+    });
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setCounters(prev => ({ ...prev, isVisible: true }));
+                        
+                        // Animasi counter untuk angka 3.155
+                        let current = 0;
+                        const target = 3155;
+                        const increment = target / 100;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= target) {
+                                current = target;
+                                clearInterval(timer);
+                            }
+                            setCounters(prev => ({ 
+                                ...prev, 
+                                hospitals: Math.floor(current)
+                            }));
+                        }, 20);
+                    }
+                });
+            },
+            { threshold: 0.3 }
+        );
+
+        const boxSection = document.querySelector('#info-boxes');
+        if (boxSection) {
+            observer.observe(boxSection);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
     return (
         <div className="min-h-screen flex flex-col">
             {/* Bagian Hero */}
@@ -12,7 +53,7 @@ export default function HeroSection() {
                 {/* Gambar utama */}
                 <div className="w-full md:w-1/2 flex justify-center">
                     <Image
-                        src="/assets/Pharmacist.png" // ganti dengan file kamu di /public
+                        src="/assets/Pharmacist.png"
                         alt="Doctor Illustration"
                         width={900}
                         height={900}
@@ -36,24 +77,52 @@ export default function HeroSection() {
                 </div>
             </section>
 
-            {/* Bagian Info Box */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8 md:px-16 lg:px-24 pb-20">
-                <div className="bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition">
+            {/* Bagian Info Box dengan Efek */}
+            <section 
+                id="info-boxes"
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8 md:px-16 lg:px-24 pb-50 pt-10"
+            >
+                {/* Box 1 - Stars dengan animasi */}
+                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${
+                    counters.isVisible 
+                        ? 'translate-y-0 opacity-100' 
+                        : 'translate-y-10 opacity-0'
+                }`}
+                style={{ transitionDelay: '0ms' }}
+                >
                     <div className="flex justify-center mb-3">
-                        ⭐⭐⭐⭐⭐
+                        <span className="inline-block text-4xl">⭐⭐⭐⭐⭐</span>
                     </div>
                     <p className="text-gray-600">Finding the best hospitals in the nearest area</p>
                 </div>
 
-                <div className="bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition">
-                    <h3 className="text-2xl font-bold text-blue-600 font-montserrat">3.155 +</h3>
+                {/* Box 2 - Counter dengan animasi */}
+                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${
+                    counters.isVisible 
+                        ? 'translate-y-0 opacity-100' 
+                        : 'translate-y-10 opacity-0'
+                }`}
+                style={{ transitionDelay: '200ms' }}
+                >
+                    <h3 className="text-4xl font-bold text-blue-600 font-montserrat mb-3">
+                        {counters.hospitals.toLocaleString()} +
+                    </h3>
                     <p className="text-gray-600">
                         More than 3,155 good hospitals in Indonesia are already registered
                     </p>
                 </div>
 
-                <div className="bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition">
-                    <h3 className="text-2xl font-bold text-blue-600 font-montserrat">24/7</h3>
+                {/* Box 3 - 24/7 dengan animasi berkedip */}
+                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${
+                    counters.isVisible 
+                        ? 'translate-y-0 opacity-100' 
+                        : 'translate-y-10 opacity-0'
+                }`}
+                style={{ transitionDelay: '400ms' }}
+                >
+                    <h3 className="text-4xl font-bold text-blue-600 font-montserrat mb-3">
+                        <span className="inline-block">24/7</span>
+                    </h3>
                     <p className="text-gray-600">
                         Thanks for all the services, no doubt it is the best hospital
                     </p>

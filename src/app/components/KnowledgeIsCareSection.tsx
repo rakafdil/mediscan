@@ -19,7 +19,7 @@ const KnowledgeIsCareSection = () => {
 
                         <a
                             href="/article"
-                            className="inline-flex items-center px-5 py-3 bg-[#6B8FC4] text-white font-semibold rounded-xl shadow-md hover:bg-blue-600 transition duration-300 gap-2"
+                            className="inline-flex items-center px-5 py-3 border border-[#252B42] text-[#252B42] font-semibold rounded-xl hover:bg-[#252B42] hover:text-white transition duration-300 gap-2"
                         >
                             Learn More
                             <span className="text-lg">›</span>
@@ -29,7 +29,7 @@ const KnowledgeIsCareSection = () => {
                     {/* Right Side - Image */}
                     <div className="flex justify-center lg:justify-end">
                         <Image
-                            src="/assets/section5.png"
+                            src="/assets/section 5.svg"
                             alt="Knowledge is Care"
                             width={400}
                             height={300}

@@ -33,6 +33,39 @@ async function fetchCoordinates(query: string): Promise<{ lat: number; lng: numb
     }
 }
 
+// Helper to get location names from API
+async function getLocationNames(countryCode: string, stateCode: string, cityCode: string) {
+    try {
+        // Fetch country name
+        const countryRes = await fetch(`/api/regions?type=countries`);
+        const countries = await countryRes.json();
+        const country = countries.find((c: any) => c.iso2 === countryCode);
+        
+        // Fetch state name
+        const stateRes = await fetch(`/api/regions?type=states&country=${countryCode}`);
+        const states = await stateRes.json();
+        const state = states.find((s: any) => s.iso2 === stateCode);
+        
+        // Fetch city name
+        const cityRes = await fetch(`/api/regions?type=cities&country=${countryCode}&state=${stateCode}`);
+        const cities = await cityRes.json();
+        const city = cities.find((c: any) => c.name === decodeURIComponent(cityCode));
+        
+        return {
+            countryName: country?.name || countryCode,
+            stateName: state?.name || stateCode,
+            cityName: city?.name || decodeURIComponent(cityCode)
+        };
+    } catch (error) {
+        console.error('Error fetching location names:', error);
+        return {
+            countryName: countryCode,
+            stateName: stateCode,
+            cityName: decodeURIComponent(cityCode)
+        };
+    }
+}
+
 const MapHospitalContent = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -42,10 +75,16 @@ const MapHospitalContent = () => {
     const [mapError, setMapError] = useState<string | null>(null);
     const [useRealLocation, setUseRealLocation] = useState(false);
     const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+    const [locationNames, setLocationNames] = useState<{
+        countryName: string;
+        stateName: string;
+        cityName: string;
+    }>({ countryName: '', stateName: '', cityName: '' });
 
-    const provinsi = searchParams.get('provinsi') || '';
-    const kabupaten = searchParams.get('kabupaten') || '';
-    const kota = searchParams.get('kota') || '';
+    // Get parameters from URL - sesuai dengan yang dikirim choose.tsx
+    const country = searchParams.get('country') || '';
+    const state = searchParams.get('state') || '';
+    const city = searchParams.get('city') || '';
 
     const {
         userLocation,
@@ -62,6 +101,13 @@ const MapHospitalContent = () => {
         fetchHospitals,
         clearHospitalsError,
     } = useHospitals();
+
+    // Fetch location names when parameters change
+    useEffect(() => {
+        if (country && state && city) {
+            getLocationNames(country, state, city).then(setLocationNames);
+        }
+    }, [country, state, city]);
 
     // Load Leaflet
     useEffect(() => {
@@ -91,8 +137,8 @@ const MapHospitalContent = () => {
     // Fetch koordinat jika bukan GPS
     useEffect(() => {
         const loadCoordinates = async () => {
-            if (!useRealLocation && kota) {
-                const query = `${kota}, ${kabupaten}, ${provinsi}, Indonesia`;
+            if (!useRealLocation && locationNames.cityName) {
+                const query = `${locationNames.cityName}, ${locationNames.stateName}, ${locationNames.countryName}`;
                 const coords = await fetchCoordinates(query);
                 if (coords) {
                     setCoordinates(coords);
@@ -102,7 +148,7 @@ const MapHospitalContent = () => {
             }
         };
         loadCoordinates();
-    }, [provinsi, kabupaten, kota, useRealLocation]);
+    }, [locationNames, useRealLocation]);
 
     // Initialize map
     useEffect(() => {
@@ -121,7 +167,7 @@ const MapHospitalContent = () => {
                 }`;
         } else if (coordinates) {
             coords = coordinates;
-            locationLabel = `${kota}, ${kabupaten}`;
+            locationLabel = `${locationNames.cityName}, ${locationNames.stateName}`;
         }
 
         if (!coords) {
@@ -172,14 +218,13 @@ const MapHospitalContent = () => {
                 }).addTo(map);
             }
 
-            // fetch hospital
-            await fetchHospitals(coords.lat, coords.lng, kota, useRealLocation);
+            // fetch hospital - menggunakan nama kota untuk pencarian
+            await fetchHospitals(coords.lat, coords.lng, locationNames.cityName, useRealLocation);
         } catch (err) {
             console.error('Error initializing map:', err);
             setMapError('Error initializing map');
         }
     };
-
 
     // Add hospital markers when hospitals data changes
     useEffect(() => {
@@ -297,7 +342,7 @@ const MapHospitalContent = () => {
                     <p className="text-white">
                         {useRealLocation && userLocation
                             ? `Lokasi GPS Anda${userLocation.accuracy ? ` (±${Math.round(userLocation.accuracy)}m)` : ''}`
-                            : `${kota}, ${kabupaten} - ${provinsi?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+                            : `${locationNames.cityName}, ${locationNames.stateName} - ${locationNames.countryName}`
                         }
                     </p>
 

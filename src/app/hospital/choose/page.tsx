@@ -1,92 +1,64 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const chooseHospital = () => {
+const ChooseHospital = () => {
     const router = useRouter();
-    const [selectedProvinsi, setSelectedProvinsi] = useState('');
-    const [selectedKabupaten, setSelectedKabupaten] = useState('');
-    const [selectedKota, setSelectedKota] = useState('');
+    const [countries, setCountries] = useState<{ name: string; iso2: string }[]>([]);
+    const [states, setStates] = useState<{ name: string; iso2: string }[]>([]);
+    const [cities, setCities] = useState<{ name: string; iso2: string }[]>([]);
 
-    const dataKabupaten: Record<string, string[]> = {
-        jawa_barat: ['Bandung', 'Bogor'],
-        jawa_tengah: ['Semarang', 'Solo'],
-        jawa_timur: ['Surabaya', 'Malang'],
-        dki_jakarta: ['Jakarta Pusat', 'Jakarta Selatan'],
-        di_yogyakarta: ['Sleman', 'Bantul'],
-    };
+    const [selectedCountry, setSelectedCountry] = useState('');
+    const [selectedState, setSelectedState] = useState('');
+    const [selectedCity, setSelectedCity] = useState('');
 
-    const dataKota: Record<string, string[]> = {
-        Bandung: ['Bandung Kota', 'Cimahi', 'Lembang'],
-        Bekasi: ['Bekasi Kota', 'Cikarang', 'Tambun'],
-        Bogor: ['Bogor Kota', 'Cibinong', 'Cisarua'],
-        Cianjur: ['Cianjur Kota', 'Cugenang', 'Sukaluyu'],
-        Cirebon: ['Cirebon Kota', 'Sumber', 'Arjawinangun'],
-        Semarang: ['Semarang Kota', 'Ungaran', 'Ambarawa'],
-        Solo: ['Solo Kota', 'Laweyan', 'Banjarsari'],
-        Magelang: ['Magelang Kota', 'Mertoyudan', 'Secang'],
-        Pekalongan: ['Pekalongan Kota', 'Kajen', 'Wonopringgo'],
-        Tegal: ['Tegal Kota', 'Slawi', 'Adiwerna'],
-        Surabaya: ['Surabaya Pusat', 'Surabaya Timur', 'Surabaya Selatan'],
-        Malang: ['Malang Kota', 'Kepanjen', 'Turen'],
-        Sidoarjo: ['Sidoarjo Kota', 'Waru', 'Taman'],
-        Kediri: ['Kediri Kota', 'Pare', 'Ngasem'],
-        Jember: ['Jember Kota', 'Patrang', 'Sumbersari'],
-        'Jakarta Pusat': ['Menteng', 'Tanah Abang', 'Kemayoran'],
-        'Jakarta Barat': ['Grogol', 'Kalideres', 'Cengkareng'],
-        'Jakarta Timur': ['Cakung', 'Duren Sawit', 'Jatinegara'],
-        'Jakarta Selatan': ['Kebayoran Baru', 'Pasar Minggu', 'Tebet'],
-        'Jakarta Utara': ['Koja', 'Kelapa Gading', 'Pademangan'],
-        Sleman: ['Depok', 'Ngaglik', 'Mlati'],
-        Bantul: ['Bantul Kota', 'Pundong', 'Srandakan'],
-        'Gunung Kidul': ['Wonosari', 'Playen', 'Semanu'],
-        'Kulon Progo': ['Wates', 'Sentolo', 'Pengasih'],
-        'Yogyakarta Kota': ['Gondokusuman', 'Jetis', 'Danurejan'],
-    };
+    // Load countries on mount
+    useEffect(() => {
+        fetch('/api/regions?type=countries')
+            .then((res) => res.json())
+            .then((data) => setCountries(data))
+            .catch((err) => console.error('Error loading countries:', err));
+    }, []);
 
-    const handleProvinsiChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const provinsi = e.target.value;
-        setSelectedProvinsi(provinsi);
-        setSelectedKabupaten('');
-        setSelectedKota('');
-    };
+    // Load states when a country is selected
+    useEffect(() => {
+        if (!selectedCountry) return;
+        setStates([]);
+        setCities([]);
+        setSelectedState('');
+        setSelectedCity('');
 
-    const handleKabupatenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const kabupaten = e.target.value;
-        setSelectedKabupaten(kabupaten);
-        setSelectedKota('');
-    };
+        fetch(`/api/regions?type=states&country=${selectedCountry}`)
+            .then((res) => res.json())
+            .then((data) => setStates(data))
+            .catch((err) => console.error('Error loading states:', err));
+    }, [selectedCountry]);
 
-    const handleKotaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedKota(e.target.value);
-    };
+    // Load cities when a state is selected
+    useEffect(() => {
+        if (!selectedCountry || !selectedState) return;
+        setCities([]);
+        setSelectedCity('');
+
+        fetch(`/api/regions?type=cities&country=${selectedCountry}&state=${selectedState}`)
+            .then((res) => res.json())
+            .then((data) => setCities(data))
+            .catch((err) => console.error('Error loading cities:', err));
+    }, [selectedState, selectedCountry]);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        if (!selectedProvinsi || !selectedKabupaten || !selectedKota) {
-            alert('Silakan pilih lokasi lengkap (Provinsi, Kabupaten, dan Kota)');
+        if (!selectedCountry || !selectedState || !selectedCity) {
+            alert('Silakan pilih lokasi lengkap (Country, State, dan City)');
             return;
         }
-
         const searchParams = new URLSearchParams({
-            provinsi: selectedProvinsi,
-            kabupaten: selectedKabupaten,
-            kota: selectedKota,
+            country: selectedCountry,
+            state: selectedState,
+            city: selectedCity,
         });
-
         router.push(`/hospital/map?${searchParams.toString()}`);
-    };
-
-    const getKabupatenOptions = () => {
-        if (!selectedProvinsi) return [];
-        return dataKabupaten[selectedProvinsi] || [];
-    };
-
-    const getKotaOptions = () => {
-        if (!selectedKabupaten) return [];
-        return dataKota[selectedKabupaten] || [];
     };
 
     return (
@@ -100,46 +72,50 @@ const chooseHospital = () => {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Country */}
                     <select
                         className="w-full p-3 rounded-md border border-gray-300 bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={selectedProvinsi}
-                        onChange={handleProvinsiChange}
+                        value={selectedCountry}
+                        onChange={(e) => setSelectedCountry(e.target.value)}
                     >
-                        <option value="">Province</option>
-                        <option value="jawa_barat">Jawa Barat</option>
-                        <option value="jawa_tengah">Jawa Tengah</option>
-                        <option value="jawa_timur">Jawa Timur</option>
-                        <option value="dki_jakarta">DKI Jakarta</option>
-                        <option value="di_yogyakarta">DI Yogyakarta</option>
-                    </select>
-
-                    <select
-                        className="w-full p-3 rounded-md border border-gray-300 bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={selectedKabupaten}
-                        onChange={handleKabupatenChange}
-                    >
-                        <option value="">Regency</option>
-                        {getKabupatenOptions().map((kabupaten) => (
-                            <option key={kabupaten} value={kabupaten}>
-                                {kabupaten}
+                        <option value="">Select Country</option>
+                        {countries.map((c) => (
+                            <option key={c.iso2} value={c.iso2}>
+                                {c.name}
                             </option>
                         ))}
                     </select>
 
+                    {/* State */}
                     <select
                         className="w-full p-3 rounded-md border border-gray-300 bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={selectedKota}
-                        onChange={handleKotaChange}
+                        value={selectedState}
+                        onChange={(e) => setSelectedState(e.target.value)}
+                        disabled={!states.length}
                     >
-                        <option value="">City</option>
-                        {getKotaOptions().map((kota) => (
-                            <option key={kota} value={kota}>
-                                {kota}
+                        <option value="">Select State</option>
+                        {states.map((s) => (
+                            <option key={s.iso2} value={s.iso2}>
+                                {s.name}
                             </option>
                         ))}
                     </select>
 
-                    {/* Tambahan button Telusuri */}
+                    {/* City */}
+                    <select
+                        className="w-full p-3 rounded-md border border-gray-300 bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedCity}
+                        onChange={(e) => setSelectedCity(e.target.value)}
+                        disabled={!cities.length}
+                    >
+                        <option value="">Select City</option>
+                        {cities.map((c) => (
+                            <option key={c.iso2} value={c.iso2}>
+                                {c.name}
+                            </option>
+                        ))}
+                    </select>
+
                     <button
                         type="submit"
                         className="w-full py-4 px-6 rounded-lg font-medium text-base transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 text-white hover:bg-blue-700 focus:ring-blue-500"
@@ -159,4 +135,4 @@ const chooseHospital = () => {
     );
 };
 
-export default chooseHospital;
+export default ChooseHospital;

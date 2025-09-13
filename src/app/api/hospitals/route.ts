@@ -97,7 +97,7 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
             const hospitalName = tags.name ||
                 tags['name:id'] ||
                 tags['name:en'] ||
-                (tags.amenity === 'hospital' ? 'Rumah Sakit' : 'Klinik') + ` #${index + 1}`;
+                (tags.amenity === 'hospital' ? 'Hospital' : 'Clinic') + ` #${index + 1}`;
 
             // Skip duplicates based on name and proximity
             const nameKey = hospitalName.toLowerCase();
@@ -140,12 +140,12 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
             // Determine hospital type with more detail
             let hospitalType = 'Fasilitas Kesehatan';
             if (tags.amenity === 'hospital' || tags.healthcare === 'hospital') {
-                hospitalType = 'Rumah Sakit';
+                hospitalType = 'Hospital';
                 if (tags.healthcare === 'hospital' && tags['healthcare:speciality']) {
                     hospitalType += ` (${tags['healthcare:speciality']})`;
                 }
             } else if (tags.amenity === 'clinic' || tags.healthcare === 'clinic') {
-                hospitalType = 'Klinik';
+                hospitalType = 'Clinic';
             }
 
             // Try to determine if it's open (basic heuristic)

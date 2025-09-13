@@ -8,6 +8,7 @@ interface SearchResult {
     isi: string;
     link: string;
     source: string;
+    image?: string;
 }
 
 export default function SearchPage() {
@@ -70,13 +71,13 @@ export default function SearchPage() {
                         disabled={loading}
                         className="bg-[#6B8FC4] hover:bg-[#217BFF] text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                     >
-                        {loading ? "Mencari..." : "Cari"}
+                        {loading ? "Searching.." : "Search"}
                     </button>
                 </div>
 
                 {/* Results */}
                 {loading && (
-                    <p className="text-center text-gray-500">Sedang mencari...</p>
+                    <p className="text-center text-gray-500">Searching...</p>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -85,7 +86,11 @@ export default function SearchPage() {
                             key={r.id}
                             className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition bg-white"
                         >
-                            <div className="h-40 bg-gray-200 rounded mb-3"></div>
+                            <img
+                                src={r.image || "https://nbhc.ca/sites/default/files/styles/article/public/default_images/news-default-image%402x_0.png?itok=B4jML1jF"}
+                                alt={r.judul}
+                                className="w-full h-40 object-cover rounded mb-3"
+                            />
                             <a
                                 href={r.link}
                                 target="_blank"
@@ -114,6 +119,7 @@ export default function SearchPage() {
                     ))}
                 </div>
 
+
                 {/* Pagination */}
                 {results.length > itemsPerPage && (
                     <div className="flex justify-center mt-6 gap-2">
@@ -129,8 +135,8 @@ export default function SearchPage() {
                                 key={i + 1}
                                 onClick={() => setCurrentPage(i + 1)}
                                 className={`px-3 py-1 border rounded ${currentPage === i + 1
-                                        ? "bg-blue-600 text-white"
-                                        : "hover:bg-gray-100"
+                                    ? "bg-blue-600 text-white"
+                                    : "hover:bg-gray-100"
                                     }`}
                             >
                                 {i + 1}
@@ -148,7 +154,7 @@ export default function SearchPage() {
                     </div>
                 )}
 
-                {!loading && results.length === 0 && query && (
+                {results.length === 0 && query && (
                     <p className="text-center text-gray-500 mt-8">
                         Tidak ada hasil untuk <span className="font-medium">{query}</span>.
                     </p>
