@@ -109,20 +109,7 @@ export default function LoginPageContent() {
     return (
         <div className="min-h-screen flex items-center justify-center p-4 py-40">
             <div className="w-full max-w-md">
-                {/* Error/Success Messages */}
-                {getErrorMessage(error) && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
-                        <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500" />
-                        <p className="text-red-700 text-sm">{getErrorMessage(error)}</p>
-                    </div>
-                )}
 
-                {getSuccessMessage(success) && (
-                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-                        <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
-                        <p className="text-green-700 text-sm">{getSuccessMessage(success)}</p>
-                    </div>
-                )}
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4">
@@ -162,6 +149,19 @@ export default function LoginPageContent() {
 
                     {/* Form Content */}
                     <div className="p-8">
+                        {getErrorMessage(error) && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500" />
+                                <p className="text-red-700 text-sm">{getErrorMessage(error)}</p>
+                            </div>
+                        )}
+
+                        {getSuccessMessage(success) && (
+                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                                <FontAwesomeIcon icon={faCheckCircle} className="text-green-500" />
+                                <p className="text-green-700 text-sm">{getSuccessMessage(success)}</p>
+                            </div>
+                        )}
                         <form action={handleSubmit} className="space-y-6">
                             {/* Name Field (Sign Up Only) */}
                             {!isLogin && (

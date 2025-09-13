@@ -186,7 +186,7 @@ const DiagnosisFlow: React.FC = () => {
                                             ? 'bg-white border-[#628EF7] border-4 hover:bg-[#ccebf9] hover:text-white cursor-pointer'
                                             : 'bg-white border-[#628EF7] border-4 cursor-not-allowed'
                                     }
-            `}
+                                            `}
                                 onClick={() => isStepAccessible(item.step) && setStep(item.step)}
                                 // onClick={() => setStep(item.step)}
                                 title={!isStepAccessible(item.step) ? "Complete previous steps first" : ""}

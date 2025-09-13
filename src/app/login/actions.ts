@@ -11,7 +11,6 @@ export async function login(formData: FormData) {
 
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
-
     const errors: string[] = [];
     if (!email) errors.push('Email is required');
     else if (!validateEmail(email)) errors.push('Please enter a valid email address');
@@ -24,7 +23,8 @@ export async function login(formData: FormData) {
         redirect(`/login?error=validation&message=${msg}`);
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log(data)
 
     if (error) {
         redirect(`/login?error=${mapAuthErrorMessage(error.message)}`);
