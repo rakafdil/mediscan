@@ -2,238 +2,131 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useLocation } from '@/hooks/useUserLocation';
+import { useHospitals } from '@/hooks/useHospitals';
+import HospitalList from '@/app/components/HospitalList';
 
-interface LocationCoordinates {
-    [key: string]: {
-        lat: number;
-        lng: number;
-    };
-}
-
-interface Hospital {
-    id: number;
-    name: string;
-    address: string;
-    lat: number;
-    lng: number;
-    rating?: number;
-    isOpen?: boolean;
-    distance?: string;
-    phone?: string;
-    website?: string;
-    hospitalType?: string;
-}
-
-interface UserLocation {
-    lat: number;
-    lng: number;
-    accuracy?: number;
+// Helper to fetch coordinates using Nominatim (OpenStreetMap)
+async function fetchCoordinates(query: string): Promise<{ lat: number; lng: number } | null> {
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url, {
+            headers: {
+                // Provide a User-Agent per Nominatim usage policy; adjust as appropriate for your app
+                'User-Agent': 'mediscan/1.0 (contact@yourdomain.example)'
+            }
+        });
+        if (!res.ok) {
+            console.error('fetchCoordinates: non-ok response', res.status);
+            return null;
+        }
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) return null;
+        const first = data[0];
+        const lat = parseFloat(first.lat);
+        const lng = parseFloat(first.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        return { lat, lng };
+    } catch (err) {
+        console.error('fetchCoordinates error:', err);
+        return null;
+    }
 }
 
 const MapHospitalContent = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const mapRef = useRef<any>(null);
+
     const [isMapLoaded, setIsMapLoaded] = useState(false);
     const [mapError, setMapError] = useState<string | null>(null);
-    const [hospitals, setHospitals] = useState<Hospital[]>([]);
-    const [isLoadingHospitals, setIsLoadingHospitals] = useState(false);
-    const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-    const [locationError, setLocationError] = useState<string | null>(null);
-    const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [useRealLocation, setUseRealLocation] = useState(false);
+    const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
     const provinsi = searchParams.get('provinsi') || '';
     const kabupaten = searchParams.get('kabupaten') || '';
     const kota = searchParams.get('kota') || '';
 
-    // Koordinat untuk setiap kota/wilayah (fallback)
-    const locationCoordinates: LocationCoordinates = {
-        // Jawa Barat
-        'Bandung Kota': { lat: -6.9175, lng: 107.6191 },
-        'Cimahi': { lat: -6.8722, lng: 107.5420 },
-        'Lembang': { lat: -6.8112, lng: 107.6162 },
-        'Bekasi Kota': { lat: -6.2383, lng: 106.9756 },
-        'Cikarang': { lat: -6.2614, lng: 107.1533 },
-        'Tambun': { lat: -6.2643, lng: 107.0640 },
-        'Bogor Kota': { lat: -6.5971, lng: 106.8060 },
-        'Cibinong': { lat: -6.4818, lng: 106.8540 },
-        'Cisarua': { lat: -6.6974, lng: 106.9537 },
+    const {
+        userLocation,
+        isGettingLocation,
+        locationError,
+        getUserLocation,
+        clearLocationError,
+    } = useLocation();
 
-        // Jawa Tengah
-        'Semarang Kota': { lat: -6.9667, lng: 110.4167 },
-        'Ungaran': { lat: -7.1397, lng: 110.4058 },
-        'Ambarawa': { lat: -7.2651, lng: 110.4042 },
-        'Solo Kota': { lat: -7.5697, lng: 110.8281 },
-        'Laweyan': { lat: -7.5563, lng: 110.8008 },
-        'Banjarsari': { lat: -7.5488, lng: 110.8317 },
+    const {
+        hospitals,
+        isLoadingHospitals,
+        hospitalsError,
+        fetchHospitals,
+        clearHospitalsError,
+    } = useHospitals();
 
-        // Jawa Timur
-        'Surabaya Pusat': { lat: -7.2459, lng: 112.7378 },
-        'Surabaya Timur': { lat: -7.3297, lng: 112.8014 },
-        'Surabaya Selatan': { lat: -7.3191, lng: 112.7278 },
-        'Malang Kota': { lat: -7.9797, lng: 112.6304 },
-        'Kepanjen': { lat: -8.1301, lng: 112.5728 },
-        'Turen': { lat: -8.1687, lng: 112.7055 },
-
-        // DKI Jakarta
-        'Menteng': { lat: -6.1944, lng: 106.8229 },
-        'Tanah Abang': { lat: -6.1867, lng: 106.8130 },
-        'Kemayoran': { lat: -6.1678, lng: 106.8456 },
-        'Grogol': { lat: -6.1617, lng: 106.7897 },
-        'Kalideres': { lat: -6.1378, lng: 106.7008 },
-        'Cengkareng': { lat: -6.1378, lng: 106.7361 },
-        'Kebayoran Baru': { lat: -6.2297, lng: 106.7975 },
-        'Pasar Minggu': { lat: -6.2854, lng: 106.8419 },
-        'Tebet': { lat: -6.2297, lng: 106.8608 },
-
-        // DI Yogyakarta
-        'Depok': { lat: -7.7628, lng: 110.4317 },
-        'Ngaglik': { lat: -7.7375, lng: 110.3653 },
-        'Mlati': { lat: -7.7297, lng: 110.3650 },
-        'Bantul Kota': { lat: -7.8753, lng: 110.3392 },
-        'Pundong': { lat: -7.9344, lng: 110.3406 },
-        'Srandakan': { lat: -7.9397, lng: 110.2503 },
-        'Gondokusuman': { lat: -7.7828, lng: 110.3667 },
-        'Jetis': { lat: -7.7956, lng: 110.3592 },
-        'Danurejan': { lat: -7.8017, lng: 110.3658 },
-    };
-
-    // Get user's real location
-    const getUserLocation = () => {
-        setIsGettingLocation(true);
-        setLocationError(null);
-
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported by this browser');
-            setIsGettingLocation(false);
-            return;
-        }
-
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 300000 // 5 minutes cache
-        };
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const location: UserLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                    accuracy: position.coords.accuracy
-                };
-                setUserLocation(location);
-                setUseRealLocation(true);
-                setIsGettingLocation(false);
-                setLocationError(null);
-            },
-            (error) => {
-                let errorMessage = 'Failed to get location';
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = 'Location permission denied. Please enable location access in your browser';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = 'Location information not available';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = 'Timeout while retrieving location. Please try again';
-                        break;
-                }
-                setLocationError(errorMessage);
-                setIsGettingLocation(false);
-            },
-            options
-        );
-    };
-
-    // Load Leaflet CSS and JS
+    // Load Leaflet
     useEffect(() => {
         const loadLeaflet = async () => {
-            try {
-                // Load Leaflet CSS
-                if (!document.querySelector('link[href*="leaflet.css"]')) {
-                    const leafletCSS = document.createElement('link');
-                    leafletCSS.rel = 'stylesheet';
-                    leafletCSS.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
-                    document.head.appendChild(leafletCSS);
-                }
+            if (!document.querySelector('link[href*="leaflet.css"]')) {
+                const leafletCSS = document.createElement('link');
+                leafletCSS.rel = 'stylesheet';
+                leafletCSS.href =
+                    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+                document.head.appendChild(leafletCSS);
+            }
 
-                // Load Leaflet JS
-                if (!window.L) {
-                    const leafletJS = document.createElement('script');
-                    leafletJS.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
-                    leafletJS.onload = () => setIsMapLoaded(true);
-                    leafletJS.onerror = () => {
-                        setMapError('Failed to load map library');
-                        console.error('Failed to load Leaflet');
-                    };
-                    document.head.appendChild(leafletJS);
-                } else {
-                    setIsMapLoaded(true);
-                }
-            } catch (error) {
-                console.error('Error loading Leaflet:', error);
-                setMapError('Failed to load map library');
+            if (!window.L) {
+                const leafletJS = document.createElement('script');
+                leafletJS.src =
+                    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+                leafletJS.onload = () => setIsMapLoaded(true);
+                leafletJS.onerror = () => setMapError('Failed to load map library');
+                document.head.appendChild(leafletJS);
+            } else {
+                setIsMapLoaded(true);
             }
         };
-
         loadLeaflet();
     }, []);
 
-    // Fetch hospitals from API
-    const fetchHospitals = async (centerLat: number, centerLng: number): Promise<Hospital[]> => {
-        try {
-            setIsLoadingHospitals(true);
-
-            const response = await fetch(
-                `/api/hospitals?lat=${centerLat}&lng=${centerLng}&kota=${encodeURIComponent(kota)}&useRealLocation=${useRealLocation}`
-            );
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (!result.success) {
-                throw new Error(result.error || 'Failed to fetch hospitals');
-            }
-
-            return result.data;
-
-        } catch (error) {
-            console.error('Error fetching hospitals:', error);
-            return [];
-        } finally {
-            setIsLoadingHospitals(false);
-        }
-    };
-
-    // Initialize map when Leaflet is loaded
+    // Fetch koordinat jika bukan GPS
     useEffect(() => {
-        if (isMapLoaded && kota && window.L) {
+        const loadCoordinates = async () => {
+            if (!useRealLocation && kota) {
+                const query = `${kota}, ${kabupaten}, ${provinsi}, Indonesia`;
+                const coords = await fetchCoordinates(query);
+                if (coords) {
+                    setCoordinates(coords);
+                } else {
+                    setMapError(`Coordinates for ${query} not found`);
+                }
+            }
+        };
+        loadCoordinates();
+    }, [provinsi, kabupaten, kota, useRealLocation]);
+
+    // Initialize map
+    useEffect(() => {
+        if (isMapLoaded && (coordinates || (useRealLocation && userLocation)) && window.L) {
             initializeMap();
         }
-    }, [isMapLoaded, kota, userLocation, useRealLocation]);
+    }, [isMapLoaded, coordinates, userLocation, useRealLocation]);
 
     const initializeMap = async () => {
-        // Determine which coordinates to use
-        let coordinates;
-        let locationLabel;
+        let coords: { lat: number; lng: number } | null = null;
+        let locationLabel = '';
 
         if (useRealLocation && userLocation) {
-            coordinates = { lat: userLocation.lat, lng: userLocation.lng };
-            locationLabel = `Lokasi GPS Anda${userLocation.accuracy ? ` (±${Math.round(userLocation.accuracy)}m)` : ''}`;
-        } else {
-            coordinates = locationCoordinates[kota];
+            coords = { lat: userLocation.lat, lng: userLocation.lng };
+            locationLabel = `Lokasi GPS Anda${userLocation.accuracy ? ` (±${Math.round(userLocation.accuracy)}m)` : ''
+                }`;
+        } else if (coordinates) {
+            coords = coordinates;
             locationLabel = `${kota}, ${kabupaten}`;
+        }
 
-            if (!coordinates) {
-                setMapError(`Coordinates for ${kota} not found`);
-                return;
-            }
+        if (!coords) {
+            setMapError('Coordinates not available');
+            return;
         }
 
         const mapElement = document.getElementById('map');
@@ -245,42 +138,52 @@ const MapHospitalContent = () => {
         try {
             if (mapRef.current) mapRef.current.remove();
 
-            const map = window.L.map('map').setView([coordinates.lat, coordinates.lng], useRealLocation ? 15 : 13);
+            const map = window.L.map('map').setView(
+                [coords.lat, coords.lng],
+                useRealLocation ? 15 : 13
+            );
             mapRef.current = map;
 
             window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
+                maxZoom: 19,
             }).addTo(map);
 
-            // Marker lokasi pengguna
+            // marker lokasi
             const locationIcon = window.L.divIcon({
-                html: `<img src="/assets/Vector.png" alt="Address" style="width:25px; height:30px;" />`,
+                html: `<img src="/assets/Vector.png" style="width:25px; height:30px;" />`,
                 className: 'custom-location-marker',
                 iconSize: [30, 30],
-                iconAnchor: [15, 15]
+                iconAnchor: [15, 15],
             });
 
-            window.L.marker([coordinates.lat, coordinates.lng], { icon: locationIcon })
+            window.L.marker([coords.lat, coords.lng], { icon: locationIcon })
                 .addTo(map)
                 .bindPopup(`<b>${useRealLocation ? '🎯' : '📍'} ${locationLabel}</b>`);
 
-            // Add accuracy circle if using real location
+            // circle akurasi
             if (useRealLocation && userLocation?.accuracy) {
-                window.L.circle([coordinates.lat, coordinates.lng], {
+                window.L.circle([coords.lat, coords.lng], {
                     radius: userLocation.accuracy,
                     color: '#10b981',
                     fillColor: '#10b981',
                     fillOpacity: 0.1,
-                    weight: 2
+                    weight: 2,
                 }).addTo(map);
             }
 
-            // Fetch rumah sakit
-            const hospitalsList = await fetchHospitals(coordinates.lat, coordinates.lng);
-            setHospitals(hospitalsList);
+            // fetch hospital
+            await fetchHospitals(coords.lat, coords.lng, kota, useRealLocation);
+        } catch (err) {
+            console.error('Error initializing map:', err);
+            setMapError('Error initializing map');
+        }
+    };
 
-            // Marker rumah sakit
+
+    // Add hospital markers when hospitals data changes
+    useEffect(() => {
+        if (mapRef.current && hospitals.length > 0 && window.L) {
             const hospitalIcon = window.L.divIcon({
                 html: `<img src="/assets/HopitalMap.png" alt="Hospital" style="width:50px; height:50px;" />`,
                 className: 'custom-hospital-marker',
@@ -288,9 +191,9 @@ const MapHospitalContent = () => {
                 iconAnchor: [14, 14]
             });
 
-            hospitalsList.forEach(hospital => {
+            hospitals.forEach(hospital => {
                 const marker = window.L.marker([hospital.lat, hospital.lng], { icon: hospitalIcon })
-                    .addTo(map)
+                    .addTo(mapRef.current)
                     .bindPopup(`
                         <div style="min-width: 200px;">
                         <div style="display: flex; align-items: center; gap: 6px;">
@@ -320,12 +223,8 @@ const MapHospitalContent = () => {
                         </div>
                     `);
             });
-
-        } catch (error) {
-            console.error('Error initializing map:', error);
-            setMapError('Error initializing map');
         }
-    };
+    }, [hospitals]);
 
     const handleBackToSearch = () => {
         router.push('/hospital/choose');
@@ -334,7 +233,8 @@ const MapHospitalContent = () => {
     const retryInitialization = () => {
         setMapError(null);
         setIsMapLoaded(false);
-        setHospitals([]);
+        clearHospitalsError();
+        clearLocationError();
 
         // Reload the page after a short delay
         setTimeout(() => {
@@ -346,12 +246,18 @@ const MapHospitalContent = () => {
         if (useRealLocation) {
             // Switch back to city coordinates
             setUseRealLocation(false);
-            setUserLocation(null);
         } else {
             // Get real location
             getUserLocation();
         }
     };
+
+    // Update useRealLocation when userLocation is obtained
+    useEffect(() => {
+        if (userLocation) {
+            setUseRealLocation(true);
+        }
+    }, [userLocation]);
 
     return (
         <div className="min-h-screen">
@@ -429,8 +335,14 @@ const MapHospitalContent = () => {
                             <p className="text-red-600 text-sm">⚠️ {locationError}</p>
                         </div>
                     )}
-                </div>
 
+                    {/* Hospitals Error */}
+                    {hospitalsError && (
+                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg w-full text-center">
+                            <p className="text-red-600 text-sm">⚠️ {hospitalsError}</p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Map Container */}
                 <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
@@ -466,87 +378,12 @@ const MapHospitalContent = () => {
                     </div>
                 </div>
 
-                {/* Hospital List */}
-                {isLoadingHospitals ? (
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-4">
-                        <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
-                            <p className="text-gray-600">Searching for nearby hospitals...</p>
-                        </div>
-                    </div>
-                ) : hospitals.length > 0 && (
-                    <div className="bg-[#D9D9D9] rounded-lg shadow-md p-4 mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <img
-                                src="/assets/HopitalMap.png"
-                                alt="Hospital"
-                                style={{ width: '90px', height: '90px' }}
-                            />
-                            Hospitals Found ({hospitals.length})
-                            {useRealLocation && (
-                                <span className="text-sm text-green-600 ml-2 flex items-center gap-1">
-                                    <img
-                                        src="/assets/Vector.png"
-                                        alt="Location"
-                                        style={{ width: '16px', height: '16px' }}
-                                    />
-                                    Based on GPS location``
-                                </span>
-                            )}
-                        </h3>
-                        <div className="grid gap-3 max-h-60 overflow-y-auto">
-                            {hospitals.map((hospital) => (
-                                <div key={hospital.id} className="border-l-4 border-blue-500 bg-gray-50 p-3 rounded-r">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h4 className="font-medium text-gray-800">{hospital.name}</h4>
-                                        {hospital.rating && (
-                                            <span className="text-sm text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
-                                                ⭐ {hospital.rating}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-2">
-                                        📍 {hospital.address}
-                                    </p>
-                                    <div className="flex items-center justify-between flex-wrap gap-2">
-                                        {hospital.distance && (
-                                            <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                🚗 {hospital.distance}
-                                            </span>
-                                        )}
-                                        {hospital.hospitalType && (
-                                            <span className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
-                                                🏷️ {hospital.hospitalType}
-                                            </span>
-                                        )}
-                                        {hospital.phone && (
-                                            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                📞 {hospital.phone}
-                                            </span>
-                                        )}
-                                        {hospital.isOpen !== undefined && (
-                                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${hospital.isOpen
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                {hospital.isOpen ? '🟢 Buka' : '🔴 Tutup'}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* No hospitals found */}
-                {!isLoadingHospitals && hospitals.length === 0 && (
-                    <div className="bg-white rounded-lg shadow-md p-6 text-center">
-                        <div className="text-gray-400 text-4xl mb-4">🏥</div>
-                        <p className="text-gray-600 mb-2">No hospitals found</p>
-                        <p className="text-sm text-gray-500">Try changing the location or check your internet connection</p>
-                    </div>
-                )}
+                {/* Hospital List Component */}
+                <HospitalList
+                    hospitals={hospitals}
+                    isLoadingHospitals={isLoadingHospitals}
+                    useRealLocation={useRealLocation}
+                />
             </div>
         </div>
     );

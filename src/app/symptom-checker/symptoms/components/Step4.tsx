@@ -206,23 +206,23 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
                     ) : hospitals.length > 0 ? (
                         <div className="space-y-4 max-h-[500px] overflow-y-auto">
                             {hospitals.map(h => (
-    <a
-        key={h.id}
-        href={h.mapsByName}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block p-4 border rounded-lg bg-gray-50 hover:shadow-md transition cursor-pointer"
-    >
-        <h3 className="font-bold text-lg text-blue-700">{h.name}</h3>
-        <p className="text-gray-600">{h.address}</p>
-        {h.distance && <p className="text-sm text-gray-500">📍 {h.distance}</p>}
-        {h.phone && <p className="text-sm">📞 {h.phone}</p>}
-        {h.website && (
-            <span className="text-sm text-blue-500">🌐 Website</span>
-        )}
-        <p className="text-xs text-gray-500 mt-1">{h.hospitalType}</p>
-    </a>
-))}
+                                <a
+                                    key={h.id}
+                                    href={h.mapsByName}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block p-4 border rounded-lg bg-gray-50 hover:shadow-md transition cursor-pointer"
+                                >
+                                    <h3 className="font-bold text-lg text-blue-700">{h.name}</h3>
+                                    <p className="text-gray-600">{h.address}</p>
+                                    {h.distance && <p className="text-sm text-gray-500">📍 {h.distance}</p>}
+                                    {h.phone && <p className="text-sm">📞 {h.phone}</p>}
+                                    {h.website && (
+                                        <span className="text-sm text-blue-500">🌐 Website</span>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">{h.hospitalType}</p>
+                                </a>
+                            ))}
 
 
                         </div>
