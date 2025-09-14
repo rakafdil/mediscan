@@ -7,8 +7,13 @@ import { ProfileData } from '../app/account/types'
 export const useProfileData = (user: User | null) => {
     const [profileData, setProfileData] = useState<ProfileData>({
         full_name: null,
-        username: null
+        username: null,
+        age: null,
+        gender: null,
+        height: null,
+        weight: null
     })
+
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const supabase = createClient()
@@ -22,7 +27,7 @@ export const useProfileData = (user: User | null) => {
 
             const { data, error: fetchError, status } = await supabase
                 .from('user')
-                .select('full_name, username')
+                .select('full_name, username, age, gender, height, weight')
                 .eq('id', user.id)
                 .single()
 
@@ -33,7 +38,11 @@ export const useProfileData = (user: User | null) => {
             if (data) {
                 setProfileData({
                     full_name: data.full_name || null,
-                    username: data.username || null
+                    username: data.username || null,
+                    age: data.age || null,
+                    gender: data.gender || null,
+                    height: data.height || null,
+                    weight: data.weight || null
                 })
             }
         } catch (err) {
@@ -60,6 +69,8 @@ export const useProfileData = (user: User | null) => {
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', user.id)
+
+            console.log("UPDATE ERROR ===>", updateError);
 
             if (updateError) throw updateError
 

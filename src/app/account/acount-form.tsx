@@ -82,19 +82,19 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
 
 
-    const removeDisease = (index: number) => {
-        medicalHook.removeDisease(index);
+    const removeDisease = (item: string) => {
+        medicalHook.removeDisease(item);
     }
 
-    const removeAllergy = (index: number) => {
-        medicalHook.removeAllergy(index)
+    const removeAllergy = (item: string) => {
+        medicalHook.removeAllergy(item)
     }
 
 
     const updateField = (field: keyof CompleteProfile, value: string | number | null) => {
-        if (['full_name', 'username'].includes(field)) {
+        if (['full_name', 'username', 'age', 'gender', 'height', 'weight'].includes(field)) {
             profileHook.setProfileData(prev => ({ ...prev, [field]: value }))
-        } else if (['street', 'city', 'state', 'postal_code', 'country', 'lon', 'lat'].includes(field)) {
+        } else if (['street', 'city', 'state', 'country', 'lon', 'lat'].includes(field)) {
             locationHook.setLocationData(prev => ({ ...prev, [field]: value }))
         }
     }
@@ -148,7 +148,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="min-h-screen py-8 px-4">
             <div className="max-w-4xl mx-auto">
                 <ProfileHeader username={profile.username} />
 

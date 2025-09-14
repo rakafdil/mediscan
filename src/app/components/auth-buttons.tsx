@@ -11,7 +11,7 @@ import useUser from "@/hooks/useUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-regular-svg-icons";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { createClient } from "../utils/supabase/client";
 
@@ -19,6 +19,19 @@ export default function AuthButton() {
   const { user, loading } = useUser();
   const pathname = usePathname();
   const [open, setOpen] = useState(false)
+  const navbarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (open && navbarRef.current && !navbarRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
 
   const supabase = createClient();
 
@@ -33,11 +46,12 @@ export default function AuthButton() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     Promise.resolve().then(() => window.location.href = '/login')
+
   }
 
   if (user) {
     return (
-      <div className="">
+      <div className="" ref={navbarRef}>
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
@@ -50,12 +64,16 @@ export default function AuthButton() {
             <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white shadow-lg ring-1 ring-black/10 z-50">
               <Link
                 href="/account"
+                onClick={() => setOpen(false)}
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Profile
               </Link>
               <button
-                onClick={handleLogout}
+                onClick={async () => {
+                  await handleLogout();
+                  setOpen(false);
+                }}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Sign out

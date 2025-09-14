@@ -30,6 +30,7 @@ const EditableList: React.FC<EditableListProps> = ({
     const [showAdd, setShowAdd] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editValue, setEditValue] = useState("");
+    const safeItems = Array.isArray(items) ? items : [];
 
     const handleAdd = () => {
         if (input.trim() === "") return;
@@ -71,7 +72,7 @@ const EditableList: React.FC<EditableListProps> = ({
         <div className='flex flex-col items-center bg-gradient-to-bl from-slate-200 to-sky-50 w-full h-120 rounded-2xl p-10 gap-10 border border-blue-200'>
             <div className='flex-1 overflow-y-auto max-h-80 px-4 w-full py-5'>
                 <ul className='space-y-4'>
-                    {items
+                    {safeItems
                         .filter(item => item.trim() !== "")
                         .map((item, i) => (
                             <li
@@ -148,7 +149,7 @@ const EditableList: React.FC<EditableListProps> = ({
                         ))}
                 </ul>
 
-                {items.filter(item => item.trim() !== "").length === 0 && (
+                {safeItems.filter(item => item.trim() !== "").length === 0 && (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                             <FontAwesomeIcon icon={faPlusSquare} size="2x" className="text-gray-400" />

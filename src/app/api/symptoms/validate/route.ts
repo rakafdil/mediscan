@@ -8,13 +8,15 @@ export async function POST(req: NextRequest) {
   const userComplication: UserComplication = {
     gender: body.gender,
     age: body.age,
+    height: body.height,
+    weight: body.weight,
     symptoms: body.symptoms,
     histories: body.histories,
     location: body.location
   }
 
   const messages = `{
-        "user_data": {age: "${userComplication.age}", gender: "${userComplication.gender}", location: "${userComplication.location}", histories: "${userComplication.histories}"},
+        "user_data": {age: "${userComplication.age}", gender: "${userComplication.gender}", height: "${userComplication.height}, weight: "${userComplication.weight}" "location: "${userComplication.location}", histories: "${userComplication.histories}"},
         "user_complication":"${userComplication.symptoms}"
       }
 

@@ -10,6 +10,11 @@ export interface ScanHistory {
 export interface ProfileData {
     full_name: string | null
     username: string | null
+    age: number | null
+    updated_at?: string | null
+    gender: string | null
+    height: number | null
+    weight: number | null
 }
 
 export interface LocationData {
@@ -17,6 +22,7 @@ export interface LocationData {
     city: string | null
     state: string | null
     country: string | null
+    updated_at?: string | null
     lon: number | null
     lat: number | null
 }

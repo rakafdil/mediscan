@@ -1,3 +1,5 @@
+import { MedicalHistoryData, ScanHistory } from '@/app/account/types';
+
 export interface DataValidate {
     response_for_user: string;
     symptoms: string[];
@@ -11,7 +13,7 @@ export interface Disease {
 }
 
 export interface PredictionResult {
-    result: Disease[];
+    result: ScanHistory;
 }
 
 export interface ValidateResult {
@@ -23,8 +25,10 @@ export interface ValidateResult {
 export interface FormData {
     gender: string;
     age: string;
+    height: string;
+    weight: string;
     symptoms: string;
-    histories: string[];
+    histories: MedicalHistoryData;
     location: string;
     result_validate: ValidateResult;
     result_prediction: PredictionResult | null;
@@ -33,6 +37,8 @@ export interface FormData {
 export interface UserComplication {
     gender: string
     age: string
+    height: string
+    weight: string
     symptoms: string
     histories: string
     location: string

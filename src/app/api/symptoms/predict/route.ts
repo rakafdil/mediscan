@@ -10,6 +10,8 @@ export async function POST(req: NextRequest) {
         const userComplication: UserComplication = {
             gender: body.gender,
             age: body.age,
+            height: body.height,
+            weight: body.weight,
             symptoms: body.symptoms,
             histories: body.histories,
             location: body.location
