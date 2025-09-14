@@ -18,16 +18,19 @@ export const useAllProfileData = (user: User | null) => {
         ...profileHook.profileData,
         ...locationHook.locationData,
         ...medicalHook.medicalData,
-        scan_history: scanHook.scanHistory
+        scan_history: scanHook.scanHistory || []
     }
 
     const updateAllProfile = async () => {
-        const results = await Promise.allSettled([
-            profileHook.updateProfileData(profileHook.profileData),
-            locationHook.updateLocationData(locationHook.locationData),
-            medicalHook.updateMedicalData(medicalHook.medicalData),
-            scanHook.updateScanHistory(scanHook.scanHistory)
-        ])
+        const updatePromises = [
+            profileHook.updateProfileData(profileHook.profileData)
+        ]
+
+        if (locationHook.locationData) {
+            updatePromises.push(locationHook.updateLocationData(locationHook.locationData))
+        }
+
+        const results = await Promise.allSettled(updatePromises)
 
         const allSuccessful = results.every(result =>
             result.status === 'fulfilled' && result.value === true

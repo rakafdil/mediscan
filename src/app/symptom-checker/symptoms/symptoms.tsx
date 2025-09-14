@@ -1,15 +1,24 @@
 
 
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormData } from './types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+
 import Step1 from './components/Step1';
 import Step2 from './components/Step2';
 import Step3 from './components/Step3';
 import Step4 from './components/Step4';
+
 import Link from 'next/link';
+
+import { useProfileData } from '@/hooks/useProfileData';
+import { useLocationData } from '@/hooks/useLocationData';
+import { useMedicalHistoryData } from '@/hooks/useMedicalHistoryData';
+import { createClient } from '@/app/utils/supabase/client';
+import { type User } from '@supabase/supabase-js';
+import { useAllProfileData } from '@/hooks/useAllProfileData';
 
 const stepName = [
     {
@@ -34,15 +43,31 @@ const stepName = [
     },
 ]
 
-const DiagnosisFlow: React.FC = () => {
+const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const supabase = createClient();
+
+    const {
+        profile,
+        error,
+        updateAll,
+        profileHook,
+        locationHook,
+        medicalHook,
+        scanHook
+    } = useAllProfileData(user)
 
     const [formData, setFormData] = useState<FormData>({
         gender: "",
         age: "",
+        height: "",
+        weight: "",
         symptoms: "",
-        histories: [],
+        histories: {
+            allergies: [],
+            diseases: []
+        },
         location: "",
         result_validate: {
             response_for_user: "",
@@ -54,8 +79,63 @@ const DiagnosisFlow: React.FC = () => {
         }
     });
 
+    useEffect(() => {
+        if (!medicalHook) return;
+
+        const { allergies, diseases } = medicalHook.medicalData;
+
+        setFormData(prev => {
+            if (
+                JSON.stringify(prev.histories.allergies) === JSON.stringify(allergies) &&
+                JSON.stringify(prev.histories.diseases) === JSON.stringify(diseases)
+            ) {
+                return prev;
+            }
+            return {
+                ...prev,
+                histories: {
+                    allergies,
+                    diseases
+                }
+            };
+        });
+    }, [medicalHook?.medicalData]);
+
+    useEffect(() => {
+        if (!profileHook) return;
+
+        const { age, gender, height, weight } = profileHook.profileData;
+
+        setFormData(prev => {
+            const ageString = age ? age.toString() : "";
+            const genderString = gender ? gender.toString() : "";
+            const heightString = height ? height.toString() : "";
+            const weightString = weight ? weight.toString() : "";
+
+            if (
+                prev.age === ageString &&
+                prev.gender === genderString &&
+                prev.height === heightString &&
+                prev.weight === weightString
+            ) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                age: ageString,
+                gender: genderString,
+                height: heightString,
+                weight: weightString,
+            };
+        });
+    }, [profileHook?.profileData]);
+
     const nextStep = () => setStep((prev) => prev + 1);
     const prevStep = () => setStep((prev) => prev - 1);
+    const saveData = () => {
+
+    };
 
     const handleBack = () => {
         const hasData = formData.gender !== "" ||

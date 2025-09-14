@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StepContainer, BackButton, NextButton } from './CommonComponents';
 import { Disease } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faNewspaper, faHospital, faSearch, faExternalLinkAlt, faSpinner, faMapMarkerAlt, faPhone, faGlobe } from '@fortawesome/free-solid-svg-icons';
+import { faNewspaper, faHospital, faSearch, faExternalLinkAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 interface Step4Props {
     onNext: () => void;

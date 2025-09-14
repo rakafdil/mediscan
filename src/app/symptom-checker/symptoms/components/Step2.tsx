@@ -30,6 +30,8 @@ const Step2: React.FC<Step2Props> = ({
             const data = await apiService.validateSymptoms(
                 formData.gender,
                 formData.age,
+                formData.height,
+                formData.weight,
                 formData.symptoms,
                 formData.histories,
                 formData.location
@@ -58,6 +60,8 @@ const Step2: React.FC<Step2Props> = ({
             const data = await apiService.predictDisease(
                 formData.gender,
                 formData.age,
+                formData.height,
+                formData.weight,
                 formData.result_validate.symptoms,
                 formData.histories,
                 formData.location

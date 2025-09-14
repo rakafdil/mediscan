@@ -62,62 +62,176 @@ export const useMedicalHistoryData = (user: User | null) => {
         } finally {
             setLoading(false)
         }
+
     }, [user?.id, supabase])
 
     useEffect(() => {
         fetchMedicalData()
     }, [fetchMedicalData])
 
-    const updateMedicalData = useCallback(async (updates: Partial<MedicalHistoryData>) => {
-        if (!user?.id) return false
-
+    const addAllergy = useCallback(async (allergyName: string) => {
+        if (!user?.id) return false;
         try {
-            const { error: updateError } = await supabase
-                .from('user')
-                .update({
-                    ...updates,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', user.id)
+            const { data: existingAllergy, error: selectError } = await supabase
+                .from("allergy")
+                .select("allergy_id, allergy_name")
+                .eq("allergy_name", allergyName)
+                .single();
 
-            if (updateError) throw updateError
+            if (selectError && selectError.code !== "PGRST116") {
+                throw selectError;
+            }
 
-            setMedicalData(prev => ({ ...prev, ...updates }))
-            return true
+            let allergyId: number;
+
+            if (!existingAllergy) {
+                const { data: newAllergy, error: insertError } = await supabase
+                    .from("allergy")
+                    .insert({ allergy_name: allergyName })
+                    .select("allergy_id")
+                    .single();
+
+                if (insertError) throw insertError;
+                allergyId = newAllergy.allergy_id;
+            } else {
+                allergyId = existingAllergy.allergy_id;
+            }
+
+            const { error: userAllergyError } = await supabase
+                .from("user_allergies")
+                .insert({
+                    id: user.id,
+                    allergy_id: allergyId,
+                });
+
+            if (userAllergyError) throw userAllergyError;
+
+            setMedicalData(prev => ({
+                ...prev,
+                allergies: [...prev.allergies, allergyName],
+            }));
+
+            return true;
         } catch (err) {
-            console.error('Error updating medical data:', err)
-            setError('Failed to update medical data')
-            return false
+            console.error("Error adding allergy:", err);
+            setError("Failed to add allergy");
+            return false;
         }
-    }, [user?.id, supabase])
+    }, [user?.id, supabase]);
 
-    const addDisease = useCallback((disease: string) => {
-        setMedicalData(prev => ({
-            ...prev,
-            diseases: [...prev.diseases, disease]
-        }))
-    }, [])
+    const removeAllergy = useCallback(async (allergyName: string) => {
+        if (!user?.id) return false;
+        try {
+            const { data: allergyData } = await supabase
+                .from("allergy")
+                .select("allergy_id, allergy_name")
+                .eq("allergy_name", allergyName)
+                .single();
 
-    const removeDisease = useCallback((index: number) => {
-        setMedicalData(prev => ({
-            ...prev,
-            diseases: prev.diseases.filter((_, i) => i !== index)
-        }))
-    }, [])
+            const { error } = await supabase
+                .from("user_allergies")
+                .delete()
+                .eq("id", user.id)
+                .eq("allergy_id", allergyData?.allergy_id);
 
-    const addAllergy = useCallback((allergy: string) => {
-        setMedicalData(prev => ({
-            ...prev,
-            allergies: [...prev.allergies, allergy]
-        }))
-    }, [])
+            if (error) throw error;
 
-    const removeAllergy = useCallback((index: number) => {
-        setMedicalData(prev => ({
-            ...prev,
-            allergies: prev.allergies.filter((_, i) => i !== index)
-        }))
-    }, [])
+            if (allergyData?.allergy_name) {
+                setMedicalData(prev => ({
+                    ...prev,
+                    allergies: prev.allergies.filter(a => a !== allergyData.allergy_name),
+                }));
+            }
+        } catch (err) {
+            console.error("Error removing allergy:", err);
+            setError("Failed to remove allergy");
+            return false;
+        }
+    }, [user?.id, supabase]);
+
+    const addDisease = useCallback(async (diseaseName: string) => {
+        if (!user?.id) return false;
+        try {
+            const { data: existingDisease, error: selectError } = await supabase
+                .from("disease")
+                .select("disease_id, disease_name")
+                .eq("disease_name", diseaseName)
+                .single();
+
+            if (selectError && selectError.code !== "PGRST116") {
+                throw selectError;
+            }
+
+            let diseaseId: number;
+
+            if (!existingDisease) {
+                // belum ada -> insert baru
+                const { data: newDisease, error: insertError } = await supabase
+                    .from("disease")
+                    .insert({ disease_name: diseaseName })
+                    .select("disease_id")
+                    .single();
+
+                if (insertError) throw insertError;
+                diseaseId = newDisease.disease_id;
+            } else {
+                // udah ada
+                diseaseId = existingDisease.disease_id;
+            }
+
+            // assign ke user
+            const { error: userDiseaseError } = await supabase
+                .from("user_disease_history")
+                .insert({
+                    id: user.id,
+                    disease_id: diseaseId,
+                });
+
+            if (userDiseaseError) throw userDiseaseError;
+
+            // update state
+            setMedicalData(prev => ({
+                ...prev,
+                diseases: [...prev.diseases, diseaseName],
+            }));
+
+            return true;
+        } catch (err) {
+            console.error("Error adding disease:", err);
+            setError("Failed to add disease");
+            return false;
+        }
+    }, [user?.id, supabase]);
+
+    const removeDisease = useCallback(async (diseaseName: string) => {
+        if (!user?.id) return false;
+        try {
+            const { data: diseaseData } = await supabase
+                .from("disease")
+                .select("disease_id, disease_name")
+                .eq("disease_name", diseaseName)
+                .single();
+
+            const { error } = await supabase
+                .from("user_disease_history")
+                .delete()
+                .eq("id", user.id)
+                .eq("disease_id", diseaseData?.disease_id);
+            if (error) throw error;
+
+            if (diseaseData?.disease_name) {
+                setMedicalData(prev => ({
+                    ...prev,
+                    diseases: prev.diseases.filter(a => a !== diseaseData.disease_name),
+                }));
+            }
+        } catch (err) {
+            console.error("Error removing allergy:", err);
+            setError("Failed to remove allergy");
+            return false;
+        }
+    }, [user?.id, supabase]);
+
 
     return {
         medicalData,
@@ -125,7 +239,6 @@ export const useMedicalHistoryData = (user: User | null) => {
         loading,
         error,
         refetch: fetchMedicalData,
-        updateMedicalData,
         addDisease,
         removeDisease,
         addAllergy,

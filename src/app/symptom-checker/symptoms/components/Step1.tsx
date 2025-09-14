@@ -49,19 +49,19 @@ const Step1: React.FC<Step1Props> = ({
                             <div className='flex-1'>
                                 <input
                                     type="radio"
-                                    id="laki-laki"
+                                    id="male"
                                     name="gender"
-                                    value="Laki-laki"
-                                    checked={formData.gender === "Laki-laki"}
+                                    value="Male"
+                                    checked={formData.gender === "Male"}
                                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                    className="hidden peer/laki"
+                                    className="hidden peer/male"
                                     required
                                 />
                                 <label
-                                    htmlFor="laki-laki"
+                                    htmlFor="male"
                                     className="px-6 py-3 w-full h-14 md:h-16 border-2 font-medium text-lg md:text-2xl border-gray-400 text-gray-600 rounded-lg cursor-pointer
-              peer-checked/laki:bg-blue-500 peer-checked/laki:border-blue-500
-              peer-checked/laki:text-white transition flex items-center justify-center hover:bg-blue-200"
+              peer-checked/male:bg-blue-500 peer-checked/male:border-blue-500
+              peer-checked/male:text-white transition flex items-center justify-center hover:bg-blue-200"
                                 >
                                     Male
                                 </label>
@@ -71,58 +71,142 @@ const Step1: React.FC<Step1Props> = ({
                             <div className='flex-1'>
                                 <input
                                     type="radio"
-                                    id="perempuan"
+                                    id="female"
                                     name="gender"
-                                    value="Perempuan"
-                                    checked={formData.gender === "Perempuan"}
+                                    value="Female"
+                                    checked={formData.gender === "Female"}
                                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                    className="hidden peer/perempuan"
+                                    className="hidden peer/female"
                                     required
                                 />
                                 <label
-                                    htmlFor="perempuan"
+                                    htmlFor="female"
                                     className="px-6 py-3 w-full h-14 md:h-16 border-2 font-medium text-lg md:text-2xl border-gray-400 text-gray-600 rounded-lg cursor-pointer
-              peer-checked/perempuan:bg-blue-500 peer-checked/perempuan:border-blue-500
-              peer-checked/perempuan:text-white transition flex items-center justify-center hover:bg-blue-200"
+              peer-checked/female:bg-blue-500 peer-checked/female:border-blue-500
+              peer-checked/female:text-white transition flex items-center justify-center hover:bg-blue-200"
                                 >
                                     Female
                                 </label>
                             </div>
                         </div>
                     </div>
+
+                    <div className='flex flex-col items-center w-full md:w-1/2'>
+                        <label htmlFor="weight" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
+                            Weight
+                        </label>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="number"
+                                id="weight"
+                                name="weight"
+                                required={true}
+                                value={formData.weight}
+                                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                                min={0}
+                                placeholder="Insert here"
+                                className="w-full md:w-30 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
+                            />
+                            <span className='font-bold text-xl md:text-2xl text-gray-800'>kg</span>
+                        </div>
+                    </div>
+
+                    <div className='flex flex-col items-center w-full md:w-1/2'>
+                        <label htmlFor="height" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
+                            Height
+                        </label>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="number"
+                                id="height"
+                                name="height"
+                                required={true}
+                                value={formData.height}
+                                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                                min={0}
+                                placeholder="Insert here"
+                                className="w-full md:w-30 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
+                            />
+                            <span className='font-bold text-xl md:text-2xl text-gray-800'>cm</span>
+                        </div>
+                    </div>
                 </div>
             </StepContainer>
 
-            {/* History */}
             <StepContainer
                 className='flex flex-col items-center w-[90%] md:w-[80%] pb-10'
-                title='Disease / Allergy History'
+                title='Disease History'
                 titleClassName='text-xl md:text-2xl font-bold'
             >
                 <EditableList
-                    items={formData.histories}
+                    items={formData.histories.diseases || []}
                     onAdd={(item) => setFormData(prev => ({
                         ...prev,
-                        histories: [...prev.histories, item]
+                        histories: {
+                            ...prev.histories,
+                            diseases: [...(prev.histories.diseases || []), item]
+                        }
                     }))}
                     onUpdate={(index, newValue) => setFormData(prev => ({
                         ...prev,
-                        histories: prev.histories.map((hst, idx) =>
-                            idx === index ? newValue : hst)
+                        histories: {
+                            ...prev.histories,
+                            diseases: (prev.histories.diseases || []).map((hst, idx) =>
+                                idx === index ? newValue : hst)
+                        }
                     }))}
                     onDelete={(index) => setFormData(prev => ({
                         ...prev,
-                        histories: prev.histories.filter((_, idx) => idx !== index)
+                        histories: {
+                            ...prev.histories,
+                            diseases: (prev.histories.diseases || []).filter((_, idx) => idx !== index)
+                        }
                     }))}
-                    placeholder="Enter disease or allergy"
-                    addButtonText="Add Disease/Allergy"
-                    emptyStateTitle="No medical history added yet"
+                    placeholder="Enter disease"
+                    addButtonText="Add Disease"
+                    emptyStateTitle="No disease history added yet"
                     emptyStateSubtitle="Click the button below to add your first entry"
                     showConfirmDelete={true}
                 />
             </StepContainer>
 
-            {/* Next button (fixed responsiveness OFF) */}
+            <StepContainer
+                className='flex flex-col items-center w-[90%] md:w-[80%] pb-10'
+                title='Allergy History'
+                titleClassName='text-xl md:text-2xl font-bold'
+            >
+                <EditableList
+                    items={formData.histories.allergies || []}
+                    onAdd={(item) => setFormData(prev => ({
+                        ...prev,
+                        histories: {
+                            ...prev.histories,
+                            allergies: [...(prev.histories.allergies || []), item]
+                        }
+                    }))}
+                    onUpdate={(index, newValue) => setFormData(prev => ({
+                        ...prev,
+                        histories: {
+                            ...prev.histories,
+                            allergies: (prev.histories.allergies || []).map((hst, idx) =>
+                                idx === index ? newValue : hst)
+                        }
+                    }))}
+                    onDelete={(index) => setFormData(prev => ({
+                        ...prev,
+                        histories: {
+                            ...prev.histories,
+                            allergies: (prev.histories.allergies || []).filter((_, idx) => idx !== index)
+                        }
+                    }))}
+                    placeholder="Enter allergy"
+                    addButtonText="Add Allergy"
+                    emptyStateTitle="No allergy history added yet"
+                    emptyStateSubtitle="Click the button below to add your first entry"
+                    showConfirmDelete={true}
+                />
+            </StepContainer>
+
             <button
                 type="submit"
                 disabled={!formData.age || !formData.gender}

@@ -24,6 +24,13 @@ export default function LoginPageContent() {
         setError(searchParams.get('error'));
     }, [searchParams]);
 
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => setError(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
     const message = searchParams.get('message');
     const success = searchParams.get('success');
 
@@ -89,8 +96,7 @@ export default function LoginPageContent() {
     };
 
     const handleSubmit = async (formData: FormData) => {
-        setIsLoading(true);
-        console.log(isLoading);
+        Promise.resolve().then(() => setIsLoading(true));
         try {
             if (isLogin) {
                 await login(formData);

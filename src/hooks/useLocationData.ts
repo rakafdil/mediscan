@@ -1,105 +1,149 @@
-import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/app/utils/supabase/client'
-import { type User } from '@supabase/supabase-js'
-import { LocationData } from '../app/account/types'
+import { useCallback, useEffect, useState } from 'react';
+import { createClient } from '@/app/utils/supabase/client';
+import { type User } from '@supabase/supabase-js';
+import { LocationData } from '../app/account/types';
 
 export const useLocationData = (user: User | null) => {
-    const [locationData, setLocationData] = useState<LocationData>({
-        street: null,
-        city: null,
-        state: null,
-        country: null,
-        lon: null,
-        lat: null
-    })
-
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const supabase = createClient()
+    const [locationData, setLocationData] = useState<LocationData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const supabase = createClient();
 
     const fetchLocationData = useCallback(async () => {
-        if (!user?.id) return
+        if (!user?.id) return;
 
         try {
-            setLoading(true)
-            setError(null)
+            setLoading(true);
+            setError(null);
 
             const { data, error: fetchError, status } = await supabase
                 .from("user")
                 .select(`
                     id,
-                    full_name,
-                    location:location!location_location_id_fkey (
-                        country,
-                        state,
-                        city,
-                        street,
-                        lon,
-                        lat
+                    user_location(
+                        location(*)
                     )
                 `)
-                .eq("id", (await supabase.auth.getUser()).data.user?.id)
-                .single()
-            console.log(data, fetchError, status);
+                .eq("id", user.id)
+                .single();
+
             if (fetchError && status !== 406) {
-                throw fetchError
+                throw fetchError;
             }
 
-            if (data?.location) {
+            const location = data?.user_location?.[0]?.location;
+
+            if (location) {
                 setLocationData({
-                    street: data.location.street,
-                    city: data.location.city,
-                    state: data.location.state,
-                    country: data.location.country,
-                    lon: data.location.lon,
-                    lat: data.location.lat
-                })
+                    street: location.street,
+                    city: location.city,
+                    state: location.state,
+                    country: location.country,
+                    lon: location.lon,
+                    lat: location.lat,
+                    updated_at: location.updated_at
+                });
             } else {
-                setLocationData(null) // atau kasih default value
+                setLocationData(null);
             }
 
-        } catch (err) {
-            console.error('Error loading location data:', err)
-            setError('Failed to load location data')
+        } catch (err: any) {
+            console.error('Error loading location data:', err);
+            setError('Failed to load location data: ' + err.message);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
 
-    }, [user?.id, supabase])
+    }, [user?.id, supabase]);
 
     useEffect(() => {
-        fetchLocationData()
-    }, [fetchLocationData])
+        fetchLocationData();
+    }, [fetchLocationData]);
 
     const updateLocationData = useCallback(async (updates: Partial<LocationData>) => {
-        if (!user?.id) return false
+        if (!user?.id) {
+            setError("User not authenticated.");
+            return false;
+        }
+
+        setLoading(true);
+        setError(null);
 
         try {
-            const { error: updateError } = await supabase
-                .from('location')
-                .update({
-                    ...updates,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', user.id)
+            // Langkah 1: Cek apakah user sudah memiliki relasi lokasi
+            const { data: userLocationData, error: userLocationError } = await supabase
+                .from('user_location')
+                .select('location_id')
+                .eq('user_id', user.id)
+                .single();
 
-            if (updateError) throw updateError
+            if (userLocationError && userLocationError.code !== 'PGRST116') { // Abaikan error 'not found'
+                throw userLocationError;
+            }
 
-            setLocationData(prev => ({ ...prev, ...updates }))
-            return true
-        } catch (err) {
-            console.error('Error updating location data:', err)
-            setError('Failed to update location data')
-            return false
+            const locationId = userLocationData?.location_id;
+
+            // Langkah 2: Jika sudah ada (locationId ditemukan), UPDATE data di tabel location
+            if (locationId) {
+                const { error: updateError } = await supabase
+                    .from('location')
+                    .update({
+                        ...updates,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('location_id', locationId);
+
+                if (updateError) throw updateError;
+
+                // Langkah 3: Jika belum ada, buat record baru di `location` dan `user_location`
+            } else {
+                // 3a: Insert data ke tabel `location`
+                const { data: newLocation, error: insertLocationError } = await supabase
+                    .from('location')
+                    .insert({
+                        ...updates,
+                        updated_at: new Date().toISOString()
+                    })
+                    .select('location_id')
+                    .single();
+
+                if (insertLocationError) throw insertLocationError;
+                if (!newLocation) throw new Error("Failed to create new location entry.");
+
+                const newLocationId = newLocation.location_id;
+
+                // 3b: Insert relasi ke tabel `user_location`
+                const { error: insertUserLocationError } = await supabase
+                    .from('user_location')
+                    .insert({
+                        user_id: user.id,
+                        location_id: newLocationId
+                    });
+
+                if (insertUserLocationError) throw insertUserLocationError;
+            }
+
+            // Sukses, refetch data untuk memastikan UI sinkron
+            await fetchLocationData();
+            return true;
+
+        } catch (err: any) {
+            console.error("Error updating location data:", err);
+            setError("Failed to update location data: " + err.message);
+            return false;
+        } finally {
+            setLoading(false);
         }
-    }, [user?.id, supabase])
+    }, [user?.id, supabase, fetchLocationData]);
+
 
     return {
         locationData,
-        setLocationData,
         loading,
         error,
+        setLocationData,
         refetch: fetchLocationData,
         updateLocationData
-    }
+    };
 }
+

@@ -6,7 +6,7 @@ import ThemeSwitch from "./components/ThemeSwitch";
 import "./globals.css";
 import { DarkModeProvider } from "./ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
-
+import Loading from "./components/Loading";
 const josefin = Josefin_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],

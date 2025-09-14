@@ -32,7 +32,7 @@ export function useAuth() {
 
             if (session?.user) {
                 const { data: profile } = await supabase
-                    .from('profiles')
+                    .from('user')
                     .select('*')
                     .eq('id', session.user.id)
                     .single();
@@ -59,7 +59,7 @@ export function useAuth() {
             async (event, session) => {
                 if (event === 'SIGNED_IN' && session?.user) {
                     const { data: profile } = await supabase
-                        .from('profiles')
+                        .from('user')
                         .select('*')
                         .eq('id', session.user.id)
                         .single();
