@@ -13,7 +13,8 @@ export interface Disease {
 }
 
 export interface PredictionResult {
-    result: ScanHistory;
+    result: Disease[];
+    scan_timestamp: string;
 }
 
 export interface ValidateResult {

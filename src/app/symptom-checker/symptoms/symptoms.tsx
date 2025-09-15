@@ -19,6 +19,8 @@ import { useMedicalHistoryData } from '@/hooks/useMedicalHistoryData';
 import { createClient } from '@/app/utils/supabase/client';
 import { type User } from '@supabase/supabase-js';
 import { useAllProfileData } from '@/hooks/useAllProfileData';
+import { useScanHistoryData } from '@/hooks/useScanHistoryData';
+import { redirect, useRouter } from 'next/navigation';
 
 const stepName = [
     {
@@ -71,11 +73,25 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
         location: "",
         result_validate: {
             response_for_user: "",
-            symptoms: [],
+            symptoms: ["pusing"],
             symptoms_related: false
         },
         result_prediction: {
-            result: []
+            result: [
+                {
+                    disease: "abc",
+                    probability: 0.9,
+                    description: "abc",
+                    precautions: ["alskdjalksdj"],
+                },
+                {
+                    disease: "def",
+                    probability: 0.5,
+                    description: "def",
+                    precautions: ["alskdjalksdj", "lasjdflaksjd"],
+                }
+            ],
+            scan_timestamp: ""
         }
     });
 
@@ -133,8 +149,28 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
 
     const nextStep = () => setStep((prev) => prev + 1);
     const prevStep = () => setStep((prev) => prev - 1);
-    const saveData = () => {
 
+    const saveData = () => {
+        if (formData.result_prediction) {
+            setFormData(prev => ({
+                ...prev,
+                result_prediction: {
+                    result: prev.result_prediction?.result || [],
+                    scan_timestamp: new Date().toISOString()
+                }
+            }));
+
+            // Create updated formData with current timestamp
+            const updatedFormData = {
+                ...formData,
+                result_prediction: {
+                    ...formData.result_prediction,
+                    scan_timestamp: new Date().toISOString()
+                }
+            };
+
+            scanHook.addScanResult(updatedFormData.result_prediction, formData.result_validate.symptoms);
+        }
     };
 
     const handleBack = () => {
@@ -216,10 +252,10 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
             default:
                 return (
                     <Step4
-                        onNext={nextStep}
+                        onNext={saveData}
                         onBack={prevStep}
                         setStep={setStep}
-                        result={formData.result_prediction?.result}
+                        result={formData.result_prediction || undefined}
 
                     />
                 );

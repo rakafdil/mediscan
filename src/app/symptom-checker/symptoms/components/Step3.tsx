@@ -29,7 +29,6 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
     isOpen,
     onToggle
 }) => {
-    // Parse precautions if it's a string
     const parsedPrecautions = typeof precautions === 'string'
         ? JSON.parse(precautions)
         : precautions;
@@ -176,20 +175,27 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
                         ))
                     }
 
-                    {formData.result_prediction?.result && formData.result_prediction.result.length > 0 ? (
+                    {formData.result_prediction && formData.result_prediction.result.length > 0 ? (
                         <div className="space-y-3">
-                            {formData.result_prediction.result.filter(item => item.disease.trim() !== "").map((disease: Disease, index: number) => (
-                                <DiagnosisCard
-                                    key={index}
-                                    probability={disease.probability}
-                                    disease={disease.disease}
-                                    description={disease.description}
-                                    precautions={disease.precautions}
-                                    index={index}
-                                    isOpen={openCardIndex === index}
-                                    onToggle={() => handleCardToggle(index)}
-                                />
-                            ))}
+                            {formData.result_prediction.result
+                                .filter(item => item.disease.trim() !== "")
+                                .map((disease: Disease, index: number) => {
+                                    console.log(disease, index);
+                                    return (
+                                        <DiagnosisCard
+                                            key={index}
+                                            probability={disease.probability}
+                                            disease={disease.disease}
+                                            description={disease.description}
+                                            precautions={disease.precautions}
+                                            index={index}
+                                            isOpen={openCardIndex === index}
+                                            onToggle={() => handleCardToggle(index)}
+                                        />
+                                    );
+                                })}
+
+
                         </div>
                     ) : (
                         <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">

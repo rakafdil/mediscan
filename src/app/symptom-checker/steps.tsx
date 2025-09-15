@@ -82,7 +82,7 @@ export default function CarouselSlide() {
     const nextContentData = slides[(displayedContent + 1) % slides.length];
 
     return (
-        <div className="flex items-center justify-center min-h-[60vh] px-4 sm:px-10 md:px-20 mt-10 sm:mt-30 lg:mt-50 overflow-hidden">
+        <div className="flex items-center justify-center min-h-[60vh] px-4 sm:px-10 md:px-20 mt-10 sm:mt-30 lg:mt-40 overflow-hidden">
             <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 max-w-7xl w-full">
 
                 {/* Left Card */}

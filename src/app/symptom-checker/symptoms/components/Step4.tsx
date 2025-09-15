@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { StepContainer, BackButton, NextButton } from './CommonComponents';
-import { Disease } from '../types';
+import { Disease, PredictionResult } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faNewspaper, faHospital, faSearch, faExternalLinkAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 interface Step4Props {
     onNext: () => void;
     onBack: () => void;
-    result: Disease[] | undefined;
+    result: PredictionResult | undefined;
     setStep: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -47,9 +47,9 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
     const [errorHospital, setErrorHospital] = useState<string | null>(null);
 
     useEffect(() => {
-        if (result && result.length > 0 && !selectedDisease) {
-            setSelectedDisease(result[0].disease);
-            handleSearch(result[0].disease);
+        if (result && result.result.length > 0 && !selectedDisease) {
+            setSelectedDisease(result.result[0].disease);
+            handleSearch(result.result[0].disease);
         }
     }, [result]);
 
@@ -144,8 +144,8 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
                     {/* Disease Sidebar */}
                     <StepContainer className='w-1/3 bg-white shadow-lg rounded-2xl p-6' title='Select Disease'>
                         <div className='space-y-3'>
-                            {result && result.filter(item => item.disease.trim() !== "").length > 0 ? (
-                                result.filter(item => item.disease.trim() !== "").map((disease, index) => (
+                            {result && result.result.filter(item => item.disease.trim() !== "").length > 0 ? (
+                                result.result.filter(item => item.disease.trim() !== "").map((disease, index) => (
                                     <button
                                         key={disease.disease}
                                         onClick={() => handleSearch(disease.disease)}

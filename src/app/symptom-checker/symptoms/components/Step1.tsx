@@ -20,114 +20,115 @@ const Step1: React.FC<Step1Props> = ({
                 className='flex flex-col items-center max-w-7xl w-[80%]'
             >
                 {/* Age + Gender section */}
-                <div className="flex flex-col md:flex-row items-center justify-center pb-20 gap-10 w-full">
+                <div className="flex flex-col md:flex-col items-center justify-center pb-20 gap-10 w-full">
                     {/* Age */}
-                    <div className='flex flex-col items-center w-full md:w-1/2'>
-                        <label htmlFor="age" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
-                            Age
-                        </label>
-                        <input
-                            type="number"
-                            id="age"
-                            name="age"
-                            required={true}
-                            value={formData.age}
-                            onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                            min={0}
-                            placeholder="Insert here"
-                            className="w-full md:w-48 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
-                        />
-                    </div>
-
-                    {/* Gender */}
-                    <div className="flex flex-col items-center w-full md:w-1/2">
-                        <label className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
-                            Gender
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-                            {/* Male */}
-                            <div className='flex-1'>
-                                <input
-                                    type="radio"
-                                    id="male"
-                                    name="gender"
-                                    value="Male"
-                                    checked={formData.gender === "Male"}
-                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                    className="hidden peer/male"
-                                    required
-                                />
-                                <label
-                                    htmlFor="male"
-                                    className="px-6 py-3 w-full h-14 md:h-16 border-2 font-medium text-lg md:text-2xl border-gray-400 text-gray-600 rounded-lg cursor-pointer
-              peer-checked/male:bg-blue-500 peer-checked/male:border-blue-500
-              peer-checked/male:text-white transition flex items-center justify-center hover:bg-blue-200"
-                                >
-                                    Male
-                                </label>
-                            </div>
-
-                            {/* Female */}
-                            <div className='flex-1'>
-                                <input
-                                    type="radio"
-                                    id="female"
-                                    name="gender"
-                                    value="Female"
-                                    checked={formData.gender === "Female"}
-                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                    className="hidden peer/female"
-                                    required
-                                />
-                                <label
-                                    htmlFor="female"
-                                    className="px-6 py-3 w-full h-14 md:h-16 border-2 font-medium text-lg md:text-2xl border-gray-400 text-gray-600 rounded-lg cursor-pointer
-              peer-checked/female:bg-blue-500 peer-checked/female:border-blue-500
-              peer-checked/female:text-white transition flex items-center justify-center hover:bg-blue-200"
-                                >
-                                    Female
-                                </label>
+                    <div className="flex flex-row md:gap-20">
+                        <div className='flex flex-col items-center w-full md:w-70'>
+                            <label htmlFor="age" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
+                                Age
+                            </label>
+                            <input
+                                type="number"
+                                id="age"
+                                name="age"
+                                required={true}
+                                value={formData.age}
+                                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                                min={0}
+                                placeholder="Insert here"
+                                className="w-full md:w-56 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
+                            />
+                        </div>
+                        {/* Gender */}
+                        <div className="flex flex-col items-center w-full md:w-70">
+                            <label className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
+                                Gender
+                            </label>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
+                                {/* Male */}
+                                <div className='flex-1'>
+                                    <input
+                                        type="radio"
+                                        id="male"
+                                        name="gender"
+                                        value="Male"
+                                        checked={formData.gender === "Male"}
+                                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                        className="hidden peer/male"
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="male"
+                                        className="px-6 py-3 w-full h-14 md:h-16 border-2 font-medium text-lg md:text-2xl border-gray-400 text-gray-600 rounded-lg cursor-pointer
+                                      peer-checked/male:bg-blue-500 peer-checked/male:border-blue-500
+                                      peer-checked/male:text-white transition flex items-center justify-center hover:bg-blue-200"
+                                    >
+                                        Male
+                                    </label>
+                                </div>
+                                {/* Female */}
+                                <div className='flex-1'>
+                                    <input
+                                        type="radio"
+                                        id="female"
+                                        name="gender"
+                                        value="Female"
+                                        checked={formData.gender === "Female"}
+                                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                        className="hidden peer/female"
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="female"
+                                        className="px-6 py-3 w-full h-14 md:h-16 border-2 font-medium text-lg md:text-2xl border-gray-400 text-gray-600 rounded-lg cursor-pointer
+                                      peer-checked/female:bg-blue-500 peer-checked/female:border-blue-500
+                                      peer-checked/female:text-white transition flex items-center justify-center hover:bg-blue-200"
+                                    >
+                                        Female
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className='flex flex-col items-center w-full md:w-1/2'>
-                        <label htmlFor="weight" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
-                            Weight
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="number"
-                                id="weight"
-                                name="weight"
-                                required={true}
-                                value={formData.weight}
-                                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                                min={0}
-                                placeholder="Insert here"
-                                className="w-full md:w-30 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
-                            />
-                            <span className='font-bold text-xl md:text-2xl text-gray-800'>kg</span>
+                    <div className="flex flex-row md:gap-20">
+                        <div className='flex flex-col items-center w-full md:w-70'>
+                            <label htmlFor="weight" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
+                                Weight
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="number"
+                                    id="weight"
+                                    name="weight"
+                                    required={true}
+                                    value={formData.weight}
+                                    onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                                    min={0}
+                                    placeholder="Insert here"
+                                    className="w-full md:w-56 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
+                                />
+                                <span className='font-bold text-xl md:text-2xl text-gray-800'>kg</span>
+                            </div>
                         </div>
-                    </div>
-
-                    <div className='flex flex-col items-center w-full md:w-1/2'>
-                        <label htmlFor="height" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
-                            Height
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="number"
-                                id="height"
-                                name="height"
-                                required={true}
-                                value={formData.height}
-                                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                                min={0}
-                                placeholder="Insert here"
-                                className="w-full md:w-30 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
-                            />
-                            <span className='font-bold text-xl md:text-2xl text-gray-800'>cm</span>
+                        <div className='flex flex-col items-center w-full md:w-70'>
+                            <label htmlFor="height" className="font-bold text-xl md:text-2xl text-gray-800 mb-4">
+                                Height
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="number"
+                                    id="height"
+                                    name="height"
+                                    required={true}
+                                    value={formData.height}
+                                    onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                                    min={0}
+                                    placeholder="Insert here"
+                                    className="w-full md:w-56 h-14 md:h-16 px-4 md:px-6 text-lg md:text-2xl border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
+                                />
+                                <span className='font-bold text-xl md:text-2xl text-gray-800'>cm</span>
+                            </div>
                         </div>
                     </div>
                 </div>

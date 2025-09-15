@@ -12,9 +12,12 @@ const ScanHistoryTab: React.FC<ScanHistoryTabProps> = ({ profile }) => (
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Disease Scan History</h3>
         {profile.scan_history && profile.scan_history.length > 0 ? (
             <div className="space-y-4">
-                {profile.scan_history.map((scan, index) => (
-                    <ScanHistoryCard key={index} scan={scan} index={index} />
-                ))}
+                {profile.scan_history.map(
+                    (scan, index) => (
+                        <ScanHistoryCard key={index} scan={scan} index={index} ref={`/account/history?id=${scan.scan_id}`} />
+                    )
+                )
+                }
             </div>
         ) : (
             <div className="text-center py-12">

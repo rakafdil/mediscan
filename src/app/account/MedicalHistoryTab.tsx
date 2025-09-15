@@ -9,9 +9,9 @@ interface MedicalHistoryTabProps {
     newAllergy: string
     setNewAllergy: (value: string) => void
     addDisease: () => void
-    removeDisease: (index: number) => void
+    removeDisease: (index: string) => void
     addAllergy: () => void
-    removeAllergy: (index: number) => void
+    removeAllergy: (index: string) => void
 }
 
 const MedicalHistoryTab: React.FC<MedicalHistoryTabProps> = ({
