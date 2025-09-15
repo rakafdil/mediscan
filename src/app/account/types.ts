@@ -3,7 +3,11 @@ export interface ScanHistory {
     scan_timestamp: string
     probability: number
     precautions?: string
-    diseases?: { disease_name: string, probability: number }[]
+    diseases?: {
+        precaution: string,
+        disease_name: string,
+        probability: number
+    }[]
     scan_history_symptoms?: { symptom: { symptom_name: string } }[]
 }
 

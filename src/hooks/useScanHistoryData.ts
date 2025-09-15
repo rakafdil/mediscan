@@ -25,6 +25,7 @@ export const useScanHistoryData = (user: User | null) => {
                     age,
                     height,
                     weight,
+                    gender,
                     scan_history (
                         probability,
                         disease (
@@ -52,6 +53,10 @@ export const useScanHistoryData = (user: User | null) => {
             if (data && data.length > 0) {
                 const transformedData = data.map((scanEntry: any) => ({
                     scan_id: scanEntry.scan_id.toString(),
+                    age: scanEntry.age,
+                    height: scanEntry.height,
+                    weight: scanEntry.weight,
+                    gender: scanEntry.gender,
                     scan_timestamp: scanEntry.created_at,
                     // Ambil probability dari disease pertama atau rata-rata
                     probability: scanEntry.scan_history[0]?.probability || 0,

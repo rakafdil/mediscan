@@ -25,7 +25,7 @@ const ScanHistoryCard: React.FC<ScanHistoryCardProps> = ({ scan, index, ref }) =
                     href={ref}
                     className={`px-3 py-1 rounded-full text-sm font-medium text-blue-500 underline`}
                 >
-                    View more
+                    {"View more >"}
                 </Link>
             </div>
             <div>

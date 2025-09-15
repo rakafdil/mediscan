@@ -76,7 +76,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user, profile, update
                     <option value="Female">Female</option>
                 </select>
             </div>
-            <div className='col-span-2 mx-auto'>
+            <div className='col-span-2'>
                 <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-2">
                     Height
                 </label>
@@ -92,7 +92,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user, profile, update
                     <span>cm</span>
                 </div>
             </div>
-            <div className='col-span-2 mx-auto'>
+            <div className='col-span-2'>
                 <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">
                     Weight
                 </label>
