@@ -34,7 +34,8 @@ const Step2: React.FC<Step2Props> = ({
                 formData.weight,
                 formData.symptoms,
                 formData.histories,
-                formData.location
+                `${formData.location.city}, ${formData.location.country}`,
+                formData.weather
             );
 
             setFormData((prev) => ({
@@ -64,7 +65,8 @@ const Step2: React.FC<Step2Props> = ({
                 formData.weight,
                 formData.result_validate.symptoms,
                 formData.histories,
-                formData.location
+                `${formData.location.city}, ${formData.location.country}`,
+                formData.weather
             );
 
             setFormData((prev) => ({

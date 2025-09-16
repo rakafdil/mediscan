@@ -55,7 +55,7 @@ export default function AuthButton() {
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
-            className="flex items-center justify-center h-12 w-12 rounded-full transition-colors duration-200 bg-[#496687] text-white hover:bg-[#3a526c] font-semibold"
+            className="cursor-pointer flex items-center justify-center h-12 w-12 rounded-full transition-colors duration-200 bg-[#496687] text-white hover:bg-[#3a526c] font-semibold"
           >
             <FontAwesomeIcon icon={faUser} />
           </button>
@@ -74,7 +74,7 @@ export default function AuthButton() {
                   await handleLogout();
                   setOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="cursor-pointer block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Sign out
               </button>

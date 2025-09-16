@@ -1,4 +1,5 @@
 import { LocationData, MedicalHistoryData, ScanHistory } from '@/app/account/types';
+import { DailyWeatherFactors } from '@/hooks/getWeatherFactors';
 
 export interface DataValidate {
     response_for_user: string;
@@ -31,6 +32,7 @@ export interface FormData {
     symptoms: string;
     histories: MedicalHistoryData;
     location: LocationData;
+    weather: string;
     result_validate: ValidateResult;
     result_prediction: PredictionResult | null;
 }
@@ -43,4 +45,5 @@ export interface UserComplication {
     symptoms: string
     histories: string
     location: string
+    weather: DailyWeatherFactors
 }

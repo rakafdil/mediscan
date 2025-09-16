@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/app/utils/supabase/client'
 import { type User } from '@supabase/supabase-js'
 import { ScanHistory } from '../app/account/types'
-import { PredictionResult } from '@/app/symptom-checker/symptoms/types'
+import { FormData, PredictionResult } from '@/app/symptom-checker/symptoms/types'
 
 export const useScanHistoryData = (user: User | null) => {
     const [scanHistory, setScanHistory] = useState<ScanHistory[]>()
@@ -110,7 +110,7 @@ export const useScanHistoryData = (user: User | null) => {
 
     }, [user?.id, supabase])
 
-    const addScanResult = useCallback(async (scanResult: PredictionResult, symptoms: string[]) => {
+    const addScanResult = useCallback(async (scanResult: FormData, symptoms: string[]) => {
         if (!user?.id) return false
 
         try {
@@ -136,17 +136,17 @@ export const useScanHistoryData = (user: User | null) => {
                     scan_id: scanId,
                     user_id: user.id,
                     created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                    // TODO: Add age, height, weight from form data
-                    // age: formData.age,
-                    // height: formData.height,
-                    // weight: formData.weight
+                    updated_at: new Date().toISOString(),
+                    age: scanResult.age,
+                    height: scanResult.height,
+                    weight: scanResult.weight,
+                    gender: scanResult.gender
                 })
 
             if (userScanError) throw userScanError
 
             // 3. Process each result from the prediction
-            for (const result of scanResult.result) {
+            for (const result of scanResult.result_prediction?.result as PredictionResult['result']) {
                 console.log("result", result);
                 if (result.disease && result.disease.trim() !== "") {
                     // Handle disease

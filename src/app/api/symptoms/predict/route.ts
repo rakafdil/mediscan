@@ -1,65 +1,84 @@
 import { NextRequest, NextResponse } from "next/server";
 import { main } from "@/app/services/geminiServices";
 import { UserComplication } from "@/app/symptom-checker/symptoms/types";
+import { DailyWeatherFactors } from "@/hooks/getWeatherFactors";
+import { summarizeWeather } from "@/hooks/summarizeWeather";
 
 export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
-        console.log(body);
+    const body = await req.json();
+    console.log(body);
 
-        const userComplication: UserComplication = {
-            gender: body.gender,
-            age: body.age,
-            height: body.height,
-            weight: body.weight,
-            symptoms: body.symptoms,
-            histories: body.histories,
-            location: body.location
-        };
+    const userComplication: UserComplication = {
+        gender: body.gender,
+        age: body.age,
+        height: body.height,
+        weight: body.weight,
+        symptoms: body.symptoms,
+        histories: body.histories,
+        location: body.location,
+        weather: body.weather as DailyWeatherFactors,
+    };
 
-        const messages = `{
-    "user_data": {
-        age: "${userComplication.age}", 
-        gender: "${userComplication.gender}", 
-        location: "${userComplication.location}", 
-        histories: "${userComplication.histories}"},
-        height: "${userComplication.height} cm",
-        weight: "${userComplication.weight} kg",
-        "user_symptoms":"${userComplication.symptoms}"
-      }
+    const bmi = (Number(userComplication.weight) / ((Number(userComplication.height) / 100) ** 2)).toFixed(2);
 
-      You are a medical disease prediction assistant.
+    function getBMICategory(bmi: number) {
+        if (bmi < 18.5) return "Underweight";
+        if (bmi < 25) return "Normal";
+        if (bmi < 30) return "Overweight";
+        return "Obese";
+    }
+
+    const weatherSummary = userComplication.weather
+        ? summarizeWeather(userComplication.weather)
+        : "Weather data unavailable";
+
+    const messages = `{
+  "user_data": {
+    "age": "${userComplication.age}", 
+    "gender": "${userComplication.gender}", 
+    "location": "${userComplication.location}", 
+    "histories": "${userComplication.histories}",
+    "height": "${userComplication.height} cm",
+    "weight": "${userComplication.weight} kg",
+    "bmi": "${bmi}",
+    "bmi_category": "${getBMICategory(Number(bmi))}"
+  },
+  "user_symptoms": ${JSON.stringify(userComplication.symptoms)},
+  "weather_factors": "${weatherSummary}"
+}
+
+You are a professional medical disease prediction assistant.
+
 Your tasks:
-1. Predict as accurately as possible what diseases the user might have based on the symptoms they provide.
-2. Produce the results as many as possible for the user to consider.
-3. Consider the user_data to produce the best prediction.
-4. If additional medical knowledge is required, search the web for the most reliable and up-to-date information.
-5. Always respond in formal, easy-to-understand ${userComplication.location}.
-6. You are a strict JSON generator. Respond ONLY with valid JSON in the following format:
-      
+1. Predict the most likely diseases based on the user's symptoms, personal data, and weather factors.
+2. Provide multiple possible diseases (not just one) to help the user consider different conditions.
+3. Consider the user's BMI and medical history in the prediction.
+4. Always respond ONLY in valid JSON with the following format:
+
 {
-    "result": [
-        {
-            "disease": "string",        // the name of predicted disease
-            "probability": float,       // disease's probabilty from the symptoms
-            "description": "string",    // brief descriptions of the disease
-            "precautions": [            // list of precaution that user can do
-                "string",
-                "string"
-            ]
-        }
-    ]
+  "result": [
+    {
+      "disease": "string",        // predicted disease name
+      "probability": float,       // value between 0 and 1
+      "description": "string",    // short and clear description
+      "precautions": [            // recommended precautions
+        "string",
+        "string"
+      ]
+    }
+  ]
 }
 
 Rules:
-- Probability must be a decimal number between 0 and 1 (e.g., 0.85 for 85%).
-- The "result" array may contain more than one predicted disease.
-- All predictions must be relevant to the symptoms provided by the user.
-- Do not add unrelated diseases or information.
+- Probability must be between 0 and 1.
+- Only include diseases relevant to the given symptoms.
 - Do not output anything outside of the JSON.
-      `;
+- Keep description short and easy to understand.
+`;
 
+    try {
         const aiText = await main(messages);
+
         console.log("AI Response:", aiText);
 
         if (!aiText) {

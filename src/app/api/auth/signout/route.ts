@@ -2,20 +2,26 @@ import { createClient } from "@/app/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
+
+export async function GET(req: NextRequest) {
     const supabase = await createClient();
 
-    // Check if a user's logged in
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        Promise.resolve().then(() => window.location.href = '/login')
+
+    }
+
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
     if (user) {
-        await supabase.auth.signOut();
+        handleLogout();
     }
 
     revalidatePath("/", "layout");
-    return NextResponse.redirect(new URL("/login", req.url), {
+    return new NextResponse(null, {
         status: 302,
     });
 }

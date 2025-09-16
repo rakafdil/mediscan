@@ -1,7 +1,15 @@
 import { MedicalHistoryData } from '@/app/account/types';
 import { DataValidate, PredictionResult } from '../../symptom-checker/symptoms/types';
 
-export const validateSymptoms = async (gender: string, age: string, height: string, weight: string, symptoms: string, histories: MedicalHistoryData, location: string): Promise<DataValidate> => {
+export const validateSymptoms = async (gender: string,
+    age: string,
+    height: string,
+    weight: string,
+    symptoms: string,
+    histories: MedicalHistoryData,
+    location: string,
+    weather: string
+): Promise<DataValidate> => {
     const res = await fetch("/api/symptoms/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -12,7 +20,8 @@ export const validateSymptoms = async (gender: string, age: string, height: stri
             weight,
             histories,
             location,
-            symptoms
+            symptoms,
+            weather
         }),
     });
 
@@ -30,7 +39,8 @@ export const predictDisease = async (
     weight: string,
     symptoms: string[],
     histories: MedicalHistoryData,
-    location: string
+    location: string,
+    weather: string
 ): Promise<PredictionResult> => {
     const res = await fetch("/api/symptoms/predict", {
         method: "POST",
@@ -42,7 +52,8 @@ export const predictDisease = async (
             weight,
             histories,
             location,
-            symptoms
+            symptoms,
+            weather
         }),
     });
 

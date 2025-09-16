@@ -106,8 +106,9 @@ const Navbar: React.FC = () => {
                         </ul>
                     </div>
 
-                    <AuthButton />
-
+                    <div className="hidden md:flex ">
+                        <AuthButton />
+                    </div>
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden">
@@ -159,7 +160,7 @@ const Navbar: React.FC = () => {
                                             />
                                         </li>
                                     ))}
-                                    <li className="w-[45%] text-center">
+                                    <li className="">
                                         <AuthButton />
                                     </li>
                                 </ul>

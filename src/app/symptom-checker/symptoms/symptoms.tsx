@@ -21,6 +21,7 @@ import { type User } from '@supabase/supabase-js';
 import { useAllProfileData } from '@/hooks/useAllProfileData';
 import { useScanHistoryData } from '@/hooks/useScanHistoryData';
 import { redirect, useRouter } from 'next/navigation';
+import { getDailyWeatherFactors } from '@/hooks/getWeatherFactors';
 
 const stepName = [
     {
@@ -78,6 +79,7 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
             lon: 0,
             lat: 0
         },
+        weather: "",
         result_validate: {
             response_for_user: "",
             symptoms: [],
@@ -88,6 +90,25 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
             scan_timestamp: ""
         }
     });
+
+    useEffect(() => {
+        const fetchWeatherData = async () => {
+            if (formData.location.lat && formData.location.lon) {
+                const weather = await getDailyWeatherFactors(formData.location.lat, formData.location.lon);
+
+                const weatherString = JSON.stringify(weather);
+
+                setFormData((prev) => (
+                    {
+                        ...prev,
+                        weather: weatherString
+                    }
+                ))
+            }
+        };
+
+        fetchWeatherData();
+    }, [formData.location.lat, formData.location.lon]);
 
     useEffect(() => {
         if (!medicalHook) return;
@@ -209,7 +230,7 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
                 }
             };
 
-            scanHook.addScanResult(updatedFormData.result_prediction, formData.result_validate.symptoms);
+            scanHook.addScanResult(updatedFormData, formData.result_validate.symptoms);
         }
     };
 
