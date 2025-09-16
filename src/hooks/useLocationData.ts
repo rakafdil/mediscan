@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/app/utils/supabase/client';
 import { type User } from '@supabase/supabase-js';
 import { LocationData } from '../app/account/types';
+import { useSearchLocationData } from './useSearchLocation';
 
 export const useLocationData = (user: User | null) => {
     const [locationData, setLocationData] = useState<LocationData | null>(null);
@@ -70,20 +71,40 @@ export const useLocationData = (user: User | null) => {
         setError(null);
 
         try {
-            // Langkah 1: Cek apakah user sudah memiliki relasi lokasi
             const { data: userLocationData, error: userLocationError } = await supabase
                 .from('user_location')
                 .select('location_id')
                 .eq('user_id', user.id)
                 .single();
 
-            if (userLocationError && userLocationError.code !== 'PGRST116') { // Abaikan error 'not found'
+            if (userLocationError && userLocationError.code !== 'PGRST116') {
                 throw userLocationError;
             }
 
             const locationId = userLocationData?.location_id;
 
-            // Langkah 2: Jika sudah ada (locationId ditemukan), UPDATE data di tabel location
+            if (!updates.country) {
+                updates.lat = null;
+                updates.lon = null;
+            } else if (!updates.state || !updates.city) {
+                const countryResponse = await fetch(`/api/regions?type=coordinates&country=${updates.country}`);
+                const countryData = await countryResponse.json();
+                updates.lat = countryData.latitude;
+                updates.lon = countryData.longitude;
+            } else if (!updates.city) {
+                const stateResponse = await fetch(`/api/regions?type=coordinates&country=${updates.country}&state=${updates.state}`);
+                const stateData = await stateResponse.json();
+                updates.lat = stateData.latitude;
+                updates.lon = stateData.longitude;
+            } else {
+                const cityResponse = await fetch(
+                    `/api/regions?type=coordinates&country=${updates.country}&state=${updates.state}&city=${updates.city}`
+                );
+                const coords = await cityResponse.json();
+                updates.lat = coords.latitude;
+                updates.lon = coords.longitude;
+            }
+
             if (locationId) {
                 const { error: updateError } = await supabase
                     .from('location')
@@ -95,9 +116,7 @@ export const useLocationData = (user: User | null) => {
 
                 if (updateError) throw updateError;
 
-                // Langkah 3: Jika belum ada, buat record baru di `location` dan `user_location`
             } else {
-                // 3a: Insert data ke tabel `location`
                 const { data: newLocation, error: insertLocationError } = await supabase
                     .from('location')
                     .insert({
@@ -112,7 +131,6 @@ export const useLocationData = (user: User | null) => {
 
                 const newLocationId = newLocation.location_id;
 
-                // 3b: Insert relasi ke tabel `user_location`
                 const { error: insertUserLocationError } = await supabase
                     .from('user_location')
                     .insert({
@@ -123,7 +141,6 @@ export const useLocationData = (user: User | null) => {
                 if (insertUserLocationError) throw insertUserLocationError;
             }
 
-            // Sukses, refetch data untuk memastikan UI sinkron
             await fetchLocationData();
             return true;
 

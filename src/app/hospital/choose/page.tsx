@@ -79,8 +79,8 @@ const ChooseHospital = () => {
                         onChange={(e) => setSelectedCountry(e.target.value)}
                     >
                         <option value="">Select Country</option>
-                        {countries.map((c) => (
-                            <option key={c.iso2} value={c.iso2}>
+                        {countries.map((c, index) => (
+                            <option key={index} value={c.iso2}>
                                 {c.name}
                             </option>
                         ))}
@@ -94,8 +94,8 @@ const ChooseHospital = () => {
                         disabled={!states.length}
                     >
                         <option value="">Select State</option>
-                        {states.map((s) => (
-                            <option key={s.iso2} value={s.iso2}>
+                        {states.map((s, index) => (
+                            <option key={index} value={s.iso2}>
                                 {s.name}
                             </option>
                         ))}
@@ -109,8 +109,8 @@ const ChooseHospital = () => {
                         disabled={!cities.length}
                     >
                         <option value="">Select City</option>
-                        {cities.map((c) => (
-                            <option key={c.iso2} value={c.iso2}>
+                        {cities.map((c, index) => (
+                            <option key={index} value={c.iso2}>
                                 {c.name}
                             </option>
                         ))}

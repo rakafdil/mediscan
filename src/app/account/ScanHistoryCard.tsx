@@ -19,7 +19,7 @@ const ScanHistoryCard: React.FC<ScanHistoryCardProps> = ({ scan, index, ref }) =
         <div key={index} className="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <div className="flex justify-between items-start mb-4">
                 <h4 className="text-xl font-semibold text-gray-900">
-                    {dayjs(scan.scan_timestamp).tz(userTimezone).locale('id').format('dddd, DD MMMM YYYY - HH:mm:ss')}
+                    {dayjs(scan.scan_timestamp).tz(userTimezone).locale('en').format('dddd, DD MMMM YYYY - HH:mm:ss')}
                 </h4>
                 <Link
                     href={ref}

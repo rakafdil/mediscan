@@ -16,7 +16,13 @@ export async function POST(req: NextRequest) {
   }
 
   const messages = `{
-        "user_data": {age: "${userComplication.age}", gender: "${userComplication.gender}", height: "${userComplication.height}, weight: "${userComplication.weight}" "location: "${userComplication.location}", histories: "${userComplication.histories}"},
+        "user_data": {
+        "age": "${userComplication.age}", 
+        "gender": "${userComplication.gender}", 
+        "height": "${userComplication.height}, 
+        "weight": "${userComplication.weight}",
+        "location": "${userComplication.location}", 
+        "histories": "${userComplication.histories}"},
         "user_complication":"${userComplication.symptoms}"
       }
 
@@ -24,7 +30,8 @@ export async function POST(req: NextRequest) {
       1. Validate if the user is providing their symptoms/diagnosis.
       2. If valid, respond by politely asking *only* about the symptoms they have already mentioned — no new symptoms should be introduced.
       3. Always use formal, easy-to-understand language in the "response_for_user".
-      4. Always respond strictly in JSON format as follows:
+      4. Consider the user_data to produce the best response.
+      5. Always respond strictly in JSON format as follows:
       {
         "response_for_user": "string",
         "symptoms": ["string", "string", "..."],

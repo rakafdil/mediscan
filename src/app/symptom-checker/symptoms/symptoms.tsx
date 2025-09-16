@@ -70,27 +70,21 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
             allergies: [],
             diseases: []
         },
-        location: "",
+        location: {
+            street: "",
+            city: "",
+            state: "",
+            country: "",
+            lon: 0,
+            lat: 0
+        },
         result_validate: {
             response_for_user: "",
-            symptoms: ["pusing"],
+            symptoms: [],
             symptoms_related: false
         },
         result_prediction: {
-            result: [
-                {
-                    disease: "abc",
-                    probability: 0.9,
-                    description: "abc",
-                    precautions: ["alskdjalksdj"],
-                },
-                {
-                    disease: "def",
-                    probability: 0.5,
-                    description: "def",
-                    precautions: ["alskdjalksdj", "lasjdflaksjd"],
-                }
-            ],
+            result: [],
             scan_timestamp: ""
         }
     });
@@ -146,6 +140,52 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
             };
         });
     }, [profileHook?.profileData]);
+
+    useEffect(() => {
+        console.log("form data", locationHook?.locationData)
+        if (!locationHook?.locationData) return;
+
+        const {
+            street,
+            city,
+            state,
+            country,
+            lon,
+            lat
+        } = locationHook.locationData;
+
+        setFormData(prev => {
+            const streetString = street ? street.toString() : "";
+            const cityString = city ? city.toString() : "";
+            const stateString = state ? state.toString() : "";
+            const countryString = country ? country.toString() : "";
+            const lonNumber = lon ? Number(lon) : 0;
+            const latNumber = lat ? Number(lat) : 0;
+
+            if (
+                prev.location.street === streetString &&
+                prev.location.city === cityString &&
+                prev.location.state === stateString &&
+                prev.location.country === countryString &&
+                prev.location.lon === lonNumber &&
+                prev.location.lat === latNumber
+            ) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                location: {
+                    country: countryString,
+                    street: streetString,
+                    city: cityString,
+                    state: stateString,
+                    lon: lonNumber,
+                    lat: latNumber
+                }
+            };
+        });
+    }, [locationHook?.locationData]);
 
     const nextStep = () => setStep((prev) => prev + 1);
     const prevStep = () => setStep((prev) => prev - 1);

@@ -18,17 +18,24 @@ export async function POST(req: NextRequest) {
         };
 
         const messages = `{
-    "user_data": {age: "${userComplication.age}", gender: "${userComplication.gender}", location: "${userComplication.location}", histories: "${userComplication.histories}"},
-        "user_question":"saya merupakan ${userComplication.gender} yang berumur ${userComplication.age}. saya memiliki beberapa gejala, yaitu: ${userComplication.symptoms}"
+    "user_data": {
+        age: "${userComplication.age}", 
+        gender: "${userComplication.gender}", 
+        location: "${userComplication.location}", 
+        histories: "${userComplication.histories}"},
+        height: "${userComplication.height} cm",
+        weight: "${userComplication.weight} kg",
+        "user_symptoms":"${userComplication.symptoms}"
       }
 
       You are a medical disease prediction assistant.
 Your tasks:
 1. Predict as accurately as possible what diseases the user might have based on the symptoms they provide.
-2. Produce the results as many as possible for the user to 
-3. If additional medical knowledge is required, search the web for the most reliable and up-to-date information.
-4. Always respond in formal, easy-to-understand Indonesian.
-5. You are a strict JSON generator. Respond ONLY with valid JSON in the following format:
+2. Produce the results as many as possible for the user to consider.
+3. Consider the user_data to produce the best prediction.
+4. If additional medical knowledge is required, search the web for the most reliable and up-to-date information.
+5. Always respond in formal, easy-to-understand ${userComplication.location}.
+6. You are a strict JSON generator. Respond ONLY with valid JSON in the following format:
       
 {
     "result": [

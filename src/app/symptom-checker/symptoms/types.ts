@@ -1,4 +1,4 @@
-import { MedicalHistoryData, ScanHistory } from '@/app/account/types';
+import { LocationData, MedicalHistoryData, ScanHistory } from '@/app/account/types';
 
 export interface DataValidate {
     response_for_user: string;
@@ -30,7 +30,7 @@ export interface FormData {
     weight: string;
     symptoms: string;
     histories: MedicalHistoryData;
-    location: string;
+    location: LocationData;
     result_validate: ValidateResult;
     result_prediction: PredictionResult | null;
 }

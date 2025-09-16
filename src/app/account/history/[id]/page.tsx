@@ -52,7 +52,7 @@ const HistoryPageDetail = ({ user }: { user: User | null }) => {
             if (id) {
                 const success = await removeScanResult(id)
                 if (success) {
-                    window.location.href = '/account/history'
+                    window.location.href = '/account'
                 }
             }
         }
