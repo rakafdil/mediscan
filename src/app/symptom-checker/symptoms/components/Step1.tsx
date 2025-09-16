@@ -114,8 +114,8 @@ const Step1: React.FC<Step1Props> = ({
             ...prev,
             location: {
                 ...prev.location,
-                latitude: latitude,
-                longitude: longitude
+                lat: latitude,
+                lon: longitude
             }
         }))
     }

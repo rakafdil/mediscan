@@ -19,33 +19,41 @@ const LocationTab: React.FC<LocationTabProps> = ({ profile, updateField }) => {
     useEffect(() => {
         fetch('/api/regions?type=countries')
             .then((res) => res.json())
-            .then((data) => setCountries(data))
-            .catch((err) => console.error('Error loading countries:', err));
+            .then((data) => setCountries(Array.isArray(data) ? data : []))
+            .catch((err) => {
+                console.error('Error loading countries:', err);
+                setCountries([]);
+            });
     }, []);
 
     useEffect(() => {
-        // if (!selectedCountry) return;
-        // setStates([]);
-        // setCities([]);
-        // setSelectedState('');
-        // setSelectedCity('');
+        if (profile.country) {
+            setSelectedCountry(profile.country);
+        }
+        if (profile.state) {
+            setSelectedState(profile.state);
+        }
+        if (profile.city) {
+            setSelectedCity(profile.city);
+        }
+    }, [profile]);
 
+    useEffect(() => {
+        if (!selectedCountry) return;
         fetch(`/api/regions?type=states&country=${selectedCountry}`)
             .then((res) => res.json())
-            .then((data) => setStates(data))
-            .catch((err) => console.error('Error loading states:', err));
+            .then((data) => setStates(Array.isArray(data) ? data : []))
+            .catch(() => setStates([]));
     }, [selectedCountry]);
 
     useEffect(() => {
-        // if (!selectedCountry || !selectedState) return;
-        // setCities([]);
-        // setSelectedCity('');
-
+        if (!selectedCountry || !selectedState) return;
         fetch(`/api/regions?type=cities&country=${selectedCountry}&state=${selectedState}`)
             .then((res) => res.json())
-            .then((data) => setCities(data))
-            .catch((err) => console.error('Error loading cities:', err));
-    }, [selectedState, selectedCountry]);
+            .then((data) => setCities(Array.isArray(data) ? data : []))
+            .catch(() => setCities([]));
+    }, [selectedCountry, selectedState]);
+
 
     const handleCountryChange = (value: string) => {
         setSelectedCountry(value);
