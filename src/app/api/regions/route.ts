@@ -5,6 +5,19 @@ const config = {
     ckey: 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==',
 };
 
+// Helper untuk fetch dengan error handling
+async function fetchData(url: string) {
+    const response = await fetch(url, {
+        headers: { 'X-CSCAPI-KEY': config.ckey }
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+}
+
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type'); // 'countries', 'states', 'cities', 'coordinates'
@@ -13,51 +26,35 @@ export async function GET(request: NextRequest) {
     const cityName = searchParams.get('city');
 
     try {
-        let url = config.cUrl;
-
         if (type === 'coordinates') {
-            // Return coordinates based on location hierarchy
+            // =========================
+            // Handle coordinate requests
+            // =========================
             if (countryCode && stateCode && cityName) {
                 // Get city coordinates
-                url = `${config.cUrl}/${countryCode}/states/${stateCode}/cities`;
-                const response = await fetch(url, {
-                    headers: { 'X-CSCAPI-KEY': config.ckey }
-                });
+                const url = `${config.cUrl}/${countryCode}/states/${stateCode}/cities`;
+                const cities = await fetchData(url);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const cities = await response.json();
                 const city = cities.find((c: any) => c.name.toLowerCase() === cityName.toLowerCase());
 
-                if (city) {
-                    return NextResponse.json({
-                        type: 'city',
-                        name: city.name,
-                        country: countryCode,
-                        state: stateCode,
-                        latitude: parseFloat(city.latitude),
-                        longitude: parseFloat(city.longitude)
-                    });
-                } else {
-                    return NextResponse.json(
-                        { error: 'City not found' },
-                        { status: 404 }
-                    );
+                if (!city) {
+                    return NextResponse.json({ error: 'City not found' }, { status: 404 });
                 }
-            } else if (countryCode && stateCode) {
-                // Get state coordinates
-                url = `${config.cUrl}/${countryCode}/states/${stateCode}`;
-                const response = await fetch(url, {
-                    headers: { 'X-CSCAPI-KEY': config.ckey }
+
+                return NextResponse.json({
+                    type: 'city',
+                    name: city.name,
+                    country: countryCode,
+                    state: stateCode,
+                    latitude: parseFloat(city.latitude),
+                    longitude: parseFloat(city.longitude)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+            } else if (countryCode && stateCode) {
+                // Get state coordinates
+                const url = `${config.cUrl}/${countryCode}/states/${stateCode}`;
+                const state = await fetchData(url);
 
-                const state = await response.json();
                 return NextResponse.json({
                     type: 'state',
                     name: state.name,
@@ -65,55 +62,54 @@ export async function GET(request: NextRequest) {
                     latitude: parseFloat(state.latitude),
                     longitude: parseFloat(state.longitude)
                 });
+
             } else if (countryCode) {
                 // Get country coordinates
-                url = `${config.cUrl}/${countryCode}`;
-                const response = await fetch(url, {
-                    headers: { 'X-CSCAPI-KEY': config.ckey }
-                });
+                const url = `${config.cUrl}/${countryCode}`;
+                const country = await fetchData(url);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const country = await response.json();
                 return NextResponse.json({
                     type: 'country',
                     name: country.name,
                     latitude: parseFloat(country.latitude),
                     longitude: parseFloat(country.longitude)
                 });
+
             } else {
                 return NextResponse.json(
                     { error: 'At least country code is required for coordinates' },
                     { status: 400 }
                 );
             }
-        } else if (type === 'countries') {
-            url = config.cUrl;
-        } else if (type === 'states' && countryCode) {
-            url = `${config.cUrl}/${countryCode}/states`;
-        } else if (type === 'cities' && countryCode && stateCode) {
-            url = `${config.cUrl}/${countryCode}/states/${stateCode}/cities`;
         } else {
-            return NextResponse.json(
-                { error: 'Invalid parameters' },
-                { status: 400 }
-            );
+            // ==============================
+            // Handle list data (non-coordinate)
+            // ==============================
+            const endpoints: Record<string, (country?: string, state?: string) => string | null> = {
+                countries: () => config.cUrl,
+                states: (country) => country ? `${config.cUrl}/${country}/states` : null,
+                cities: (country, state) =>
+                    (country && state) ? `${config.cUrl}/${country}/states/${state}/cities` : null,
+            };
+
+            const urlBuilder = endpoints[type as keyof typeof endpoints];
+
+            if (!urlBuilder) {
+                return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+            }
+
+            const url = urlBuilder(countryCode ?? undefined, stateCode ?? undefined);
+
+            if (!url) {
+                return NextResponse.json(
+                    { error: 'Missing required parameters' },
+                    { status: 400 }
+                );
+            }
+
+            const data = await fetchData(url);
+            return NextResponse.json(data);
         }
-
-        // For non-coordinate requests, return the original data
-        const response = await fetch(url, {
-            headers: { 'X-CSCAPI-KEY': config.ckey }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        return NextResponse.json(data);
     } catch (error) {
         console.error(`Error loading ${type}:`, error);
         return NextResponse.json(

@@ -1,30 +1,22 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useLocation } from '@/hooks/useUserLocation';
-import { useHospitals } from '@/hooks/useHospitals';
 import HospitalList from '@/app/components/HospitalList';
+import { useHospitals } from '@/hooks/useHospitals';
+import { useLocation } from '@/hooks/useUserLocation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
-// Helper to fetch coordinates using Nominatim (OpenStreetMap)
+// Helper to fetch coordinates using server-side API proxy
 async function fetchCoordinates(query: string): Promise<{ lat: number; lng: number } | null> {
     try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
-        const res = await fetch(url, {
-            headers: {
-                // Provide a User-Agent per Nominatim usage policy; adjust as appropriate for your app
-                'User-Agent': 'mediscan/1.0 (contact@yourdomain.example)'
-            }
-        });
+        const res = await fetch(`/api/geocode?query=${encodeURIComponent(query)}`);
         if (!res.ok) {
             console.error('fetchCoordinates: non-ok response', res.status);
             return null;
         }
-        const data = await res.json();
-        if (!Array.isArray(data) || data.length === 0) return null;
-        const first = data[0];
-        const lat = parseFloat(first.lat);
-        const lng = parseFloat(first.lon);
+        const result = await res.json();
+        if (!result.success || !result.data) return null;
+        const { lat, lng } = result.data;
         if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
         return { lat, lng };
     } catch (err) {
