@@ -61,7 +61,7 @@ const SistemPakarPage = () => {
                         <Image
                             src="/assets/symptom-hero.svg"
                             alt="Symptom Hero"
-                            width={500}  // ini optional buat ratio aja
+                            width={500}
                             height={500}
                             priority
                             className="w-80 h-80 sm:w-96 sm:h-96 lg:w-[600px] lg:h-[600px] object-contain"

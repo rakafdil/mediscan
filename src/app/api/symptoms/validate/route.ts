@@ -39,15 +39,18 @@ export async function POST(req: NextRequest) {
     : "Weather data unavailable";
 
   const messages = `{
-    "user_data": {
-      "age": "${userComplication.age}", 
-      "gender": "${userComplication.gender}", 
-      "height": "${userComplication.height}", 
-      "weight": "${userComplication.weight}",
-      "BMI": "${bmi}",
-      "location": "${userComplication.location}", 
-      "histories": "${userComplication.histories}"
-    },
+  "user_data": {
+    "age": "${userComplication.age}", 
+    "gender": "${userComplication.gender}", 
+    "height": "${userComplication.height}", 
+    "weight": "${userComplication.weight}",
+    "BMI": "${bmi}",
+    "location": "${userComplication.location ? JSON.stringify(userComplication.location) : "unknown"}", 
+    "histories": "${userComplication.histories ? JSON.stringify(userComplication.histories) : "unknown"}"
+  },
+  "user_complication": "${userComplication.symptoms}",
+  "weather_on_user_location": "${weatherSummary}"
+}
     "user_complication": "${userComplication.symptoms}",
     "weather_on_user_location": "${weatherSummary}"
   }
@@ -91,6 +94,7 @@ export async function POST(req: NextRequest) {
     }
   } catch (e) {
     console.error("JSON Error:", e);
+    console.log("AI Response:", e instanceof Error ? e.message : String(e));
     return NextResponse.json(
       { error: "Invalid JSON from AI" },
       { status: 500 }

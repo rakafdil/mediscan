@@ -52,7 +52,7 @@ const Step2: React.FC<Step2Props> = ({
         } catch (err) {
             console.error(err);
         } finally {
-            setLoading(false);
+            setLoadingSymptom(false);
         }
     };
 
