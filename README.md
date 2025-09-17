@@ -43,6 +43,34 @@ The app will start on [http://localhost:3000](http://localhost:3000).
 - Visit [http://localhost:3000](http://localhost:3000) in your browser.
 - You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+### 4. Build and Run Production
+
+To build the app for production, run:
+
+```bash
+npm run build
+# or
+yarn build
+# or
+pnpm build
+# or
+bun build
+```
+
+Then start the production server:
+
+```bash
+npm start
+# or
+yarn start
+# or
+pnpm start
+# or
+bun start
+```
+
+The production app will run on [http://localhost:3000](http://localhost:3000).
+
 ## Demo
 
 Try the deployed app: [https://mediscan-smoky.vercel.app/](https://mediscan-smoky.vercel.app/)
