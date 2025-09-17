@@ -17,6 +17,7 @@ interface SearchResult {
     isi: string;
     link: string;
     source: string;
+    image?: string;
 }
 
 interface Hospital {
@@ -65,7 +66,9 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
             const res = await fetch(`/api/search?q=${encodeURIComponent(disease)}`);
             if (!res.ok) throw new Error('Search failed');
             const data = await res.json();
-            setResults(data || []);
+            
+            // Perbaikan: Gunakan data.results instead of data langsung
+            setResults(data.results || []);
         } catch (err) {
             console.error("Search failed:", err);
             setResults([]);
@@ -223,8 +226,6 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
                                     <p className="text-xs text-gray-500 mt-1">{h.hospitalType}</p>
                                 </a>
                             ))}
-
-
                         </div>
                     ) : (
                         <p className="text-gray-600 text-center py-16">No hospitals found nearby</p>
