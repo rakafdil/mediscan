@@ -11,7 +11,7 @@ export async function main(message: string): Promise<string> {
         }
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: message,
         });
 
