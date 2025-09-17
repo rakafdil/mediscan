@@ -35,7 +35,7 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
         // Real GPS location: smaller radius for more precise results
         // City coordinates: larger radius to cover more area
         const searchRadius = useRealLocation ? 3000 : 5000; // 3km vs 5km
-        
+
         // Simplified Overpass API query
         const overpassQuery = `
             [out:json][timeout:25];
@@ -69,10 +69,9 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
         }
 
         const data = await response.json();
-        
+
         // Check if we got any elements
         if (!data.elements || data.elements.length === 0) {
-            console.log('No hospitals found in the area');
             return [];
         }
 
@@ -81,7 +80,7 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
 
         data.elements.forEach((element: any, index: number) => {
             const tags = element.tags || {};
-            
+
             // Get coordinates based on element type
             let lat, lng;
             if (element.type === 'node') {
@@ -124,14 +123,14 @@ const fetchHospitalsFromOverpass = async (centerLat: number, centerLng: number, 
             } else if (tags['addr:street']) {
                 addressParts.push(tags['addr:street']);
             }
-            
+
             if (tags['addr:city'] || tags['addr:village']) {
                 addressParts.push(tags['addr:city'] || tags['addr:village']);
             } else if (!useRealLocation) {
                 addressParts.push(kota);
             }
 
-            const address = addressParts.join(', ') || 
+            const address = addressParts.join(', ') ||
                 (useRealLocation ? `Lokasi sekitar GPS Anda` : `Lokasi di ${kota}`);
 
             // Calculate distance from user's position
@@ -199,9 +198,9 @@ export async function GET(request: NextRequest) {
 
         if (!lat || !lng) {
             return NextResponse.json(
-                { 
+                {
                     success: false,
-                    error: 'Latitude dan longitude diperlukan' 
+                    error: 'Latitude dan longitude diperlukan'
                 },
                 { status: 400 }
             );
@@ -212,9 +211,9 @@ export async function GET(request: NextRequest) {
 
         if (isNaN(centerLat) || isNaN(centerLng)) {
             return NextResponse.json(
-                { 
+                {
                     success: false,
-                    error: 'Latitude dan longitude harus berupa angka yang valid' 
+                    error: 'Latitude dan longitude harus berupa angka yang valid'
                 },
                 { status: 400 }
             );
@@ -223,22 +222,22 @@ export async function GET(request: NextRequest) {
         // Validate coordinates range
         if (centerLat < -90 || centerLat > 90 || centerLng < -180 || centerLng > 180) {
             return NextResponse.json(
-                { 
+                {
                     success: false,
-                    error: 'Koordinat tidak valid' 
+                    error: 'Koordinat tidak valid'
                 },
                 { status: 400 }
             );
         }
 
-        console.log(`Searching hospitals near ${centerLat}, ${centerLng} for ${kota} (Real location: ${useRealLocation})`);
+        (`Searching hospitals near ${centerLat}, ${centerLng} for ${kota} (Real location: ${useRealLocation})`);
 
         // Try to fetch from Overpass API first
         let hospitals = await fetchHospitalsFromOverpass(centerLat, centerLng, kota, useRealLocation);
 
         // If no hospitals found from API, use fallback data
         if (hospitals.length === 0) {
-            console.log('Using fallback data as no hospitals found from API');
+            ('Using fallback data as no hospitals found from API');
         }
 
         return NextResponse.json({
@@ -255,16 +254,16 @@ export async function GET(request: NextRequest) {
 
     } catch (error) {
         console.error('Error in hospitals API:', error);
-        
+
         // Fallback to mock data in case of error
         const { searchParams } = new URL(request.url);
         const lat = searchParams.get('lat');
         const lng = searchParams.get('lng');
         const kota = searchParams.get('kota') || '';
-        
+
         const centerLat = parseFloat(lat || '-6.2');
         const centerLng = parseFloat(lng || '106.8');
-        
+
         return NextResponse.json({
             success: true,
             locationMethod: 'fallback',

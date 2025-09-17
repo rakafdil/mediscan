@@ -24,7 +24,7 @@ const Step2: React.FC<Step2Props> = ({
     setLoading
 }) => {
 
-    const [loadingSymptom, setLoadingSymptom] = useState(false)
+    const [loadingSymptom, setLoadingSymptom] = useState(false);
     const validateSymptoms = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoadingSymptom(true);
@@ -112,7 +112,7 @@ const Step2: React.FC<Step2Props> = ({
                         disabled={loadingSymptom || !formData.symptoms.trim()}
                         className={`w-full py-4 px-8 rounded-xl font-semibold text-xl flex items-center justify-center gap-3 transition-all duration-300 transform ${loading || !formData.symptoms.trim()
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105 shadow-lg hover:shadow-xl'
+                            : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer'
                             }`}
                     >
                         {loadingSymptom ? (

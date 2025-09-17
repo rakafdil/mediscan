@@ -62,7 +62,7 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
         <div className={`w-full mb-4 border-2 ${bgColor} ${borderColor} rounded-xl shadow-sm transition-all duration-300 hover:shadow-md justify-center`}>
             <button
                 onClick={onToggle}
-                className={`w-full text-left px-6 py-5 hover:opacity-80 transition-all duration-300 rounded-t-xl ${!isOpen ? 'rounded-b-xl' : ''} flex justify-between items-center`}
+                className={`cursor-pointer w-full text-left px-6 py-5 hover:opacity-80 transition-all duration-300 rounded-t-xl ${!isOpen ? 'rounded-b-xl' : ''} flex justify-between items-center`}
             >
                 <div className="flex flex-col pr-4 w-[90%]">
                     <div className="flex justify-between gap-3 mb-2 w-full">
@@ -194,7 +194,7 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
                             {formData.result_prediction.result
                                 .filter(item => item.disease.trim() !== "")
                                 .map((disease: Disease, index: number) => {
-                                    console.log(disease, index);
+
                                     return (
                                         <DiagnosisCard
                                             key={index}

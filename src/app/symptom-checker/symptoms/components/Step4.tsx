@@ -66,7 +66,7 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
             const res = await fetch(`/api/search?q=${encodeURIComponent(disease)}`);
             if (!res.ok) throw new Error('Search failed');
             const data = await res.json();
-            
+
             // Perbaikan: Gunakan data.results instead of data langsung
             setResults(data.results || []);
         } catch (err) {
@@ -128,13 +128,13 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
             {/* Tabs */}
             <div className='flex flex-row w-full max-w-4xl bg-gray-100 rounded-2xl p-2 shadow-inner'>
                 <button
-                    className={`flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${isArticle ? 'bg-white text-blue-600 shadow-md' : 'text-gray-600 hover:text-gray-800'}`}
+                    className={`cursor-pointer flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${isArticle ? 'bg-white text-blue-600 shadow-md' : 'text-gray-600 hover:text-gray-800'}`}
                     onClick={() => handleTabSwitch(true)}
                 >
                     <FontAwesomeIcon icon={faNewspaper} /> Articles
                 </button>
                 <button
-                    className={`flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${!isArticle ? 'bg-white text-blue-600 shadow-md' : 'text-gray-600 hover:text-gray-800'}`}
+                    className={`cursor-pointer flex-1 py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 flex items-center justify-center gap-3 ${!isArticle ? 'bg-white text-blue-600 shadow-md' : 'text-gray-600 hover:text-gray-800'}`}
                     onClick={() => handleTabSwitch(false)}
                 >
                     <FontAwesomeIcon icon={faHospital} /> Hospitals
@@ -152,7 +152,7 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
                                     <button
                                         key={disease.disease}
                                         onClick={() => handleSearch(disease.disease)}
-                                        className={`w-full py-4 px-5 text-left rounded-xl font-medium transition-all duration-300 ${selectedDisease === disease.disease ? 'bg-blue-500 text-white' : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'}`}
+                                        className={`cursor-pointer w-full py-4 px-5 text-left rounded-xl font-medium transition-all duration-300 ${selectedDisease === disease.disease ? 'bg-blue-500 text-white' : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-600'}`}
                                     >
                                         <div className="flex items-center justify-between">
                                             <span className="truncate">{disease.disease}</span>

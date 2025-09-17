@@ -129,7 +129,7 @@ const HealthInsightsDashboard = () => {
                     </p>
 
                     <Link href="/article/article-content" className="inline-block w-full sm:w-auto">
-                        <button className="w-full sm:w-auto bg-[#6B8FC4] hover:from-blue-600 hover:to-indigo-700 text-white font-semibold font-montserrat py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base">
+                        <button className="cursor-pointer w-full sm:w-auto bg-[#6B8FC4] hover:from-blue-600 hover:to-indigo-700 text-white font-semibold font-montserrat py-3 sm:py-4 px-8 sm:px-10 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base">
                             Start Exploring Now →
                         </button>
                     </Link>
@@ -160,7 +160,7 @@ const HealthInsightsDashboard = () => {
                     <button
                         onClick={() => setSelectedCategory('brain')}
                         disabled={loading}
-                        className={`px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base disabled:opacity-50 ${selectedCategory === 'brain'
+                        className={`cursor-pointer px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base disabled:opacity-50 ${selectedCategory === 'brain'
                             ? 'bg-blue-500 text-white shadow-lg'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
@@ -175,7 +175,7 @@ const HealthInsightsDashboard = () => {
                         <p className="text-red-700 mb-4">{error}</p>
                         <button
                             onClick={handleRetry}
-                            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors"
+                            className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors"
                         >
                             Try Again
                         </button>
@@ -201,7 +201,7 @@ const HealthInsightsDashboard = () => {
                         {/* Prev Button */}
                         <button
                             onClick={prevSlide}
-                            className="hidden lg:block p-3 sm:p-4 bg-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-40 hover:scale-110 border border-gray-100"
+                            className="hidden cursor-pointer lg:block p-3 sm:p-4 bg-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-40 hover:scale-110 border border-gray-100"
                             disabled={articles.length <= ARTICLES_PER_SLIDE}
                             aria-label="Previous slide"
                         >
@@ -274,7 +274,7 @@ const HealthInsightsDashboard = () => {
                         {/* Next Button */}
                         <button
                             onClick={nextSlide}
-                            className="hidden lg:block p-3 sm:p-4 bg-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-40 hover:scale-110 border border-gray-100"
+                            className="hidden cursor-pointer lg:block p-3 sm:p-4 bg-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-40 hover:scale-110 border border-gray-100"
                             disabled={articles.length <= ARTICLES_PER_SLIDE}
                             aria-label="Next slide"
                         >
@@ -303,7 +303,7 @@ const HealthInsightsDashboard = () => {
                             <button
                                 key={index}
                                 onClick={() => setCurrentSlide(index * ARTICLES_PER_SLIDE)}
-                                className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${index === Math.floor(currentSlide / ARTICLES_PER_SLIDE)
+                                className={`cursor-pointer w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${index === Math.floor(currentSlide / ARTICLES_PER_SLIDE)
                                     ? 'bg-blue-500 scale-125'
                                     : 'bg-gray-300 hover:bg-gray-400'
                                     }`}

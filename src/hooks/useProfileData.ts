@@ -70,8 +70,6 @@ export const useProfileData = (user: User | null) => {
                 })
                 .eq('id', user.id)
 
-            console.log("UPDATE ERROR ===>", updateError);
-
             if (updateError) throw updateError
 
             setProfileData(prev => ({ ...prev, ...updates }))
