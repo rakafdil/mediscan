@@ -29,7 +29,7 @@ const KnowledgeIsCareSection = () => {
                     {/* Right Side - Image */}
                     <div className="flex justify-center lg:justify-end">
                         <Image
-                            src="/assets/section 5.svg"
+                            src="/assets/Section 5.svg"
                             alt="Knowledge is Care"
                             width={400}
                             height={300}

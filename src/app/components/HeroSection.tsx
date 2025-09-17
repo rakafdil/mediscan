@@ -24,7 +24,7 @@ const HeroSection = () => {
                                 </button>
                             </a>
                             <button
-                                className="w-full sm:w-auto border-1 border-[#628EF7] hover:bg-[#628EF7] hover:text-white text-[#628EF7] font-semibold py-3 px-8 rounded-lg transition-colors duration-300"
+                                className="w-full sm:w-auto border-1 border-[#628EF7] hover:bg-[#8daffd] hover:text-white text-[#628EF7] font-semibold py-3 px-8 rounded-lg transition-colors duration-300"
                                 onClick={() => {
                                     const el = document.getElementById("about-section");
                                     if (el) el.scrollIntoView({ behavior: "smooth" });

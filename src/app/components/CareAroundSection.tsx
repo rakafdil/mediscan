@@ -12,7 +12,7 @@ const CareAroundSection = () => {
                     {/* Center - Image */}
                     <div className="flex justify-center lg:justify-center">
                         <Image
-                            src="/assets/section4.svg"
+                            src="/assets/Section4.svg"
                             alt="Care Around You"
                             width={400}
                             height={300}
