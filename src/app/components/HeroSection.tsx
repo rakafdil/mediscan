@@ -19,11 +19,17 @@ const HeroSection = () => {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <a href="/symptom-checker" className="w-full sm:w-auto">
-                                <button className="w-full sm:w-auto bg-[#628EF7] hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-300">
+                                <button className="w-full sm:w-auto hover:border-[#628EF7] hover:border-2 hover:text-[#628EF7] hover:bg-white bg-[#628EF7] text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-300">
                                     Start Scan Now
                                 </button>
                             </a>
-                            <button className="w-full sm:w-auto border-2 border-[#628EF7] hover:border-blue-800 text-[#628EF7] font-semibold py-3 px-8 rounded-lg transition-colors duration-300">
+                            <button
+                                className="w-full sm:w-auto border-1 border-[#628EF7] hover:bg-[#628EF7] hover:text-white text-[#628EF7] font-semibold py-3 px-8 rounded-lg transition-colors duration-300"
+                                onClick={() => {
+                                    const el = document.getElementById("about-section");
+                                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                                }}
+                            >
                                 Learn More
                             </button>
                         </div>

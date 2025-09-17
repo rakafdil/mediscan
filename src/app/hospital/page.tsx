@@ -16,8 +16,7 @@ export default function HeroSection() {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         setCounters(prev => ({ ...prev, isVisible: true }));
-                        
-                        // Animasi counter untuk angka 3.155
+
                         let current = 0;
                         const target = 215977;
                         const increment = target / 100;
@@ -27,8 +26,8 @@ export default function HeroSection() {
                                 current = target;
                                 clearInterval(timer);
                             }
-                            setCounters(prev => ({ 
-                                ...prev, 
+                            setCounters(prev => ({
+                                ...prev,
                                 hospitals: Math.floor(current)
                             }));
                         }, 20);
@@ -78,17 +77,16 @@ export default function HeroSection() {
             </section>
 
             {/* Bagian Info Box dengan Efek */}
-            <section 
+            <section
                 id="info-boxes"
                 className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8 md:px-16 lg:px-24 pb-50 pt-10"
             >
                 {/* Box 1 - Stars dengan animasi */}
-                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${
-                    counters.isVisible 
-                        ? 'translate-y-0 opacity-100' 
-                        : 'translate-y-10 opacity-0'
-                }`}
-                style={{ transitionDelay: '0ms' }}
+                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${counters.isVisible
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-10 opacity-0'
+                    }`}
+                    style={{ transitionDelay: '0ms' }}
                 >
                     <div className="flex justify-center mb-3">
                         <span className="inline-block text-4xl">⭐⭐⭐⭐⭐</span>
@@ -97,12 +95,11 @@ export default function HeroSection() {
                 </div>
 
                 {/* Box 2 - Counter dengan animasi */}
-                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${
-                    counters.isVisible 
-                        ? 'translate-y-0 opacity-100' 
-                        : 'translate-y-10 opacity-0'
-                }`}
-                style={{ transitionDelay: '200ms' }}
+                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${counters.isVisible
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-10 opacity-0'
+                    }`}
+                    style={{ transitionDelay: '200ms' }}
                 >
                     <h3 className="text-4xl font-bold text-blue-600 font-montserrat mb-3">
                         {counters.hospitals.toLocaleString()} +
@@ -113,12 +110,11 @@ export default function HeroSection() {
                 </div>
 
                 {/* Box 3 - 24/7 dengan animasi berkedip */}
-                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${
-                    counters.isVisible 
-                        ? 'translate-y-0 opacity-100' 
-                        : 'translate-y-10 opacity-0'
-                }`}
-                style={{ transitionDelay: '400ms' }}
+                <div className={`bg-white shadow-md rounded-xl p-15 text-center hover:shadow-lg transition-all duration-700 transform ${counters.isVisible
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-10 opacity-0'
+                    }`}
+                    style={{ transitionDelay: '400ms' }}
                 >
                     <h3 className="text-4xl font-bold text-blue-600 font-montserrat mb-3">
                         <span className="inline-block">24/7</span>

@@ -22,7 +22,9 @@ const Home = () => {
         <VideoSection />
 
         {/* The Tech Behind mediScan Section */}
-        <TechBehindSection />
+        <div id='about-section'>
+          <TechBehindSection />
+        </div>
 
         {/* Care Around You Section */}
         <CareAroundSection />

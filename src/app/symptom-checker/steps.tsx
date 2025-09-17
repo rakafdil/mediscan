@@ -8,31 +8,35 @@ type Direction = "left" | "right";
 const slides = [
     {
         step: 1,
-        title: "Tell Us Your Age and Gender",
-        description: "Your age and gender can influence health outcomes. Sharing this helps us personalize and improve the accuracy of your diagnosis.",
+        title: "Share Your Basic Info",
+        description:
+            "Provide details like age, gender, location, height, and weight. This helps us calculate your BMI and adjust for your local weather, making your health check more accurate and personalized.",
     },
     {
         step: 2,
-        title: "Describe or Add Your Symptoms",
-        description: "List your symptoms in as much detail as possible. The more specific you are, the better we can analyze your condition.",
+        title: "Add Your Symptoms",
+        description:
+            "Describe what you’re experiencing as clearly as possible. The more specific your symptoms, the better we can analyze your condition.",
     },
     {
         step: 3,
-        title: "Result Of Your Symptoms",
-        description: "Get an instant health insight based on your symptoms. This is not a final medical judgment, but a helpful first step to understand your condition.",
+        title: "See Your Health Results",
+        description:
+            "Get instant insights based on your symptoms. This isn’t a final medical decision, but a helpful first step toward understanding your health.",
     },
     {
         step: 4,
-        title: "Articles Related to Your Symptoms",
-        description: "Read trusted medical articles that match your symptoms. Stay informed with reliable resources to better understand your health.",
+        title: "Read Helpful Articles",
+        description:
+            "Access trusted medical articles related to your symptoms. Stay informed with reliable information to better understand your condition.",
     },
     {
         step: 5,
-        title: "Nearby Hospitals For Further Diagnosis",
-        description: "Find the closest hospitals and healthcare facilities where you can consult professionals for accurate diagnosis and treatment.",
-    }
+        title: "Find Nearby Hospitals",
+        description:
+            "Discover hospitals and healthcare facilities near you where professionals can provide accurate diagnosis and treatment.",
+    },
 ];
-
 
 export default function CarouselSlide() {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -82,7 +86,7 @@ export default function CarouselSlide() {
     const nextContentData = slides[(displayedContent + 1) % slides.length];
 
     return (
-        <div className="flex items-center justify-center min-h-[60vh] px-4 sm:px-10 md:px-20 mt-10 sm:mt-30 lg:mt-40 overflow-hidden">
+        <div className="flex items-center justify-center min-h-[60vh] px-4 sm:px-10 md:px-20 mt-10 sm:mt-30 lg:mt-30 overflow-hidden">
             <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 max-w-7xl w-full">
 
                 {/* Left Card */}

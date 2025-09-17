@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
   Rules:
   - "response_for_user" should be a single sentence or short paragraph asking the user follow-up questions about the symptoms they mentioned, while also reflecting potential influences of BMI or weather if relevant.
-  - "symptoms" must be an array containing only the symptoms explicitly mentioned by the user in this turn.
+  - "symptoms" must be an array containing the exact symptoms described by the user, preserving all details, modifiers, and context (e.g., "persistent headache" instead of just "headache").
   - Do not infer or add unrelated symptoms.
   - Always produce valid JSON with no extra text outside the JSON.
   `;

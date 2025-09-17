@@ -21,7 +21,7 @@ const CareAroundSection = () => {
                     </div>
 
                     {/* Right Side - Description */}
-                    <div className="text-center font-montserrat lg:text-right lg:justify-end">
+                    <div className="text-center font-montserrat lg:text-left lg:justify-end">
                         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-montserrat font-bold text-gray-800 leading-snug mb-8">
                             Care Around You
                         </h2>
