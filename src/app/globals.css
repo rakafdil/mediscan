@@ -28,6 +28,24 @@
   }
 }
 
+/* @media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-area,
+  #print-area * {
+    visibility: visible;
+  }
+
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+  }
+} */
+
 body {
   /* background: var(--background); */
   color: var(--foreground);
@@ -110,4 +128,13 @@ body {
 a,
 [data-link] {
   @apply cursor-pointer;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -1,14 +1,17 @@
 import { DailyWeatherFactors } from "./getWeatherFactors";
 
 function avg(arr: number[]): number {
+    if (!Array.isArray(arr)) return 0;
     return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 }
 
 function max(arr: number[]): number {
+    if (!Array.isArray(arr)) return 0;
     return arr.length ? Math.max(...arr) : 0;
 }
 
 function min(arr: number[]): number {
+    if (!Array.isArray(arr)) return 0;
     return arr.length ? Math.min(...arr) : 0;
 }
 

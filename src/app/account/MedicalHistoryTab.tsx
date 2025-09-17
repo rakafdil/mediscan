@@ -28,7 +28,7 @@ const MedicalHistoryTab: React.FC<MedicalHistoryTabProps> = ({
     <div className="space-y-8">
         {/* Diseases */}
         <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Medical Conditions / Diseases</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Medical Conditions / Diseases</h3>
             <div className="space-y-4">
                 <MedicalInput
                     value={newDisease}
@@ -56,7 +56,7 @@ const MedicalHistoryTab: React.FC<MedicalHistoryTabProps> = ({
 
         {/* Allergies */}
         <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Allergies</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Allergies</h3>
             <div className="space-y-4">
                 <MedicalInput
                     value={newAllergy}

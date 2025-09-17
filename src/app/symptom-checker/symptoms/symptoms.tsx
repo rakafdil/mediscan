@@ -1,10 +1,10 @@
 
 
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FormData } from './types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 import Step1 from './components/Step1';
 import Step2 from './components/Step2';
@@ -20,7 +20,7 @@ import { createClient } from '@/app/utils/supabase/client';
 import { type User } from '@supabase/supabase-js';
 import { useAllProfileData } from '@/hooks/useAllProfileData';
 import { useScanHistoryData } from '@/hooks/useScanHistoryData';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect, useRouter, useSearchParams } from 'next/navigation';
 import { getDailyWeatherFactors } from '@/hooks/getWeatherFactors';
 
 const stepName = [
@@ -46,10 +46,49 @@ const stepName = [
     },
 ]
 
+const bar = (width: number) => {
+    return (
+        <div
+            style={{ width: `${width}%` }}
+            className='h-2 bg-[#6AC2EA] absolute left-0 md:top-[28%] lg:top-[22%] top-[24%] transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
+        />
+    );
+}
+
+const initialFormData: FormData = {
+    gender: "",
+    age: "",
+    height: "",
+    weight: "",
+    symptoms: "",
+    histories: {
+        allergies: [],
+        diseases: []
+    },
+    location: {
+        street: "",
+        city: "",
+        state: "",
+        country: "",
+        lon: 0,
+        lat: 0
+    },
+    weather: "",
+    result_validate: {
+        response_for_user: "",
+        symptoms: [],
+        symptoms_related: false
+    },
+    result_prediction: {
+        result: [],
+        scan_timestamp: ""
+    }
+};
+
 const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const supabase = createClient();
+    const [isComplete, setIsComplete] = useState(false);
 
     const {
         profile,
@@ -90,6 +129,21 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
             scan_timestamp: ""
         }
     });
+
+    const isFormChanged = JSON.stringify(formData) !== JSON.stringify(initialFormData);
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
+        if (isFormChanged) {
+            e.preventDefault();
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [isFormChanged]);
 
     useEffect(() => {
         const fetchWeatherData = async () => {
@@ -208,29 +262,43 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
         });
     }, [locationHook?.locationData]);
 
+    useEffect(() => {
+        if (formData.result_prediction?.result && formData.result_prediction.result.length > 0) {
+            setIsComplete(true);
+        }
+    }, [formData.result_prediction])
+
     const nextStep = () => setStep((prev) => prev + 1);
     const prevStep = () => setStep((prev) => prev - 1);
 
     const saveData = () => {
         if (formData.result_prediction) {
-            setFormData(prev => ({
-                ...prev,
-                result_prediction: {
-                    result: prev.result_prediction?.result || [],
-                    scan_timestamp: new Date().toISOString()
-                }
-            }));
+            const confirmed = window.confirm("Do you want to finish?");
+            if (confirmed) {
+                setFormData(prev => ({
+                    ...prev,
+                    result_prediction: {
+                        result: prev.result_prediction?.result || [],
+                        scan_timestamp: new Date().toISOString()
+                    }
+                }));
 
-            // Create updated formData with current timestamp
-            const updatedFormData = {
-                ...formData,
-                result_prediction: {
-                    ...formData.result_prediction,
-                    scan_timestamp: new Date().toISOString()
-                }
-            };
+                const updatedFormData = {
+                    ...formData,
+                    result_prediction: {
+                        ...formData.result_prediction,
+                        scan_timestamp: new Date().toISOString()
+                    }
+                };
 
-            scanHook.addScanResult(updatedFormData, formData.result_validate.symptoms);
+                scanHook.addScanResult(updatedFormData, formData.result_validate.symptoms);
+                const goToHistory = window.confirm("Do you want to see the history?");
+                if (goToHistory) {
+                    redirect('/account/')
+                } else {
+                    redirect('/symptom-checker')
+                }
+            }
         }
     };
 
@@ -254,25 +322,22 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
         window.location.href = '/symptom-checker';
     };
 
-    // Add this validation function
     const isStepAccessible = (targetStep: number) => {
         switch (targetStep) {
             case 1:
                 return true;
             case 2:
-                return formData.gender !== "" && formData.age !== "";
+                return formData.gender !== "" && formData.age !== "" && formData.height !== "" && formData.weight !== "" && formData.location.country !== "" && formData.location.city !== "" && formData.location.state !== "";
             case 3:
                 return formData.result_prediction?.result &&
                     formData.result_prediction.result.length > 0;
             case 4:
-                return formData.gender !== "" && formData.age !== "" &&
-                    formData.symptoms !== "" &&
+                return formData.symptoms !== "" &&
                     formData.result_validate.symptoms.some(s => s.trim() !== "") &&
                     formData.result_prediction?.result &&
                     formData.result_prediction.result.length > 0;
             case 5:
-                return formData.gender !== "" && formData.age !== "" &&
-                    formData.symptoms !== "" &&
+                return formData.symptoms !== "" &&
                     formData.result_validate.symptoms.some(s => s.trim() !== "") &&
                     formData.result_prediction?.result &&
                     formData.result_prediction.result.length > 0;
@@ -323,6 +388,7 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
         }
     };
 
+
     return (
         <>
             <div className='flex flex-col items-center justify-center pt-18 gap-10 relative overflow-hidden'>
@@ -337,14 +403,34 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
                     />
                     <span className="text-gray-600 md:text-2xl text-sm mt-1">Back</span>
                 </Link>
-                <h1 className='md:text-6xl text-3xl font-bold text-gray-900 text-center'>
-                    {stepName.find(item => item.step === step)?.name}
-                </h1>
+
+                <div className="flex items-center justify-center gap-10 flex-row">
+                    <h1 className='md:text-6xl text-3xl font-bold text-gray-900 text-center'>
+                        {stepName.find(item => item.step === step)?.name}
+                    </h1>
+                    {isComplete && (
+                        <button
+                            onClick={saveData}
+                            className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg md:px-8 md:py-4 px-2 py-2 shadow-lg transition-all duration-200 text-xs md:text-xl flex items-center justify-center gap-2"
+                        >
+                            <span>Finish</span>
+                            <FontAwesomeIcon icon={faCheckCircle} className="" />
+                        </button>
+                    )}
+                </div>
+
                 <div className='flex flex-row md:min-h-[200px] min-h-[120px] xl:gap-30 md:gap-20 sm:gap-8 gap-4 relative overflow-hidden md:px-30 px-8'>
-                    <div
-                        style={{ width: `${(step) * 20}%` }}
-                        className='h-2 bg-[#6AC2EA] absolute left-0 md:top-[28%] lg:top-[22%] top-[24%] transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
-                    />
+                    {
+                        (step === 1) ? (
+                            bar(12)
+                        ) : (step === 2) ? (
+                            bar(35)
+                        ) : (step === 3) ? (
+                            bar(50)
+                        ) : (step === 4) ? (
+                            bar(70)
+                        ) : (bar(100))
+                    }
                     <div
                         className='h-2 w-full bg-[#628EF7] absolute left-0 md:top-[28%] lg:top-[22%] top-[24%] transform -translate-y-1/2 rounded-full z-[-1]'
                     />
@@ -365,7 +451,6 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
                                     }
                                             `}
                                 onClick={() => isStepAccessible(item.step) && setStep(item.step)}
-                                // onClick={() => setStep(item.step)}
                                 title={!isStepAccessible(item.step) ? "Complete previous steps first" : ""}
                             >
                                 {item.step}

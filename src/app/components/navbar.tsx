@@ -45,7 +45,7 @@ const Navigation: React.FC<NavigationProps> = ({ linkTo, text, isMobile = false,
         <Link
             href={linkTo}
             onClick={onClick}
-            className={`md:text-xl sm:text-lg px-5 py-4 rounded-xl transition-colors duration-200 block 
+            className={`md:text-xl sm:text-lg text-sm px-5 py-4 rounded-xl transition-colors duration-200 block 
                 ${isMobile ? 'py-2 px-4 w-full' : ''
                 } ${isActive
                     ? 'bg-[#217BFF] text-white font-bold after:scale-x-100'
@@ -134,7 +134,7 @@ const Navbar: React.FC = () => {
                         <>
                             {/* Overlay */}
                             <motion.div
-                                className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                                className="md:hidden fixed top-0 right-0 left-0 bg-black bg-opacity-50 z-40"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}

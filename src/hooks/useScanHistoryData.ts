@@ -64,7 +64,7 @@ export const useScanHistoryData = (user: User | null) => {
                     precautions: scanEntry.scan_history
                         .map((sh: any) => sh.precaution?.precaution_text)
                         .filter((text: string) => text)
-                        .join(', ') || '',
+                        .join(';') || '',
                     // Ubah menjadi array dari semua diseases
                     diseases: scanEntry.scan_history?.map((sh: any) => ({
                         disease_name: sh.disease?.disease_name || '',
@@ -174,7 +174,7 @@ export const useScanHistoryData = (user: User | null) => {
                     let precautionId = null;
                     if (result.precautions) {
                         const precautions = Array.isArray(result.precautions)
-                            ? result.precautions.join(', ')
+                            ? result.precautions.join(';')
                             : result.precautions || '';
 
                         const { data: existingPrecaution } = await supabase

@@ -9,7 +9,7 @@ interface PersonalInfoTabProps {
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user, profile, updateField }) => (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div className='md:col-span-2'>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address
@@ -76,7 +76,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user, profile, update
                     <option value="Female">Female</option>
                 </select>
             </div>
-            <div className='col-span-2'>
+            <div className='sm:col-span-1 md:col-span-2'>
                 <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-2">
                     Height
                 </label>
@@ -92,7 +92,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user, profile, update
                     <span>cm</span>
                 </div>
             </div>
-            <div className='col-span-2'>
+            <div className='sm:col-span-1 md:col-span-2'>
                 <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">
                     Weight
                 </label>
@@ -111,9 +111,6 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user, profile, update
                 </div>
             </div>
         </div>
-
-
-
     </div>
 )
 

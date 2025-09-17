@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StepContainer, BackButton } from './CommonComponents';
 import EditableList from './EditableList';
 import { FormData } from '../types';
@@ -23,9 +23,11 @@ const Step2: React.FC<Step2Props> = ({
     loading,
     setLoading
 }) => {
+
+    const [loadingSymptom, setLoadingSymptom] = useState(false)
     const validateSymptoms = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setLoadingSymptom(true);
         try {
             const data = await apiService.validateSymptoms(
                 formData.gender,
@@ -107,13 +109,13 @@ const Step2: React.FC<Step2Props> = ({
 
                     <button
                         onClick={validateSymptoms}
-                        disabled={loading || !formData.symptoms.trim()}
+                        disabled={loadingSymptom || !formData.symptoms.trim()}
                         className={`w-full py-4 px-8 rounded-xl font-semibold text-xl flex items-center justify-center gap-3 transition-all duration-300 transform ${loading || !formData.symptoms.trim()
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105 shadow-lg hover:shadow-xl'
                             }`}
                     >
-                        {loading ? (
+                        {loadingSymptom ? (
                             <>
                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                                 Analyzing Symptoms...
@@ -192,7 +194,7 @@ const Step2: React.FC<Step2Props> = ({
                 <button
                     onClick={predictDisease}
                     disabled={loading || formData.result_validate.symptoms.length === 0}
-                    className={`w-[30%] text-xl font-bold py-3 px-4 rounded-lg transition ${loading || formData.result_validate.symptoms.length === 0
+                    className={`flex items-center justify-center gap-4 md:w-[30%] text-xl font-bold py-3 px-4 rounded-lg transition ${loading || formData.result_validate.symptoms.length === 0
                         ? 'bg-gray-400 text-white cursor-not-allowed'
                         : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600 hover:scale-105 shadow-lg hover:shadow-xl'
                         }`}

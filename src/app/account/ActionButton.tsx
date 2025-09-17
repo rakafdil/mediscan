@@ -10,14 +10,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ handleLogout, updateProfi
             <button
                 onClick={handleLogout}
                 type="button"
-                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                className="md:px-8 md:py-3 px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
             >
                 Sign Out
             </button>
             <button
                 onClick={updateProfile}
                 disabled={saving}
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                className="md:px-8 md:py-3 px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
                 {saving ? (
                     <>

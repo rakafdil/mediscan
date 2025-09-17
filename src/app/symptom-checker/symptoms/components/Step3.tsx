@@ -91,6 +91,12 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
             {isOpen && (
                 <div className="px-6 py-5 bg-white border-t-2 border-gray-100 rounded-b-xl animate-fadeIn">
                     <div className="space-y-4">
+
+                        <div>
+                            <p className="text-sm font-semibold text-gray-600 mb-1">Disease Name:</p>
+                            <p className={`text-lg font-bold text-gray-700`}>{disease}</p>
+                        </div>
+
                         <div>
                             <p className="text-sm font-semibold text-gray-600 mb-1">Probability:</p>
                             <p className={`text-lg font-bold ${textColor}`}>{percentage}%</p>
@@ -153,6 +159,14 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
                         <div>
                             <span className="font-medium text-gray-600">Age:</span>
                             <span className="ml-2 text-gray-800">{formData.age} years old</span>
+                        </div>
+                        <div>
+                            <span className="font-medium text-gray-600">Height:</span>
+                            <span className="ml-2 text-gray-800">{formData.height} cm</span>
+                        </div>
+                        <div>
+                            <span className="font-medium text-gray-600">Weight:</span>
+                            <span className="ml-2 text-gray-800">{formData.weight} kg</span>
                         </div>
                     </div>
                 </div>

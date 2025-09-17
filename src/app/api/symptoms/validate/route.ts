@@ -6,7 +6,17 @@ import { summarizeWeather } from "@/hooks/summarizeWeather";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  console.log(body);
+
+  let weather: DailyWeatherFactors | undefined = undefined;
+  if (typeof body.weather === "string") {
+    try {
+      weather = JSON.parse(body.weather);
+    } catch {
+      weather = undefined;
+    }
+  } else {
+    weather = body.weather;
+  }
 
   const userComplication: UserComplication = {
     gender: body.gender,
@@ -16,7 +26,7 @@ export async function POST(req: NextRequest) {
     symptoms: body.symptoms,
     histories: body.histories,
     location: body.location,
-    weather: body.weather as DailyWeatherFactors,
+    weather: weather as DailyWeatherFactors,
   };
 
   const bmi =

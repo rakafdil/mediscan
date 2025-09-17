@@ -1,7 +1,7 @@
 import { CompleteProfile } from './types';
 import ScanHistoryCard from './ScanHistoryCard';
 
-import { FiShield } from 'react-icons/fi'
+import { FiShield } from 'react-icons/fi';
 
 interface ScanHistoryTabProps {
     profile: CompleteProfile

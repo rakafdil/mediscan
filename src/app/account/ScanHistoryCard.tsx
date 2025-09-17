@@ -31,9 +31,17 @@ const ScanHistoryCard: React.FC<ScanHistoryCardProps> = ({ scan, index, ref }) =
             <div>
                 <h5 className="font-medium text-gray-900 mb-2">Diseases:</h5>
                 {Array.isArray(scan.diseases) ? (
-                    <ul className="flex flex-row gap-3">
+                    <ul className="flex flex-row gap-3 flex-wrap">
                         {scan.diseases?.map((disease, discIndex) => (
-                            <li key={discIndex} className="text-gray-700 bg-blue-200 px-5 py-1 rounded-3xl">{disease?.disease_name}</li>
+                            <li
+                                key={discIndex}
+                                className="text-gray-700 bg-blue-200 px-5 py-1 rounded-3xl max-w-[120px] truncate"
+                                title={disease?.disease_name}
+                            >
+                                {disease?.disease_name?.length > 16
+                                    ? `${disease.disease_name.slice(0, 13)}...`
+                                    : disease?.disease_name}
+                            </li>
                         ))}
                     </ul>
                 ) : (
