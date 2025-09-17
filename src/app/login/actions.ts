@@ -24,7 +24,6 @@ export async function login(formData: FormData) {
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    console.log(data)
 
     if (error) {
         redirect(`/login?error=${mapAuthErrorMessage(error.message)}`);

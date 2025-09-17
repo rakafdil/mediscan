@@ -13,7 +13,7 @@ const MedicalItem: React.FC<MedicalItemProps> = ({ item, onRemove, bgColor }) =>
         <button
             type="button"
             onClick={() => onRemove(item)}
-            className="text-red-600 hover:text-red-800 transition-colors"
+            className="cursor-pointer text-red-600 hover:text-red-800 transition-colors"
         >
             <FiTrash2 className="w-5 h-5" />
         </button>

@@ -5,34 +5,33 @@ import { DailyWeatherFactors } from "@/hooks/getWeatherFactors";
 import { summarizeWeather } from "@/hooks/summarizeWeather";
 
 export async function POST(req: NextRequest) {
-    const body = await req.json();
-    console.log(body);
+  const body = await req.json();
 
-    const userComplication: UserComplication = {
-        gender: body.gender,
-        age: body.age,
-        height: body.height,
-        weight: body.weight,
-        symptoms: body.symptoms,
-        histories: body.histories,
-        location: body.location,
-        weather: body.weather as DailyWeatherFactors,
-    };
+  const userComplication: UserComplication = {
+    gender: body.gender,
+    age: body.age,
+    height: body.height,
+    weight: body.weight,
+    symptoms: body.symptoms,
+    histories: body.histories,
+    location: body.location,
+    weather: body.weather as DailyWeatherFactors,
+  };
 
-    const bmi = (Number(userComplication.weight) / ((Number(userComplication.height) / 100) ** 2)).toFixed(2);
+  const bmi = (Number(userComplication.weight) / ((Number(userComplication.height) / 100) ** 2)).toFixed(2);
 
-    function getBMICategory(bmi: number) {
-        if (bmi < 18.5) return "Underweight";
-        if (bmi < 25) return "Normal";
-        if (bmi < 30) return "Overweight";
-        return "Obese";
-    }
+  function getBMICategory(bmi: number) {
+    if (bmi < 18.5) return "Underweight";
+    if (bmi < 25) return "Normal";
+    if (bmi < 30) return "Overweight";
+    return "Obese";
+  }
 
-    const weatherSummary = userComplication.weather
-        ? summarizeWeather(userComplication.weather)
-        : "Weather data unavailable";
+  const weatherSummary = userComplication.weather
+    ? summarizeWeather(userComplication.weather)
+    : "Weather data unavailable";
 
-    const messages = `{
+  const messages = `{
   "user_data": {
     "age": "${userComplication.age}", 
     "gender": "${userComplication.gender}", 
@@ -76,34 +75,31 @@ Rules:
 - Keep description short and easy to understand.
 `;
 
-    try {
-        const aiText = await main(messages);
+  try {
+    const aiText = await main(messages);
 
-        console.log("AI Response:", aiText);
-
-        if (!aiText) {
-            return NextResponse.json({ error: "No response from AI service" }, { status: 500 });
-        }
-
-        const cleanJson = aiText
-            .replace(/```(json)?\s*/gi, "")
-            .replace(/```$/m, "")
-            .trim();
-
-        const parsed = JSON.parse(cleanJson);
-        console.log("Parsed JSON:", parsed);
-        return NextResponse.json(parsed);
-
-    } catch (error) {
-        console.error("API Error:", error);
-
-        if (error instanceof SyntaxError) {
-            return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
-        }
-
-        return NextResponse.json({
-            error: "Internal server error",
-            details: error instanceof Error ? error.message : 'Unknown error'
-        }, { status: 500 });
+    if (!aiText) {
+      return NextResponse.json({ error: "No response from AI service" }, { status: 500 });
     }
+
+    const cleanJson = aiText
+      .replace(/```(json)?\s*/gi, "")
+      .replace(/```$/m, "")
+      .trim();
+
+    const parsed = JSON.parse(cleanJson);
+    return NextResponse.json(parsed);
+
+  } catch (error) {
+    console.error("API Error:", error);
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Invalid JSON from AI" }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
 }

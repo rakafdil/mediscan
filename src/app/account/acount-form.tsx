@@ -111,7 +111,7 @@ export default function AccountForm({ user }: { user: User | null }) {
                     <p className="text-red-500 mb-4">{error}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 cursor-pointer"
                     >
                         Retry
                     </button>

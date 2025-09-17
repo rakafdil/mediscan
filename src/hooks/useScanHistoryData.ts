@@ -48,8 +48,6 @@ export const useScanHistoryData = (user: User | null) => {
                 throw fetchError
             }
 
-            console.log("data", data);
-
             if (data && data.length > 0) {
                 const transformedData = data.map((scanEntry: any) => ({
                     scan_id: scanEntry.scan_id.toString(),
@@ -77,7 +75,6 @@ export const useScanHistoryData = (user: User | null) => {
                     })) || []
                 }))
 
-                console.log("transformedData", transformedData);
                 setScanHistory(transformedData as ScanHistory[])
             } else {
                 setScanHistory([])
@@ -100,7 +97,6 @@ export const useScanHistoryData = (user: User | null) => {
         if (!user?.id) return false
 
         try {
-            console.log('Update scan history not implemented for new structure')
             return false
         } catch (err) {
             console.error('Error updating scan history:', err)
@@ -147,7 +143,6 @@ export const useScanHistoryData = (user: User | null) => {
 
             // 3. Process each result from the prediction
             for (const result of scanResult.result_prediction?.result as PredictionResult['result']) {
-                console.log("result", result);
                 if (result.disease && result.disease.trim() !== "") {
                     // Handle disease
                     let diseaseId = null;
@@ -233,7 +228,6 @@ export const useScanHistoryData = (user: User | null) => {
 
                         if (symptomInsertError) throw symptomInsertError
                         symptomId = newSymptom?.symptom_id;
-                        console.log("masok", symptomId);
                     }
 
                     if (symptomId) {

@@ -29,7 +29,7 @@ const MedicalInput: React.FC<MedicalInputProps> = ({
         <button
             type="button"
             onClick={onAdd}
-            className={`w-full sm:w-auto px-6 py-3 ${buttonColor} text-white rounded-lg ${buttonHoverColor} transition-colors flex items-center justify-center space-x-2`}
+            className={`cursor-pointer w-full sm:w-auto px-6 py-3 ${buttonColor} text-white rounded-lg ${buttonHoverColor} transition-colors flex items-center justify-center space-x-2`}
         >
             <FiPlus className="w-5 h-5" />
             <span>Add</span>

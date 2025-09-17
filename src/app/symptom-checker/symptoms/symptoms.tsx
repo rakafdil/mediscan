@@ -50,7 +50,7 @@ const bar = (width: number) => {
     return (
         <div
             style={{ width: `${width}%` }}
-            className='h-2 bg-[#6AC2EA] absolute left-0 md:top-[28%] lg:top-[22%] top-[24%] transform -translate-y-1/2 transition-all duration-300 rounded-full z-0'
+            className='h-2 bg-[#6AC2EA] absolute left-0 md:top-[28%] lg:top-[22%] top-[24%] transform -translate-y-1/2 transition-all duration-400 rounded-full z-0'
         />
     );
 }
@@ -217,7 +217,6 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
     }, [profileHook?.profileData]);
 
     useEffect(() => {
-        console.log("form data", locationHook?.locationData)
         if (!locationHook?.locationData) return;
 
         const {
