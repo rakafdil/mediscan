@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export const useSearchLocationData = () => {
     const getCoordinates = async (country: string, state: string, city: string) => {
         try {
