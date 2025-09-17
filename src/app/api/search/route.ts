@@ -110,21 +110,42 @@ async function searchWithGoogleAPI(keyword: string): Promise<SearchResult[]> {
             return [];
         }
 
-        return data.items.map((item: GoogleSearchItem, index: number) => {
-            const image =
-                item.pagemap?.cse_image?.[0]?.src ||
-                item.pagemap?.thumbnail?.[0]?.src ||
-                undefined;
+        const TRUSTED_DOMAINS = [
+            "who.int",
+            "cdc.gov",
+            "nih.gov",
+            "mayoclinic.org",
+            "healthline.com",
+            "webmd.com",
+            "alodokter.com",
+            "hellosehat.com",
+            "klikdokter.com"
+        ];
 
-            return {
-                id: `google-${Date.now()}-${index}`,
-                judul: item.title?.trim() || "Tidak ada judul",
-                isi: item.snippet?.trim() || "Tidak ada deskripsi",
-                link: item.link,
-                source: "google-custom-search",
-                image, // sertakan gambar kalau ada
-            };
-        });
+        return data.items
+            .filter(item => {
+                try {
+                    const url = new URL(item.link);
+                    return TRUSTED_DOMAINS.some(domain => url.hostname.includes(domain));
+                } catch {
+                    return false;
+                }
+            })
+            .map((item: GoogleSearchItem, index: number) => {
+                const image =
+                    item.pagemap?.cse_image?.[0]?.src ||
+                    item.pagemap?.thumbnail?.[0]?.src ||
+                    undefined;
+
+                return {
+                    id: `google-${Date.now()}-${index}`,
+                    judul: item.title?.trim() || "Tidak ada judul",
+                    isi: item.snippet?.trim() || "Tidak ada deskripsi",
+                    link: item.link,
+                    source: "google-custom-search",
+                    image,
+                };
+            });
     } catch (error) {
         if (error instanceof Error) {
             if (error.name === "AbortError") {

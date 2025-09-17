@@ -35,8 +35,6 @@ const HealthInsightsDashboard = () => {
     const fetchArticles = async (category: string) => {
         setLoading(true);
         setError(null);
-
-        // Define keywords for each category
         const keywords = {
             general: 'daily health tips vitamins nutrition healthy lifestyle',
             brain: 'brain health mental stress depression intelligence memory'
@@ -230,33 +228,43 @@ const HealthInsightsDashboard = () => {
                                 .map((article, idx) => (
                                     <div
                                         key={`${article.id}-${idx}`}
-                                        className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 flex flex-col border border-gray-100 hover:border-blue-200 transition-all duration-300"
+                                        className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl p-4 sm:p-6 lg:p-8 flex flex-col border border-gray-100 hover:border-blue-200 transition-all duration-500 ease-out transform hover:-translate-y-3 hover:scale-105 cursor-pointer animate-fade-in-up"
+                                        style={{
+                                            animationDelay: `${idx * 150}ms`,
+                                            animationFillMode: 'both'
+                                        }}
                                     >
-                                        <div className="w-full h-40 sm:h-48 lg:h-56 rounded-xl mb-4 sm:mb-6 overflow-hidden">
+                                        <div className="w-full h-40 sm:h-48 lg:h-56 rounded-xl mb-4 sm:mb-6 overflow-hidden relative">
                                             <img
                                                 src={article.image || "https://nbhc.ca/sites/default/files/styles/article/public/default_images/news-default-image%402x_0.png?itok=B4jML1jF"}
                                                 alt={article.judul}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-110"
                                                 onError={handleImageError}
                                             />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                         </div>
-                                        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                                            {article.judul}
-                                        </h3>
-                                        <p className="text-sm sm:text-base text-gray-600 line-clamp-3 mb-4">
-                                            {article.isi}
-                                        </p>
-                                        <div className="mt-auto">
-                                            <a
-                                                href={article.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-[#217BFF] hover:text-blue-700 font-medium text-sm flex items-center transition-colors"
-                                            >
-                                                Read more →
-                                            </a>
-                                            <div className="text-xs text-gray-500 mt-2">
-                                                Source: {article.source}
+                                        <div className="flex flex-col flex-grow">
+                                            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors duration-300">
+                                                {article.judul}
+                                            </h3>
+                                            <p className="text-sm sm:text-base text-gray-600 line-clamp-3 mb-4 group-hover:text-gray-700 transition-colors duration-300">
+                                                {article.isi}
+                                            </p>
+                                            <div className="mt-auto transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                <a
+                                                    href={article.link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[#217BFF] hover:text-blue-700 font-medium text-sm flex items-center transition-all duration-300 group-hover:underline decoration-2 underline-offset-4"
+                                                >
+                                                    <span className="group-hover:translate-x-1 transition-transform duration-300">Read more</span>
+                                                    <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-2 group-hover:scale-110 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </a>
+                                                <div className="text-xs text-gray-500 mt-2 opacity-70 group-hover:opacity-100 transition-opacity duration-300">
+                                                    Source: {article.source}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -306,6 +314,23 @@ const HealthInsightsDashboard = () => {
                     </div>
                 )}
             </div>
+
+            <style jsx>{`
+                @keyframes fade-in-up {
+                    0% {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                .animate-fade-in-up {
+                    animation: fade-in-up 0.8s ease-out;
+                }
+            `}</style>
         </div>
     );
 };

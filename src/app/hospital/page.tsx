@@ -19,7 +19,7 @@ export default function HeroSection() {
                         
                         // Animasi counter untuk angka 3.155
                         let current = 0;
-                        const target = 3155;
+                        const target = 215977;
                         const increment = target / 100;
                         const timer = setInterval(() => {
                             current += increment;
@@ -108,7 +108,7 @@ export default function HeroSection() {
                         {counters.hospitals.toLocaleString()} +
                     </h3>
                     <p className="text-gray-600">
-                        More than 3,155 good hospitals in Indonesia are already registered
+                        Across the globe, thousands of hospitals are recognized among the best
                     </p>
                 </div>
 
