@@ -9,26 +9,64 @@ interface Article {
     isi: string;
     link: string;
     image?: string;
+    source: string;
 }
 
-const ARTICLES_PER_SLIDE = 3; // Tampilkan 3 artikel per slide
+interface SearchResponse {
+    results: Article[];
+    total: number;
+    keyword: string;
+}
+
+interface SearchError {
+    error: string;
+    details?: string;
+}
+
+const ARTICLES_PER_SLIDE = 3;
 
 const HealthInsightsDashboard = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState<'general' | 'brain'>('general');
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchArticles = async (category: string) => {
         setLoading(true);
-        const keyword = category === 'general' ? 'health' : 'brain health';
+        setError(null);
+
+        // Define keywords for each category
+        const keywords = {
+            general: 'daily health tips vitamins nutrition healthy lifestyle',
+            brain: 'brain health mental stress depression intelligence memory'
+        };
+
+        const keyword = keywords[category as keyof typeof keywords];
+
         try {
             const res = await fetch(`/api/search?q=${encodeURIComponent(keyword)}`);
-            const data: Article[] = await res.json();
-            setArticles(data);
+
+            if (!res.ok) {
+                const errorData: SearchError = await res.json();
+                throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+            }
+
+            const data: SearchResponse = await res.json();
+
+            if (data.results && Array.isArray(data.results)) {
+                setArticles(data.results);
+            } else {
+                const resultArray = Array.isArray(data) ? data : [];
+                setArticles(resultArray);
+            }
+
             setCurrentSlide(0);
+            setError(null);
         } catch (err) {
             console.error("Failed to fetch articles:", err);
+            const errorMessage = err instanceof Error ? err.message : "Failed to load health articles";
+            setError(errorMessage);
             setArticles([]);
         } finally {
             setLoading(false);
@@ -51,11 +89,21 @@ const HealthInsightsDashboard = () => {
         }
     };
 
-    // Auto slide
     useEffect(() => {
-        const interval = setInterval(nextSlide, 4000);
-        return () => clearInterval(interval);
-    }, [articles]);
+        if (articles.length > ARTICLES_PER_SLIDE && !loading && !error) {
+            const interval = setInterval(nextSlide, 4000);
+            return () => clearInterval(interval);
+        }
+    }, [articles, loading, error]);
+
+    const handleRetry = () => {
+        fetchArticles(selectedCategory);
+    };
+
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+        const target = e.target as HTMLImageElement;
+        target.src = "https://nbhc.ca/sites/default/files/styles/article/public/default_images/news-default-image%402x_0.png?itok=B4jML1jF";
+    };
 
     return (
         <div className="min-h-screen">
@@ -103,7 +151,8 @@ const HealthInsightsDashboard = () => {
                 <div className="flex flex-wrap justify-center gap-3 mb-8">
                     <button
                         onClick={() => setSelectedCategory('general')}
-                        className={`px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${selectedCategory === 'general'
+                        disabled={loading}
+                        className={`px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base disabled:opacity-50 ${selectedCategory === 'general'
                             ? 'bg-[#217BFF] text-white shadow-lg'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
@@ -112,7 +161,8 @@ const HealthInsightsDashboard = () => {
                     </button>
                     <button
                         onClick={() => setSelectedCategory('brain')}
-                        className={`px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${selectedCategory === 'brain'
+                        disabled={loading}
+                        className={`px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base disabled:opacity-50 ${selectedCategory === 'brain'
                             ? 'bg-blue-500 text-white shadow-lg'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
@@ -121,11 +171,34 @@ const HealthInsightsDashboard = () => {
                     </button>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl text-center">
+                        <p className="text-red-700 mb-4">{error}</p>
+                        <button
+                            onClick={handleRetry}
+                            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                )}
+
                 {loading ? (
-                    <div className="text-center text-gray-500 py-10">Loading articles...</div>
-                ) : articles.length === 0 ? (
-                    <div className="text-center text-gray-500 py-10">No articles found.</div>
-                ) : (
+                    <div className="text-center text-gray-500 py-10">
+                        <div className="inline-flex items-center">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading articles...
+                        </div>
+                    </div>
+                ) : articles.length === 0 && !error ? (
+                    <div className="text-center text-gray-500 py-10">
+                        <p>No articles found for {selectedCategory === 'general' ? 'general health' : 'brain health'}.</p>
+                    </div>
+                ) : !error && articles.length > 0 ? (
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-8">
                         {/* Prev Button */}
                         <button
@@ -156,25 +229,16 @@ const HealthInsightsDashboard = () => {
                                 .slice(currentSlide, currentSlide + ARTICLES_PER_SLIDE)
                                 .map((article, idx) => (
                                     <div
-                                        key={idx}
+                                        key={`${article.id}-${idx}`}
                                         className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 flex flex-col border border-gray-100 hover:border-blue-200 transition-all duration-300"
                                     >
                                         <div className="w-full h-40 sm:h-48 lg:h-56 rounded-xl mb-4 sm:mb-6 overflow-hidden">
-                                            {article.image ? (
-                                                <img
-                                                    src={article.image}
-                                                    alt={article.judul}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                                    <img
-                                                        src={"https://nbhc.ca/sites/default/files/styles/article/public/default_images/news-default-image%402x_0.png?itok=B4jML1jF"}
-                                                        alt="No image available"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            )}
+                                            <img
+                                                src={article.image || "https://nbhc.ca/sites/default/files/styles/article/public/default_images/news-default-image%402x_0.png?itok=B4jML1jF"}
+                                                alt={article.judul}
+                                                className="w-full h-full object-cover"
+                                                onError={handleImageError}
+                                            />
                                         </div>
                                         <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2">
                                             {article.judul}
@@ -182,12 +246,19 @@ const HealthInsightsDashboard = () => {
                                         <p className="text-sm sm:text-base text-gray-600 line-clamp-3 mb-4">
                                             {article.isi}
                                         </p>
-                                        <Link
-                                            href={article.link}
-                                            className="text-[#217BFF] hover:text-blue-700 font-medium text-sm flex items-center transition-colors"
-                                        >
-                                            Read more →
-                                        </Link>
+                                        <div className="mt-auto">
+                                            <a
+                                                href={article.link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[#217BFF] hover:text-blue-700 font-medium text-sm flex items-center transition-colors"
+                                            >
+                                                Read more →
+                                            </a>
+                                            <div className="text-xs text-gray-500 mt-2">
+                                                Source: {article.source}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                         </div>
@@ -215,23 +286,25 @@ const HealthInsightsDashboard = () => {
                             </svg>
                         </button>
                     </div>
-                )}
+                ) : null}
 
                 {/* Indicators */}
-                <div className="flex justify-center mt-6 sm:mt-8 gap-2">
-                    {Array.from({ length: Math.ceil(articles.length / ARTICLES_PER_SLIDE) }).map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setCurrentSlide(index * ARTICLES_PER_SLIDE)}
-                            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${index === Math.floor(currentSlide / ARTICLES_PER_SLIDE)
-                                ? 'bg-blue-500 scale-125'
-                                : 'bg-gray-300 hover:bg-gray-400'
-                                }`}
-                        >
-                            <span className="sr-only">Slide {index + 1}</span>
-                        </button>
-                    ))}
-                </div>
+                {articles.length > ARTICLES_PER_SLIDE && !error && (
+                    <div className="flex justify-center mt-6 sm:mt-8 gap-2">
+                        {Array.from({ length: Math.ceil(articles.length / ARTICLES_PER_SLIDE) }).map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentSlide(index * ARTICLES_PER_SLIDE)}
+                                className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${index === Math.floor(currentSlide / ARTICLES_PER_SLIDE)
+                                    ? 'bg-blue-500 scale-125'
+                                    : 'bg-gray-300 hover:bg-gray-400'
+                                    }`}
+                            >
+                                <span className="sr-only">Slide {index + 1}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

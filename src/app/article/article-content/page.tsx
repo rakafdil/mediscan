@@ -11,26 +11,70 @@ interface SearchResult {
     image?: string;
 }
 
+interface SearchResponse {
+    results: SearchResult[];
+    total: number;
+    keyword: string;
+}
+
+interface SearchError {
+    error: string;
+    details?: string;
+}
+
 export default function SearchPage() {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
 
     const handleSearch = async () => {
-        if (!query.trim()) return;
+        const trimmedQuery = query.trim();
+        if (!trimmedQuery) {
+            setError("Harap masukkan kata kunci pencarian");
+            return;
+        }
+
+        // Validate query length
+        if (trimmedQuery.length > 200) {
+            setError("Kata kunci terlalu panjang (maksimal 200 karakter)");
+            return;
+        }
+
         setLoading(true);
         setCurrentPage(1);
+        setError(null);
 
         try {
-            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            setResults(data);
+            const res = await fetch(`/api/search?q=${encodeURIComponent(trimmedQuery)}`);
+            
+            if (!res.ok) {
+                const errorData: SearchError = await res.json();
+                throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+            }
+
+            const data: SearchResponse = await res.json();
+            
+            // Handle the new API response structure
+            if (data.results && Array.isArray(data.results)) {
+                setResults(data.results);
+                setError(null);
+            } else {
+                // Fallback for old API structure (if data is directly an array)
+                const resultArray = Array.isArray(data) ? data : [];
+                setResults(resultArray);
+                setError(null);
+            }
+
         } catch (err) {
             console.error("Search failed:", err);
+            const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan saat mencari";
+            setError(errorMessage);
+            setResults([]);
         } finally {
             setLoading(false);
         }
@@ -39,6 +83,14 @@ export default function SearchPage() {
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             handleSearch();
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setQuery(e.target.value);
+        // Clear error when user starts typing
+        if (error) {
+            setError(null);
         }
     };
 
@@ -61,19 +113,27 @@ export default function SearchPage() {
                     <input
                         type="text"
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
+                        onChange={handleInputChange}
                         onKeyPress={handleKeyPress}
                         placeholder="Masukkan kata kunci..."
                         className="flex-grow border border-gray-300 rounded-lg px-4 py-2 max-w-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        maxLength={200}
                     />
                     <button
                         onClick={handleSearch}
-                        disabled={loading}
-                        className="bg-[#6B8FC4] hover:bg-[#217BFF] text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                        disabled={loading || !query.trim()}
+                        className="bg-[#6B8FC4] hover:bg-[#217BFF] text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? "Searching.." : "Search"}
                     </button>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-700 text-center">{error}</p>
+                    </div>
+                )}
 
                 {/* Results */}
                 {loading && (
@@ -90,6 +150,10 @@ export default function SearchPage() {
                                 src={r.image || "https://nbhc.ca/sites/default/files/styles/article/public/default_images/news-default-image%402x_0.png?itok=B4jML1jF"}
                                 alt={r.judul}
                                 className="w-full h-40 object-cover rounded mb-3"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "https://nbhc.ca/sites/default/files/styles/article/public/default_images/news-default-image%402x_0.png?itok=B4jML1jF";
+                                }}
                             />
                             <a
                                 href={r.link}
@@ -118,7 +182,6 @@ export default function SearchPage() {
                         </div>
                     ))}
                 </div>
-
 
                 {/* Pagination */}
                 {results.length > itemsPerPage && (
@@ -154,13 +217,13 @@ export default function SearchPage() {
                     </div>
                 )}
 
-                {results.length === 0 && query && (
+                {results.length === 0 && query && !loading && !error && (
                     <p className="text-center text-gray-500 mt-8">
                         Tidak ada hasil untuk <span className="font-medium">{query}</span>.
                     </p>
                 )}
 
-                {!loading && !query && (
+                {!loading && !query && !error && (
                     <p className="text-center text-gray-400 mt-8">
                         Masukkan kata kunci untuk memulai pencarian
                     </p>
