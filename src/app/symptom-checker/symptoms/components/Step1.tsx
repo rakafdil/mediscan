@@ -76,7 +76,9 @@ const Step1: React.FC<Step1Props> = ({
                 city: ''
             }
         }));
-        setCoordinates()
+        setTimeout(() => {
+            if (value) setCoordinates();
+        }, 200);
     };
 
     const handleStateChange = (value: string) => {
@@ -89,7 +91,9 @@ const Step1: React.FC<Step1Props> = ({
                 city: ''
             }
         }));
-        setCoordinates()
+        setTimeout(() => {
+            if (value) setCoordinates();
+        }, 200);
     };
 
     const handleCityChange = (value: string) => {
@@ -101,7 +105,9 @@ const Step1: React.FC<Step1Props> = ({
                 city: value
             }
         }));
-        setCoordinates()
+        setTimeout(() => {
+            if (value) setCoordinates();
+        }, 200);
     };
 
     const setCoordinates = async () => {

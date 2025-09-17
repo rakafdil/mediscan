@@ -3,10 +3,7 @@ import { useState } from 'react';
 export const useSearchLocationData = () => {
     const getCoordinates = async (country: string, state: string, city: string) => {
         try {
-            if (!country || !state || !city) {
-                throw new Error('Country, state, and city must be provided');
-            }
-            if (!state || !city) {
+            if (state === "" && city === "") {
                 const countryResponse = await fetch(`/api/regions?type=coordinates&country=${country}`);
                 const countryData = await countryResponse.json();
                 return {
@@ -18,7 +15,7 @@ export const useSearchLocationData = () => {
                     longitude: countryData.longitude,
                 };
             }
-            if (!city) {
+            if (city === "") {
                 const stateResponse = await fetch(`/api/regions?type=coordinates&country=${country}&state=${state}`);
                 const stateData = await stateResponse.json();
                 return {
@@ -35,6 +32,7 @@ export const useSearchLocationData = () => {
                 `/api/regions?type=coordinates&country=${country}&state=${state}&city=${encodeURIComponent(city)}`
             );
             const coords = await cityResponse.json();
+            console.log(coords)
 
             return {
                 country,
