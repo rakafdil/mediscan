@@ -16,18 +16,6 @@
 
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #ededed;
-  }
-
-  .dark {
-    --background: #645c5c;
-    --foreground: #ededed;
-  }
-}
-
 /* @media print {
   body * {
     visibility: hidden;

@@ -3,7 +3,6 @@ import { Josefin_Sans, Montserrat } from "next/font/google";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import "./globals.css";
-import { DarkModeProvider } from "./ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import Loading from "./components/Loading";
 const josefin = Josefin_Sans({
