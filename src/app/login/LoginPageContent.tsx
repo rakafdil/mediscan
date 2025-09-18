@@ -17,6 +17,8 @@ export default function LoginPageContent() {
     const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+
     const searchParams = useSearchParams();
     const next = searchParams.get("next");
 
@@ -35,6 +37,22 @@ export default function LoginPageContent() {
     const success = searchParams.get('success');
 
     const supabase = createClient();
+
+    const validatePassword = (password: string) => {
+        const errors = [];
+        if (password.length < 6) errors.push("at least 6 characters");
+        if (!/[A-Z]/.test(password)) errors.push("an uppercase letter");
+        if (!/[0-9]/.test(password)) errors.push("a number");
+        if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) errors.push("a symbol");
+        return errors.length
+            ? `Password must contain ${errors.join(", ")}.`
+            : null;
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setPasswordError(validatePassword(value));
+    };
 
     const loginWithGoogle = async () => {
         setIsGoogleLoading(true);
@@ -227,6 +245,7 @@ export default function LoginPageContent() {
                                         required
                                         className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                                         placeholder="Enter your password"
+                                        onChange={handlePasswordChange}
                                     />
                                     <button
                                         type="button"
@@ -236,6 +255,17 @@ export default function LoginPageContent() {
                                         <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                                     </button>
                                 </div>
+                                {/* Password requirements info */}
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Password must contain at least 6 characters, an uppercase letter, a number, and a symbol.
+                                </p>
+                                {/* Show error if password is not valid */}
+                                {passwordError && (
+                                    <div className="mt-2 text-xs text-red-600 flex items-center gap-2">
+                                        <CircleAlert className="w-4 h-4" />
+                                        {passwordError}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Confirm Password (Sign Up Only) */}
