@@ -254,6 +254,7 @@ const Step1: React.FC<Step1Props> = ({
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                 value={formData.location.country || ''}
                                 onChange={(e) => handleCountryChange(e.target.value)}
+                                disabled={false}
                             >
                                 <option className="bg-white" value="">
                                     {!selectedCountry && "Select Country"}
@@ -270,9 +271,10 @@ const Step1: React.FC<Step1Props> = ({
                                 State/Province
                             </label>
                             <select
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:text-gray-300"
                                 value={formData.location.state || ''}
                                 onChange={(e) => handleStateChange(e.target.value)}
+                                disabled={formData.location.country === ""}
                             >
                                 <option className="bg-white" value="">
                                     Select State/Province
@@ -289,9 +291,9 @@ const Step1: React.FC<Step1Props> = ({
                                 City
                             </label>
                             <select
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:text-gray-300"
                                 value={selectedCity}
-                                disabled={cities.length === 0}
+                                disabled={cities.length === 0 || formData.location.country === "" || formData.location.state === ""}
                                 onChange={(e) => handleCityChange(e.target.value)}
                             >
                                 <option className="bg-white" value="">
@@ -314,6 +316,7 @@ const Step1: React.FC<Step1Props> = ({
                 titleClassName="text-xl md:text-2xl font-bold"
             >
                 <EditableList
+                    variant="history"  
                     items={formData.histories.diseases || []}
                     onAdd={(item) => setFormData(prev => ({
                         ...prev,
@@ -351,6 +354,7 @@ const Step1: React.FC<Step1Props> = ({
                 titleClassName="text-xl md:text-2xl font-bold"
             >
                 <EditableList
+                    variant="history"
                     items={formData.histories.allergies || []}
                     onAdd={(item) => setFormData(prev => ({
                         ...prev,
@@ -388,7 +392,7 @@ const Step1: React.FC<Step1Props> = ({
                 className={`cursor-pointer w-full md:w-[80%] text-xl font-bold py-3 px-4 rounded-lg transition
                     ${formData.age && formData.gender
                         ? "bg-blue-500 text-white cursor-pointer hover:bg-blue-600 hover:scale-105 shadow-lg hover:shadow-xl"
-                        : "bg-gray-400 text-white cursor-not-allowed"
+                        : "bg-gray-400 text-white !cursor-not-allowed"
                     }`}
                 onClick={onNext}
             >

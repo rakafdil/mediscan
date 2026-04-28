@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from "../../../public/assets/Logo.png";
-import AuthButton from './auth-buttons'
+// import AuthButton from './auth-buttons'
 
 interface NavLink {
     href: string;
@@ -106,9 +106,9 @@ const Navbar: React.FC = () => {
                         </ul>
                     </div>
 
-                    <div className="hidden md:flex ">
+                    {/* <div className="hidden md:flex ">
                         <AuthButton />
-                    </div>
+                    </div> */}
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden">
@@ -160,9 +160,9 @@ const Navbar: React.FC = () => {
                                             />
                                         </li>
                                     ))}
-                                    <li className="">
+                                    {/* <li className="">
                                         <AuthButton />
-                                    </li>
+                                    </li> */}
                                 </ul>
                             </motion.div>
                         </>

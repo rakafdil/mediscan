@@ -23,7 +23,7 @@ const Step2: React.FC<Step2Props> = ({
     loading,
     setLoading
 }) => {
-
+    const [symptomInput, setSymptomInput] = useState("");
     const [loadingSymptom, setLoadingSymptom] = useState(false);
     const validateSymptoms = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,7 +34,7 @@ const Step2: React.FC<Step2Props> = ({
                 formData.age,
                 formData.height,
                 formData.weight,
-                formData.symptoms,
+                symptomInput,        // ← dari local state, bukan formData.symptoms
                 formData.histories,
                 `${formData.location.city}, ${formData.location.country}`,
                 formData.weather
@@ -88,31 +88,29 @@ const Step2: React.FC<Step2Props> = ({
         <div className='flex items-center flex-col gap-8 pb-20 w-full max-w-6xl mx-auto px-4'>
             <StepContainer
                 className='w-full bg-white shadow-lg rounded-2xl p-8 animate-fadeInUp'
+                title="Describe Your Symptoms"
+                titleClassName="text-3xl font-bold text-gray-800 text-center"
             >
-                <div className="flex items-center justify-center gap-3 mb-4">
-                    <h2 className="text-3xl font-bold text-gray-800 text-center">Describe Your Symptoms</h2>
-                </div>
-
                 <div className="space-y-6">
                     <div className="relative">
                         <textarea
                             placeholder="Please describe what symptoms you're experiencing in detail. For example: 'I have a headache that started this morning, along with a mild fever and fatigue...'"
-                            value={formData.symptoms}
-                            onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
+                            value={symptomInput}
+                            onChange={(e) => setSymptomInput(e.target.value)}
                             className="w-full p-6 border-2 border-gray-200 rounded-xl min-h-[200px] text-lg leading-relaxed resize-none focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-300 shadow-sm"
                             rows={8}
                         />
                         <div className="absolute bottom-4 right-4 text-sm text-gray-400">
-                            {formData.symptoms.length}/500 characters
+                            {symptomInput.length}/500 characters
                         </div>
                     </div>
 
                     <button
                         onClick={validateSymptoms}
-                        disabled={loadingSymptom || !formData.symptoms.trim()}
-                        className={`w-full py-4 px-8 rounded-xl font-semibold text-xl flex items-center justify-center gap-3 transition-all duration-300 transform ${loading || !formData.symptoms.trim()
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer'
+                        disabled={loadingSymptom || !symptomInput.trim()}
+                        className={`w-full py-4 px-8 rounded-xl font-semibold text-xl flex items-center justify-center gap-3 transition-all duration-300 transform ${loadingSymptom || !symptomInput.trim()
+                                ? '!bg-gray-300 !text-gray-500 cursor-not-allowed'
+                                : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer'
                             }`}
                     >
                         {loadingSymptom ? (
@@ -146,13 +144,14 @@ const Step2: React.FC<Step2Props> = ({
                 </StepContainer>
             )}
 
-            {formData.result_validate.symptoms.length > -1 && (
+            {formData.result_validate.symptoms.length > 0 && (
                 <StepContainer
                     className='w-full rounded-2xl animate-fadeInUp delay-200'
                     title='Identified Symptoms'
                     titleClassName='text-3xl font-bold text-gray-800 text-center'
                 >
                     <EditableList
+                        variant="symptoms"
                         items={formData.result_validate.symptoms}
                         onAdd={(item) => setFormData(prev => ({
                             ...prev,
@@ -193,7 +192,6 @@ const Step2: React.FC<Step2Props> = ({
 
                 <button
                     onClick={predictDisease}
-                    disabled={loading || formData.result_validate.symptoms.length === 0}
                     className={`flex items-center justify-center gap-4 md:w-[30%] text-xl font-bold py-3 px-4 rounded-lg transition ${loading || formData.result_validate.symptoms.length === 0
                         ? 'bg-gray-400 text-white cursor-not-allowed'
                         : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600 hover:scale-105 shadow-lg hover:shadow-xl'

@@ -31,9 +31,13 @@ export interface LocationData {
     lat: number | null
 }
 
+export interface HistoryData {
+    name: string;
+    description: string;
+}
 export interface MedicalHistoryData {
-    allergies: string[]
-    diseases: string[]
+    allergies: HistoryData[]
+    diseases: HistoryData[]
 }
 
 export interface CompleteProfile extends ProfileData, LocationData, MedicalHistoryData {

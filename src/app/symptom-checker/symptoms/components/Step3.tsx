@@ -14,7 +14,9 @@ interface DiagnosisCardProps {
     probability: number;
     disease: string;
     description: string;
+    reasoning: string;
     precautions: string[] | string;
+    first_aid: string;
     index: number;
     isOpen: boolean;
     onToggle: () => void;
@@ -24,7 +26,9 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
     probability,
     disease,
     description,
+    reasoning,       // ← tambah
     precautions,
+    first_aid,       // ← tambah
     index,
     isOpen,
     onToggle
@@ -91,10 +95,9 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
             {isOpen && (
                 <div className="px-6 py-5 bg-white border-t-2 border-gray-100 rounded-b-xl animate-fadeIn">
                     <div className="space-y-4">
-
                         <div>
                             <p className="text-sm font-semibold text-gray-600 mb-1">Disease Name:</p>
-                            <p className={`text-lg font-bold text-gray-700`}>{disease}</p>
+                            <p className="text-lg font-bold text-gray-700">{disease}</p>
                         </div>
 
                         <div>
@@ -107,6 +110,24 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
                             <p className="text-gray-700 leading-relaxed">{description}</p>
                         </div>
 
+                        {reasoning && (
+                            <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+                                <p className="text-sm font-semibold text-indigo-700 mb-1 flex items-center gap-2">
+                                    🧠 AI Reasoning:
+                                </p>
+                                <p className="text-gray-700 leading-relaxed text-sm">{reasoning}</p>
+                            </div>
+                        )}
+
+                        {first_aid && (
+                            <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+                                <p className="text-sm font-semibold text-green-700 mb-1 flex items-center gap-2">
+                                    🩹 First Aid:
+                                </p>
+                                <p className="text-gray-700 leading-relaxed text-sm">{first_aid}</p>
+                            </div>
+                        )}
+
                         {parsedPrecautions && parsedPrecautions.length > 0 && (
                             <div>
                                 <p className="text-sm font-semibold text-gray-600 mb-2 flex items-center gap-2">
@@ -116,10 +137,7 @@ const DiagnosisCard: React.FC<DiagnosisCardProps> = ({
                                 <ul className="space-y-2">
                                     {parsedPrecautions.map((precaution: string, idx: number) =>
                                         precaution && (
-                                            <li
-                                                key={idx}
-                                                className="flex items-start gap-3 text-gray-700"
-                                            >
+                                            <li key={idx} className="flex items-start gap-3 text-gray-700">
                                                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                                                 <span className="leading-relaxed">{precaution}</span>
                                             </li>
@@ -179,12 +197,12 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
 
                     <p className="text-lg font-semibold text-gray-800 mb-0.2">Selected Symptoms</p>
                     {formData.result_validate.symptoms
-                        .filter(item => item.trim() !== "")
+                        .filter(item => item.name !== "")
                         .map((symptom, index) => (
                             <span
                                 key={index}
                                 className="inline-block bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full">
-                                {symptom}
+                                {symptom.name}
                             </span>
                         ))
                     }
@@ -201,7 +219,9 @@ const Step3: React.FC<Step3Props> = ({ formData, onNext, onBack }) => {
                                             probability={disease.probability}
                                             disease={disease.disease}
                                             description={disease.description}
+                                            reasoning={disease.reasoning}      // ← tambah
                                             precautions={disease.precautions}
+                                            first_aid={disease.first_aid}      // ← tambah
                                             index={index}
                                             isOpen={openCardIndex === index}
                                             onToggle={() => handleCardToggle(index)}

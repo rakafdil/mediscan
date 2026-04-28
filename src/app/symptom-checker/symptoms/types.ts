@@ -1,16 +1,37 @@
-import { LocationData, MedicalHistoryData, ScanHistory } from '@/app/account/types';
+import { LocationData, MedicalHistoryData } from '@/app/account/types';
 import { DailyWeatherFactors } from '@/hooks/getWeatherFactors';
+
+export interface Symptom {
+    name: string;
+    duration: string;
+    severity: string;
+    description: string;  
+}
 
 export interface DataValidate {
     response_for_user: string;
-    symptoms: string[];
+    symptoms: Symptom[];         
     symptoms_related: boolean;
 }
+
+export interface UserComplication {
+    gender: string;
+    age: string;
+    height: string;
+    weight: string;
+    symptoms: Symptom[];         
+    histories: MedicalHistoryData;
+    location: string;
+    weather: DailyWeatherFactors;
+}
+
 export interface Disease {
     disease: string;
     probability: number;
     description: string;
+    reasoning: string;     
     precautions: string[];
+    first_aid: string;      
 }
 
 export interface PredictionResult {
@@ -20,7 +41,7 @@ export interface PredictionResult {
 
 export interface ValidateResult {
     response_for_user: string;
-    symptoms: string[];
+    symptoms: Symptom[];
     symptoms_related: boolean;
 }
 
@@ -29,21 +50,10 @@ export interface FormData {
     age: string;
     height: string;
     weight: string;
-    symptoms: string;
+    symptoms: Symptom[];
     histories: MedicalHistoryData;
     location: LocationData;
     weather: string;
     result_validate: ValidateResult;
     result_prediction: PredictionResult | null;
-}
-
-export interface UserComplication {
-    gender: string
-    age: string
-    height: string
-    weight: string
-    symptoms: string
-    histories: string
-    location: string
-    weather: DailyWeatherFactors
 }

@@ -97,7 +97,7 @@ const Step4: React.FC<Step4Props> = ({ onNext, onBack, result, setStep }) => {
                     if (!res.ok) throw new Error('Failed to fetch hospitals');
                     const data = await res.json();
                     setHospitals(data.data || []);
-                } catch (err: any) {
+                } catch (err: unknown) {
                     console.error("Hospital fetch error:", err);
                     setErrorHospital("Failed to fetch hospitals");
                 } finally {

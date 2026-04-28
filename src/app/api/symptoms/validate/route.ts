@@ -1,103 +1,89 @@
 import { NextRequest, NextResponse } from "next/server";
-import { main } from "@/app/services/geminiServices";
-import { UserComplication } from "@/app/symptom-checker/symptoms/types";
-import { DailyWeatherFactors } from "@/hooks/getWeatherFactors";
-import { summarizeWeather } from "@/hooks/summarizeWeather";
+import Groq from "groq-sdk";
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
+  const {
+    gender,
+    age,
+    height,
+    weight,
+    histories,
+    location,
+    symptoms,
+    weather,
+  } = body;
 
-  let weather: DailyWeatherFactors | undefined = undefined;
-  if (typeof body.weather === "string") {
-    try {
-      weather = JSON.parse(body.weather);
-    } catch {
-      weather = undefined;
+  const bmi = (Number(weight) / (Number(height) / 100) ** 2).toFixed(2);
+
+  const systemPrompt = `You are a medical symptom extraction assistant for MediScan.
+
+Your task is to analyze a patient's free-text symptom description and extract structured symptom data.
+
+Patient context:
+- Age: ${age}, Gender: ${gender}
+- BMI: ${bmi} (Height: ${height}cm, Weight: ${weight}kg)
+- Location: ${location}
+- Weather condition: ${weather}
+- Medical history: ${JSON.stringify(histories)}
+
+Rules:
+1. Extract ONLY symptoms explicitly or implicitly mentioned in the user's text.
+2. For each symptom, estimate a reasonable duration if not stated (e.g. "unknown").
+3. Severity must be one of: "Mild", "Moderate", "Severe".
+4. Respond ONLY in valid JSON — no explanation, no markdown.
+5. Recognize informal, colloquial, or slang health terms in any language and map them to their proper medical symptom names.
+6. "bapil" is informal Indonesian slang for "batuk pilek" (cough + runny nose) — recognize common informal/slang health terms.
+7. add the scientific names after the general names of what user input (e.g. Batuk pilek (common cold))
+8. Treat each symptom as INDEPENDENT — do not infer causation between symptoms. Extract what the user states, nothing more.
+9. For each symptom, extract any additional contextual detail the user mentions (e.g. timing, triggers, associated sensations) into the "description" field. If none, leave as empty string.
+10. Format:
+{
+  "response_for_user": "string (brief, empathetic summary in the same language as user input)",
+  "symptoms": [
+    {
+      "name": "string",
+      "duration": "string",
+      "severity": "Mild" | "Moderate" | "Severe"
+      "description": "string" 
     }
-  } else {
-    weather = body.weather;
-  }
-
-  const userComplication: UserComplication = {
-    gender: body.gender,
-    age: body.age,
-    height: body.height,
-    weight: body.weight,
-    symptoms: body.symptoms,
-    histories: body.histories,
-    location: body.location,
-    weather: weather as DailyWeatherFactors,
-  };
-
-  const bmi =
-    userComplication.height && userComplication.weight
-      ? (Number(userComplication.weight) / ((Number(userComplication.height) / 100) ** 2)).toFixed(1)
-      : "unknown";
-
-  const weatherSummary = userComplication.weather
-    ? summarizeWeather(userComplication.weather)
-    : "Weather data unavailable";
-
-  const messages = `{
-  "user_data": {
-    "age": "${userComplication.age}", 
-    "gender": "${userComplication.gender}", 
-    "height": "${userComplication.height}", 
-    "weight": "${userComplication.weight}",
-    "BMI": "${bmi}",
-    "location": "${userComplication.location ? JSON.stringify(userComplication.location) : "unknown"}", 
-    "histories": "${userComplication.histories ? JSON.stringify(userComplication.histories) : "unknown"}"
-  },
-  "user_complication": "${userComplication.symptoms}",
-  "weather_on_user_location": "${weatherSummary}"
+  ],
+  "symptoms_related": boolean
 }
-    "user_complication": "${userComplication.symptoms}",
-    "weather_on_user_location": "${weatherSummary}"
-  }
 
-  You are a diagnoses validator and specifier. Your only tasks are:
-  1. Validate if the user is providing their symptoms/diagnosis.
-  2. If valid, respond by politely asking *only* about the symptoms they have already mentioned — no new symptoms should be introduced.
-  3. Always use formal, easy-to-understand language in the "response_for_user".
-  4. Consider user_data (including BMI category) and weather_on_user_location to produce the best, medically-reasonable response.
-  5. Always respond strictly in JSON format as follows:
-  {
-    "response_for_user": "string",
-    "symptoms": ["string", "string", "..."],
-    "symptoms_related": true | false
-  }
-
-  Rules:
-  - "response_for_user" should be a single sentence or short paragraph asking the user follow-up questions about the symptoms they mentioned, while also reflecting potential influences of BMI or weather if relevant.
-  - "symptoms" must be an array containing the exact symptoms described by the user, preserving all details, modifiers, and context (e.g., "persistent headache" instead of just "headache").
-  - Do not infer or add unrelated symptoms.
-  - Always produce valid JSON with no extra text outside the JSON.
-  `;
+example: 
+`;
 
   try {
-    const aiText = await main(messages);
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: symptoms },
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+    });
 
-    if (aiText === undefined)
-      return NextResponse.json({ error: "Response is empty" }, { status: 500 });
-    else if (typeof aiText !== "string")
+    const content = completion.choices[0].message.content;
+    if (!content)
       return NextResponse.json(
-        { error: "Invalid response type" },
-        { status: 500 }
+        { error: "No response from AI" },
+        { status: 500 },
       );
-    else {
-      const cleanJson = aiText
-        .replace(/```(json)?\s*/gi, "")
-        .replace(/```$/m, "")
-        .trim();
-      const parsed = JSON.parse(cleanJson);
-      return NextResponse.json(parsed);
-    }
-  } catch (e) {
-    console.error("JSON Error:", e);
-    console.log("AI Response:", e instanceof Error ? e.message : String(e));
+
+    const parsed = JSON.parse(content);
+    return NextResponse.json(parsed);
+  } catch (error) {
+    console.error("Validate API Error:", error);
     return NextResponse.json(
-      { error: "Invalid JSON from AI" },
-      { status: 500 }
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }

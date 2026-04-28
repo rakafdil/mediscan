@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const config = {
     cUrl: 'https://api.countrystatecity.in/v1/countries',
-    ckey: 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA==',
+    ckey: process.env.location_api_key ?? '',
 };
 
 // Helper untuk fetch dengan error handling

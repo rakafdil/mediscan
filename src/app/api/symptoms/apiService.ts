@@ -1,11 +1,12 @@
 import { MedicalHistoryData } from '@/app/account/types';
-import { DataValidate, PredictionResult } from '../../symptom-checker/symptoms/types';
+import { DataValidate, PredictionResult, Symptom } from '../../symptom-checker/symptoms/types';
 
-export const validateSymptoms = async (gender: string,
+export const validateSymptoms = async (
+    gender: string,
     age: string,
     height: string,
     weight: string,
-    symptoms: string,
+    symptoms: string,              
     histories: MedicalHistoryData,
     location: string,
     weather: string
@@ -14,21 +15,12 @@ export const validateSymptoms = async (gender: string,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            gender,
-            age,
-            height,
-            weight,
-            histories,
-            location,
-            symptoms,
-            weather
+            gender, age, height, weight,
+            histories, location, symptoms, weather
         }),
     });
 
-    if (!res.ok) {
-        throw new Error('Failed to validate symptoms');
-    }
-
+    if (!res.ok) throw new Error('Failed to validate symptoms');
     return res.json();
 };
 
@@ -37,7 +29,7 @@ export const predictDisease = async (
     age: string,
     height: string,
     weight: string,
-    symptoms: string[],
+    symptoms: Symptom[],          
     histories: MedicalHistoryData,
     location: string,
     weather: string
@@ -46,20 +38,11 @@ export const predictDisease = async (
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            gender,
-            age,
-            height,
-            weight,
-            histories,
-            location,
-            symptoms,
-            weather
+            gender, age, height, weight,
+            symptoms, histories, location, weather
         }),
     });
 
-    if (!res.ok) {
-        throw new Error('Failed to predict disease');
-    }
-
+    if (!res.ok) throw new Error('Failed to predict disease');
     return res.json();
 };

@@ -1,7 +1,7 @@
 
 
 "use client"
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormData } from './types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
@@ -13,14 +13,6 @@ import Step4 from './components/Step4';
 
 import Link from 'next/link';
 
-import { useProfileData } from '@/hooks/useProfileData';
-import { useLocationData } from '@/hooks/useLocationData';
-import { useMedicalHistoryData } from '@/hooks/useMedicalHistoryData';
-import { createClient } from '@/app/utils/supabase/client';
-import { type User } from '@supabase/supabase-js';
-import { useAllProfileData } from '@/hooks/useAllProfileData';
-import { useScanHistoryData } from '@/hooks/useScanHistoryData';
-import { redirect, useRouter, useSearchParams } from 'next/navigation';
 import { getDailyWeatherFactors } from '@/hooks/getWeatherFactors';
 
 const stepName = [
@@ -55,57 +47,18 @@ const bar = (width: number) => {
     );
 }
 
-const initialFormData: FormData = {
-    gender: "",
-    age: "",
-    height: "",
-    weight: "",
-    symptoms: "",
-    histories: {
-        allergies: [],
-        diseases: []
-    },
-    location: {
-        street: "",
-        city: "",
-        state: "",
-        country: "",
-        lon: 0,
-        lat: 0
-    },
-    weather: "",
-    result_validate: {
-        response_for_user: "",
-        symptoms: [],
-        symptoms_related: false
-    },
-    result_prediction: {
-        result: [],
-        scan_timestamp: ""
-    }
-};
-
-const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
+const DiagnosisFlow: React.FC = () => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [isComplete, setIsComplete] = useState(false);
 
-    const {
-        profile,
-        error,
-        updateAll,
-        profileHook,
-        locationHook,
-        medicalHook,
-        scanHook
-    } = useAllProfileData(user)
 
     const [formData, setFormData] = useState<FormData>({
         gender: "",
         age: "",
         height: "",
         weight: "",
-        symptoms: "",
+        symptoms: [],
         histories: {
             allergies: [],
             diseases: []
@@ -130,20 +83,6 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
         }
     });
 
-    const isFormChanged = JSON.stringify(formData) !== JSON.stringify(initialFormData);
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
-        if (isFormChanged) {
-            e.preventDefault();
-        }
-    };
-
-    useEffect(() => {
-        window.addEventListener("beforeunload", handleBeforeUnload);
-        return () => {
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-        };
-    }, [isFormChanged]);
 
     useEffect(() => {
         const fetchWeatherData = async () => {
@@ -165,103 +104,6 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
     }, [formData.location.lat, formData.location.lon]);
 
     useEffect(() => {
-        if (!medicalHook) return;
-
-        const { allergies, diseases } = medicalHook.medicalData;
-
-        setFormData(prev => {
-            if (
-                JSON.stringify(prev.histories.allergies) === JSON.stringify(allergies) &&
-                JSON.stringify(prev.histories.diseases) === JSON.stringify(diseases)
-            ) {
-                return prev;
-            }
-            return {
-                ...prev,
-                histories: {
-                    allergies,
-                    diseases
-                }
-            };
-        });
-    }, [medicalHook?.medicalData]);
-
-    useEffect(() => {
-        if (!profileHook) return;
-
-        const { age, gender, height, weight } = profileHook.profileData;
-
-        setFormData(prev => {
-            const ageString = age ? age.toString() : "";
-            const genderString = gender ? gender.toString() : "";
-            const heightString = height ? height.toString() : "";
-            const weightString = weight ? weight.toString() : "";
-
-            if (
-                prev.age === ageString &&
-                prev.gender === genderString &&
-                prev.height === heightString &&
-                prev.weight === weightString
-            ) {
-                return prev;
-            }
-
-            return {
-                ...prev,
-                age: ageString,
-                gender: genderString,
-                height: heightString,
-                weight: weightString,
-            };
-        });
-    }, [profileHook?.profileData]);
-
-    useEffect(() => {
-        if (!locationHook?.locationData) return;
-
-        const {
-            street,
-            city,
-            state,
-            country,
-            lon,
-            lat
-        } = locationHook.locationData;
-
-        setFormData(prev => {
-            const streetString = street ? street.toString() : "";
-            const cityString = city ? city.toString() : "";
-            const stateString = state ? state.toString() : "";
-            const countryString = country ? country.toString() : "";
-            const lonNumber = lon ? Number(lon) : 0;
-            const latNumber = lat ? Number(lat) : 0;
-
-            if (
-                prev.location.street === streetString &&
-                prev.location.city === cityString &&
-                prev.location.state === stateString &&
-                prev.location.country === countryString &&
-                prev.location.lon === lonNumber &&
-                prev.location.lat === latNumber
-            ) {
-                return prev;
-            }
-
-            return {
-                ...prev,
-                location: {
-                    country: countryString,
-                    street: streetString,
-                    city: cityString,
-                    state: stateString,
-                    lon: lonNumber,
-                    lat: latNumber
-                }
-            };
-        });
-    }, [locationHook?.locationData]);
-
-    useEffect(() => {
         if (formData.result_prediction?.result && formData.result_prediction.result.length > 0) {
             setIsComplete(true);
         }
@@ -281,22 +123,6 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
                         scan_timestamp: new Date().toISOString()
                     }
                 }));
-
-                const updatedFormData = {
-                    ...formData,
-                    result_prediction: {
-                        ...formData.result_prediction,
-                        scan_timestamp: new Date().toISOString()
-                    }
-                };
-
-                scanHook.addScanResult(updatedFormData, formData.result_validate.symptoms);
-                const goToHistory = window.confirm("Do you want to see the history?");
-                if (goToHistory) {
-                    redirect('/account/')
-                } else {
-                    redirect('/symptom-checker')
-                }
             }
         }
     };
@@ -304,8 +130,8 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
     const handleBack = () => {
         const hasData = formData.gender !== "" ||
             formData.age !== "" ||
-            formData.symptoms !== "" ||
-            formData.result_validate.symptoms.some(s => s !== "");
+            formData.symptoms.length === 0 ||
+            formData.result_validate.symptoms.some(s => s.name !== "");
 
         if (hasData) {
             const confirmed = window.confirm(
@@ -326,18 +152,18 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
             case 1:
                 return true;
             case 2:
-                return formData.gender !== "" && formData.age !== "" && formData.height !== "" && formData.weight !== "" && formData.location.country !== "" && formData.location.city !== "" && formData.location.state !== "";
+                return formData.gender !== "" && formData.age !== "" && formData.height !== "" && formData.weight !== "";
             case 3:
                 return formData.result_prediction?.result &&
                     formData.result_prediction.result.length > 0;
             case 4:
-                return formData.symptoms !== "" &&
-                    formData.result_validate.symptoms.some(s => s.trim() !== "") &&
+                return formData.symptoms.length === 0 &&
+                    formData.result_validate.symptoms.some(s => s.name !== "") &&
                     formData.result_prediction?.result &&
                     formData.result_prediction.result.length > 0;
             case 5:
-                return formData.symptoms !== "" &&
-                    formData.result_validate.symptoms.some(s => s.trim() !== "") &&
+                return formData.symptoms.length === 0 &&
+                    formData.result_validate.symptoms.some(s => s.name !== "") &&
                     formData.result_prediction?.result &&
                     formData.result_prediction.result.length > 0;
             default:
@@ -381,7 +207,6 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
                         onBack={prevStep}
                         setStep={setStep}
                         result={formData.result_prediction || undefined}
-
                     />
                 );
         }
@@ -462,7 +287,7 @@ const DiagnosisFlow: React.FC<{ user: User | null }> = ({ user }) => {
                                 </div>
                             )}
 
-                            <span className={`md:text-2xl text-sm text-center ${!isStepAccessible(item.step) ? 'text-gray-400' : 'text-black'}`}>
+                            <span className={`md:text-2xl text-sm text-center ${!isStepAccessible(item.step) ? 'text-gray-400' : 'text-black'} ${item.step === step && '!text-blue-400'}`}>
                                 {item.name}
                             </span>
                         </div>

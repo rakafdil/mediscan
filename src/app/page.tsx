@@ -1,4 +1,3 @@
-// pages/LandingPage.jsx or components/LandingPage.jsx
 'use client'
 
 import HeroSection from './components/HeroSection';
