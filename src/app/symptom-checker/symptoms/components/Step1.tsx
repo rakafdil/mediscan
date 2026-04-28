@@ -26,6 +26,70 @@ const Step1: React.FC<Step1Props> = ({
 
     const searchCoor = useSearchLocationData();
 
+    const [locating, setLocating] = useState(false);
+    const [locError, setLocError] = useState<string | null>(null);
+
+    const handleUseMyLocation = () => {
+        if (!navigator.geolocation) {
+            setLocError("Geolocation is not supported by your browser");
+            return;
+        }
+        setLocating(true);
+        setLocError(null);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+
+                // Reverse geocode via Nominatim untuk dapat nama lokasi
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=en`,
+                        { headers: { 'User-Agent': 'MediScan/1.0' } }
+                    );
+                    const data = await res.json();
+                    const addr = data.address ?? {};
+
+                    const country = addr.country ?? '';
+                    const state = addr.state ?? addr.province ?? addr.region ?? '';
+                    const city = addr.city ?? addr.town ?? addr.village ?? addr.county ?? '';
+
+                    setSelectedCountry(country);
+                    setSelectedState(state);
+                    setSelectedCity(city);
+
+                    setFormData(prev => ({
+                        ...prev,
+                        location: {
+                            ...prev.location,
+                            country,
+                            state,
+                            city,
+                            lat: latitude,
+                            lon: longitude,
+                        }
+                    }));
+                } catch {
+                    // Koordinat tetap tersimpan walau reverse geocode gagal
+                    setFormData(prev => ({
+                        ...prev,
+                        location: { ...prev.location, lat: latitude, lon: longitude }
+                    }));
+                    setLocError("Got coordinates but couldn't resolve location name");
+                } finally {
+                    setLocating(false);
+                }
+            },
+            (err) => {
+                setLocating(false);
+                setLocError(
+                    err.code === 1 ? "Location permission denied" :
+                        err.code === 2 ? "Location unavailable" :
+                            "Location request timed out"
+                );
+            },
+            { timeout: 10000, maximumAge: 60000 }
+        );
+    };
     useEffect(() => {
         fetch('/api/regions?type=countries')
             .then((res) => res.json())
@@ -244,7 +308,47 @@ const Step1: React.FC<Step1Props> = ({
                 title="Location"
                 titleClassName="text-xl md:text-2xl font-bold"
             >
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
+                    {/* Tombol Use My Location */}
+                    <div className="flex flex-col items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={handleUseMyLocation}
+                            disabled={locating}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 border-2
+                    ${locating
+                                    ? 'border-gray-300 text-gray-400 cursor-not-allowed'
+                                    : 'border-blue-400 text-blue-600 hover:bg-blue-50 hover:scale-105 cursor-pointer'
+                                }`}
+                        >
+                            {locating ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400" />
+                                    Detecting location...
+                                </>
+                            ) : (
+                                <>
+                                    📍 Use My Location
+                                </>
+                            )}
+                        </button>
+                        {locError && (
+                            <p className="text-sm text-red-500">{locError}</p>
+                        )}
+                        {formData.location.lat && formData.location.lon && (
+                            <p className="text-xs text-gray-400">
+                                📌 {formData.location.lat.toFixed(4)}, {formData.location.lon.toFixed(4)}
+                                {formData.location.city && ` — ${formData.location.city}`}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-4 text-gray-400 text-sm">
+                        <div className="flex-1 h-px bg-gray-200" />
+                        <span>or select manually</span>
+                        <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                         <div>
                             <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
@@ -316,7 +420,7 @@ const Step1: React.FC<Step1Props> = ({
                 titleClassName="text-xl md:text-2xl font-bold"
             >
                 <EditableList
-                    variant="history"  
+                    variant="history"
                     items={formData.histories.diseases || []}
                     onAdd={(item) => setFormData(prev => ({
                         ...prev,
