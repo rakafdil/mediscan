@@ -32,14 +32,15 @@ export const predictDisease = async (
     symptoms: Symptom[],          
     histories: MedicalHistoryData,
     location: string,
-    weather: string
+    weather: string,
+    user_language: string
 ): Promise<PredictionResult> => {
     const res = await fetch("/api/symptoms/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             gender, age, height, weight,
-            symptoms, histories, location, weather
+            symptoms, histories, location, weather, user_language
         }),
     });
 

@@ -6,6 +6,62 @@ import { Symptom } from "@/app/symptom-checker/symptoms/types";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+interface DiagnosisSnapshot {
+    disease: string;
+    estimated_probability: number;
+}
+
+function hasProbabilityConverged(
+    prev: DiagnosisSnapshot[],
+    curr: DiagnosisSnapshot[],
+    threshold = 0.05
+): boolean {
+    if (prev.length === 0 || curr.length === 0) return false;
+    if (prev.length !== curr.length) return false;
+
+    // Sort keduanya by disease name agar comparable
+    const sortedPrev = [...prev].sort((a, b) => a.disease.localeCompare(b.disease));
+    const sortedCurr = [...curr].sort((a, b) => a.disease.localeCompare(b.disease));
+
+    return sortedPrev.every((p, i) => {
+        const c = sortedCurr[i];
+        return p.disease === c.disease &&
+            Math.abs(p.estimated_probability - c.estimated_probability) < threshold;
+    });
+}
+
+function handleEvaluateConfidence(
+    args: {
+        current_diagnoses: DiagnosisSnapshot[];
+        confidence_level: string;
+        gaps: string[];
+    },
+    previousSnapshot: DiagnosisSnapshot[]
+): { result: string; shouldStop: boolean; snapshot: DiagnosisSnapshot[] } {
+    const converged = hasProbabilityConverged(previousSnapshot, args.current_diagnoses);
+    const highConfidence = args.confidence_level === "high";
+    const noGaps = args.gaps.length === 0;
+
+    const shouldStop = converged || (highConfidence && noGaps);
+
+    return {
+        result: JSON.stringify({
+            converged,
+            should_stop: shouldStop,
+            reason: shouldStop
+                ? converged
+                    ? "Probabilities have converged — no significant change from previous iteration."
+                    : "High confidence with no remaining knowledge gaps."
+                : `Continue research. Confidence: ${args.confidence_level}. Gaps: ${args.gaps.join("; ")}`,
+            recommendation: shouldStop
+                ? "Proceed to final JSON output."
+                : "Continue calling search_medical_literature or calculate_risk_factors for remaining gaps.",
+        }),
+        shouldStop,
+        snapshot: args.current_diagnoses,
+    };
+}
+
 // ─── Tool definitions ──────────────────────────────────────────────────────────
 
 const tools: Groq.Chat.ChatCompletionTool[] = [
@@ -69,6 +125,42 @@ const tools: Groq.Chat.ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "evaluate_confidence",
+      description:
+        "Evaluate current diagnostic confidence and decide whether more research is needed. Call this after gathering sufficient evidence to check if probabilities have converged.",
+      parameters: {
+        type: "object",
+        properties: {
+          current_diagnoses: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                disease: { type: "string" },
+                estimated_probability: { type: "number" },
+              },
+            },
+            description: "Current estimated diagnoses with probabilities",
+          },
+          confidence_level: {
+            type: "string",
+            enum: ["low", "medium", "high"],
+            description: "Overall confidence in current differential diagnosis",
+          },
+          gaps: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              "Remaining knowledge gaps that need further research. Empty array if confident.",
+          },
+        },
+        required: ["current_diagnoses", "confidence_level", "gaps"],
+      },
+    },
+  },
 ];
 
 // ─── Tool handlers ─────────────────────────────────────────────────────────────
@@ -119,61 +211,98 @@ function handleCalculateRiskFactors(args: {
 
 // ─── Agentic loop ──────────────────────────────────────────────────────────────
 
+// ─── Agentic loop dengan konvergensi ──────────────────────────────────────────
 async function runAgenticPrediction(
-  messages: Groq.Chat.ChatCompletionMessageParam[],
+    messages: Groq.Chat.ChatCompletionMessageParam[]
 ): Promise<string> {
-  const MAX_ITERATIONS = 5;
-  let iteration = 0;
+    const MAX_ITERATIONS = 6; // lebih banyak untuk riset mendalam
+    let iteration = 0;
+    let previousSnapshot: DiagnosisSnapshot[] = [];
+    let forceStop = false;
 
-  while (iteration < MAX_ITERATIONS) {
-    iteration++;
+    while (iteration < MAX_ITERATIONS && !forceStop) {
+        iteration++;
+        console.log(`[MediScan] Iteration ${iteration}/${MAX_ITERATIONS}`);
 
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages,
-      tools,
-      tool_choice: iteration === 1 ? "auto" : "auto",
-      temperature: 0.2,
-    });
+        const response = await groq.chat.completions.create({
+            model: "openai/gpt-oss-120b",
+            messages,
+            tools,
+            tool_choice: "auto",
+            temperature: 0.15, // lebih rendah = lebih deterministik untuk riset
+            max_tokens: 4096,
+        });
 
-    const choice = response.choices[0];
+        const choice = response.choices[0];
 
-    // Selesai — kembalikan hasil
-    if (choice.finish_reason === "stop") {
-      return choice.message.content ?? "";
-    }
-
-    // Ada tool call — proses semua
-    if (choice.finish_reason === "tool_calls" && choice.message.tool_calls) {
-      messages.push({ ...choice.message, role: "assistant" });
-
-      for (const toolCall of choice.message.tool_calls) {
-        const args = JSON.parse(toolCall.function.arguments);
-        let result = "";
-
-        if (toolCall.function.name === "search_medical_literature") {
-          result = handleSearchMedicalLiterature(args);
-        } else if (toolCall.function.name === "calculate_risk_factors") {
-          result = handleCalculateRiskFactors(args);
+        if (choice.finish_reason === "stop") {
+            console.log(`[MediScan] Finished at iteration ${iteration} (stop)`);
+            return choice.message.content ?? "";
         }
 
-        messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: result,
-        });
-      }
+        if (choice.finish_reason === "tool_calls" && choice.message.tool_calls) {
+            messages.push({ ...choice.message, role: "assistant" });
 
-      continue;
+            for (const toolCall of choice.message.tool_calls) {
+                const args = JSON.parse(toolCall.function.arguments);
+                let result = "";
+
+                if (toolCall.function.name === "search_medical_literature") {
+                    result = handleSearchMedicalLiterature(args);
+
+                } else if (toolCall.function.name === "calculate_risk_factors") {
+                    result = handleCalculateRiskFactors(args);
+
+                } else if (toolCall.function.name === "evaluate_confidence") {
+                    const evaluation = handleEvaluateConfidence(args, previousSnapshot);
+                    result = evaluation.result;
+                    previousSnapshot = evaluation.snapshot;
+
+                    if (evaluation.shouldStop) {
+                        forceStop = true;
+                        console.log(`[MediScan] Converged at iteration ${iteration} — stopping early`);
+                        // Inject instruksi untuk langsung output final JSON
+                        messages.push({
+                            role: "tool",
+                            tool_call_id: toolCall.id,
+                            content: result,
+                        });
+                        messages.push({
+                            role: "user",
+                            content: "Research complete. Now produce the final JSON prediction based on all gathered evidence."
+                        });
+                        break;
+                    }
+                }
+
+                if (!forceStop) {
+                    messages.push({
+                        role: "tool",
+                        tool_call_id: toolCall.id,
+                        content: result,
+                    });
+                }
+            }
+
+            continue;
+        }
+
+        break;
     }
 
-    // Fallback jika finish_reason tidak terduga
-    break;
-  }
+    // Jika loop habis atau forceStop, minta final output
+    if (iteration >= MAX_ITERATIONS || forceStop) {
+        console.log(`[MediScan] Requesting final output after ${iteration} iterations`);
+        const finalResponse = await groq.chat.completions.create({
+            model: "openai/gpt-oss-120b",
+            messages,
+            temperature: 0.1,
+            max_tokens: 4096,
+        });
+        return finalResponse.choices[0].message.content ?? "";
+    }
 
-  throw new Error(
-    "Agentic loop exceeded max iterations without final response",
-  );
+    throw new Error("Agentic loop exited unexpectedly");
 }
 
 // ─── Route handler ─────────────────────────────────────────────────────────────
@@ -199,20 +328,30 @@ export async function POST(req: NextRequest) {
     ? summarizeWeather(weather)
     : "Weather data unavailable";
 
-  const systemPrompt = `You are MediScan's AI medical prediction agent — an expert differential diagnosis assistant.
+  const systemPrompt = `You are MediScan's AI medical prediction agent — an expert differential diagnosis assistant with deep reasoning capability.
 
-You have access to tools to cross-reference symptoms with medical literature and calculate patient risk factors. You MUST use these tools before producing your final answer.
+You have access to tools for research and self-evaluation. Follow this workflow rigorously:
 
 Workflow:
-1. Call search_medical_literature with relevant symptom combinations.
-2. Call calculate_risk_factors for each top candidate disease.
-3. Synthesize all findings into a final JSON prediction.
+1. Call search_medical_literature for the primary symptom cluster.
+2. Call search_medical_literature again for secondary/atypical presentations and weather-related conditions.
+3. Call calculate_risk_factors for each candidate disease (minimum 3 diseases).
+4. Call evaluate_confidence to assess if your differential diagnosis has converged.
+   - If confidence is LOW or gaps remain → continue researching.
+   - If confidence is HIGH and probabilities converged → proceed to final output.
+5. Repeat steps 1–4 as needed until evaluate_confidence signals to stop.
+6. Output final JSON with user's language ${body.user_language}.
+
+Research guidelines:
+- Do NOT limit to a single body system. Always consider systemic, infectious, environmental, and metabolic causes.
+- Actively correlate weather data (temperature, humidity, air quality) with disease likelihood.
+- Do NOT hallucinate patient habits unless explicitly stated in input.
+- Minimum 2 search_medical_literature calls and 3 calculate_risk_factors calls before first evaluate_confidence.
 
 Output rules:
-- Predict a MAXIMUM of 5 diseases, ordered by probability (highest first).
-- Probability must be between 0 and 1.
-- Always end with a professional note to consult a doctor.
-- Respond ONLY with valid JSON in this exact format:
+- Maximum 5 diseases, ordered by probability (highest first).
+- Probability between 0 and 1.
+- Respond ONLY with valid JSON:
 
 {
   "result": [
@@ -220,12 +359,12 @@ Output rules:
       "disease": "string",
       "probability": float,
       "description": "string",
-      "reasoning": "string (why this disease matches the patient's profile and symptoms)",
+      "reasoning": "string (cite specific symptoms, patient factors, AND weather context)",
       "precautions": ["string", "string"],
-      "first_aid": "string (immediate steps the patient can take)"
+      "first_aid": "string"
     }
   ],
-  "disclaimer": "string (always remind to consult a professional doctor)"
+  "disclaimer": "string"
 }`;
 
   const userMessage = `Patient Profile:
@@ -236,9 +375,12 @@ Output rules:
 - Medical History: ${JSON.stringify(body.histories)}
 
 Verified Symptoms:
-${symptoms.map(s =>
-    `- ${s.name} | Duration: ${s.duration} | Severity: ${s.severity}${s.description ? ` | Note: ${s.description}` : ''}`
-).join("\n")}
+${symptoms
+  .map(
+    (s) =>
+      `- ${s.name} | Duration: ${s.duration} | Severity: ${s.severity}${s.description ? ` | Note: ${s.description}` : ""}`,
+  )
+  .join("\n")}
 
 Environmental Context:
 ${weatherSummary}`;

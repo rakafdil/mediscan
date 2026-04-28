@@ -12,6 +12,7 @@ export interface DataValidate {
     response_for_user: string;
     symptoms: Symptom[];         
     symptoms_related: boolean;
+    user_language: string;
 }
 
 export interface UserComplication {
@@ -43,6 +44,7 @@ export interface ValidateResult {
     response_for_user: string;
     symptoms: Symptom[];
     symptoms_related: boolean;
+    user_language: string;
 }
 
 export interface FormData {

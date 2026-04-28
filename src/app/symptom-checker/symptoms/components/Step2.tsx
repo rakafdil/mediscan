@@ -34,7 +34,7 @@ const Step2: React.FC<Step2Props> = ({
                 formData.age,
                 formData.height,
                 formData.weight,
-                symptomInput,        // ← dari local state, bukan formData.symptoms
+                symptomInput,      
                 formData.histories,
                 `${formData.location.city}, ${formData.location.country}`,
                 formData.weather
@@ -46,7 +46,8 @@ const Step2: React.FC<Step2Props> = ({
                     ...prev.result_validate,
                     response_for_user: data.response_for_user,
                     symptoms: [...prev.result_validate.symptoms, ...data.symptoms],
-                    symptoms_related: data.symptoms_related
+                    symptoms_related: data.symptoms_related,
+                    user_language: data.user_language
                 }
             }));
         } catch (err) {
@@ -68,7 +69,8 @@ const Step2: React.FC<Step2Props> = ({
                 formData.result_validate.symptoms,
                 formData.histories,
                 `${formData.location.city}, ${formData.location.country}`,
-                formData.weather
+                formData.weather,
+                formData.result_validate.user_language
             );
 
             setFormData((prev) => ({

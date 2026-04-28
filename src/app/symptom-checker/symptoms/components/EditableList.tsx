@@ -280,10 +280,10 @@ const EditableList: React.FC<EditableListProps> = ({
                                             </span>
                                             {variant === 'symptoms' && (
                                                 <span className="text-sm text-gray-400">
-                                                    {(item as Symptom).duration} · {(item as Symptom).severity}
+                                                    {(item as Symptom).duration} · {(item as Symptom).severity} |
                                                     {(item as Symptom).description && (
                                                         <span className="text-xs text-gray-400 truncate italic">
-                                                            {(item as Symptom).description}
+                                                            {" " + (item as Symptom).description}
                                                         </span>
                                                     )}
                                                 </span>
