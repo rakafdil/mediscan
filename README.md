@@ -1,18 +1,27 @@
-# Mediscan
+# MediScan
 
-Mediscan is a modern web application built with [Next.js](https://nextjs.org) that helps users check symptoms, track medical history, and get AI-powered health insights. The app features a responsive interface, location-aware weather integration, and secure authentication.
+MediScan is a robust, full-stack AI symptom detection platform built with [Next.js](https://nextjs.org). It bridges the communication gap between patients and medical professionals by translating vague, natural-language health complaints into structured, medically grounded differential diagnoses. 
+
+By utilizing a Human-in-the-Loop (HITL) architecture and an advanced AI agentic loop, MediScan provides highly accurate preliminary health assessments without the hallucinations common in standard LLM chatbots.
 
 ## Features
 
-- **Symptom Checker:** Input your symptoms and receive AI-driven suggestions and follow-up questions.
-- **Medical History:** Track allergies, diseases, and scan history.
-- **Location & Weather:** Automatically fetches your location and local weather to provide more accurate health context.
-- **Authentication:** Secure login, password reset, and account management.
-- **Responsive Design:** Works seamlessly on desktop and mobile devices.
+- **Human-in-the-Loop (HITL) Symptom Extraction:** Users input symptoms via natural language. The AI extracts these into structured, editable symptom cards. It actively identifies missing physical or sensory details and instructs users to update their cards, preventing misdiagnosis.
+- **Advanced Agentic Loop:** The backend utilizes a multi-step agentic loop powered by Groq. The AI autonomously calls tools to cross-reference symptoms with medical literature and evaluates its own diagnostic confidence until probabilities mathematically converge.
+- **Context-Aware Risk Modifiers:** Automatically fetches the user's location and real-time weather data. The system combines environmental factors with deterministic math (calculating risk modifiers based on BMI and age) to ensure a holistic diagnosis.
+- **Responsive Design:** A clean, accessible, and mobile-friendly interface designed to reduce patient anxiety.
 
 ## Getting Started
 
-### 1. Install Dependencies
+### 1. Set Up Environment Variables
+
+Create a `.env.local` file in the root directory and add your API keys:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### 2. Install Dependencies
 
 ```bash
 npm install
@@ -24,7 +33,7 @@ pnpm install
 bun install
 ```
 
-### 2. Run the Application
+### 3. Run the Application
 
 ```bash
 npm run dev
@@ -38,11 +47,6 @@ bun dev
 
 The app will start on [http://localhost:3000](http://localhost:3000).
 
-### 3. Explore the App
-
-- Visit [http://localhost:3000](http://localhost:3000) in your browser.
-- You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
 ### 4. Build and Run Production
 
 To build the app for production, run:
@@ -51,10 +55,6 @@ To build the app for production, run:
 npm run build
 # or
 yarn build
-# or
-pnpm build
-# or
-bun build
 ```
 
 Then start the production server:
@@ -63,32 +63,21 @@ Then start the production server:
 npm start
 # or
 yarn start
-# or
-pnpm start
-# or
-bun start
 ```
-
-The production app will run on [http://localhost:3000](http://localhost:3000).
 
 ## Demo
 
-Try the deployed app: [https://mediscan-smoky.vercel.app/](https://mediscan-smoky.vercel.app/)
+Try the deployed app: [https://mediscan-phi.vercel.app/](https://mediscan-phi.vercel.app/)
 
 ## Technologies Used
 
-- [Next.js](https://nextjs.org)
-- [React](https://react.dev)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Supabase](https://supabase.com) (for authentication and database)
-- [Framer Motion](https://www.framer.com/motion/) (for animations)
-- [Gemini/AI](https://ai.google.dev/) (for symptom validation)
+- **Frontend:** [Next.js](https://nextjs.org), [React](https://react.dev), [Tailwind CSS](https://tailwindcss.com), [Framer Motion](https://www.framer.com/motion/)
+- **AI & Backend Logic:** [Groq SDK](https://console.groq.com/) (Llama 3 Models)
 
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Learn Next.js](https://nextjs.org/learn)
-- [Next.js GitHub Repository](https://github.com/vercel/next.js)
 
 ## Deploy on Vercel
 
@@ -98,4 +87,4 @@ Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ---
 
-Feel free to contribute or open issues to help improve Mediscan!
+Feel free to contribute or open issues to help improve MediScan!

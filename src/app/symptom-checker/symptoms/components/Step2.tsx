@@ -103,7 +103,7 @@ const Step2: React.FC<Step2Props> = ({
                             rows={8}
                         />
                         <div className="absolute bottom-4 right-4 text-sm text-gray-400">
-                            {symptomInput.length}/500 characters
+                            {symptomInput.length} characters
                         </div>
                     </div>
 

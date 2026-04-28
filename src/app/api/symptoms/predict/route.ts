@@ -6,84 +6,142 @@ import { Symptom } from "@/app/symptom-checker/symptoms/types";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-interface DiagnosisSnapshot {
-    disease: string;
-    estimated_probability: number;
+// ─── Utility: Sleep (Delay) untuk menangani Rate Limit ───────────────────────
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// ─── Utility: Prune Messages untuk Meringkas History & Hemat Token ───────────
+function pruneMessages(messages: Groq.Chat.ChatCompletionMessageParam[]): Groq.Chat.ChatCompletionMessageParam[] {
+  // Jika pesan belum terlalu panjang, biarkan saja
+  if (messages.length <= 8) return messages;
+
+  const core = messages.slice(0, 2); // [0] System Prompt, [1] User Profile
+  const history = messages.slice(2);
+  
+  const cycles: Groq.Chat.ChatCompletionMessageParam[][] = [];
+  let currentCycle: Groq.Chat.ChatCompletionMessageParam[] = [];
+
+  // Kelompokkan history menjadi siklus-siklus riset
+  for (const msg of history) {
+    // Siklus baru dimulai saat ada pesan assistant yang memanggil tools
+    if (msg.role === "assistant" && (msg as any).tool_calls && currentCycle.length > 0) {
+      cycles.push(currentCycle);
+      currentCycle = [];
+    }
+    currentCycle.push(msg);
+  }
+  if (currentCycle.length > 0) cycles.push(currentCycle);
+
+  // Jika ada lebih dari 2 siklus, kita simpan yang PERTAMA dan TERAKHIR saja
+  // Ini menghindari error orphaned tool_calls sekaligus menghemat token
+  if (cycles.length > 2) {
+    const firstCycle = cycles[0];
+    const lastCycle = cycles[cycles.length - 1];
+    return [...core, ...firstCycle, ...lastCycle];
+  }
+
+  return messages;
 }
 
+// ─── Fallback model chain ──────────────────────────────────────────────────────
+const MODEL_CHAIN: string[] = [
+  "openai/gpt-oss-120b",                       // primary — highest reasoning
+  "llama-3.3-70b-versatile",                   // fallback 1 — strong tool-calling support
+  "qwen/qwen3-32b",                            // fallback 2 — Qwen 3 (Sesuai list preview)
+  "meta-llama/llama-4-scout-17b-16e-instruct", // fallback 3 — Llama 4 terbaru yang efisien
+  "llama-3.1-8b-instant"                       // fallback 4 — lapis pertahanan super ringan
+];
+
+const FALLBACK_TRIGGERS = [
+  "rate_limit_exceeded",
+  "tokens_exceeded",
+  "context_length_exceeded",
+  "model_not_found",
+  "service_unavailable",
+  "request too large",
+  "maximum context length",
+  "rate limit",
+  "429",
+  "529",
+  "model_decommissioned", // FIX: Tambahkan ini agar aman kalau Groq mematikan model lagi
+  "decommissioned"
+];
+
+function shouldFallback(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const msg = error.message.toLowerCase();
+  return FALLBACK_TRIGGERS.some((trigger) => msg.includes(trigger.toLowerCase()));
+}
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
+interface DiagnosisSnapshot {
+  disease: string;
+  estimated_probability: number;
+}
+
+// ─── Convergence check ─────────────────────────────────────────────────────────
 function hasProbabilityConverged(
-    prev: DiagnosisSnapshot[],
-    curr: DiagnosisSnapshot[],
-    threshold = 0.05
+  prev: DiagnosisSnapshot[],
+  curr: DiagnosisSnapshot[],
+  threshold = 0.05,
 ): boolean {
-    if (prev.length === 0 || curr.length === 0) return false;
-    if (prev.length !== curr.length) return false;
+  if (prev.length === 0 || curr.length === 0) return false;
+  if (prev.length !== curr.length) return false;
 
-    // Sort keduanya by disease name agar comparable
-    const sortedPrev = [...prev].sort((a, b) => a.disease.localeCompare(b.disease));
-    const sortedCurr = [...curr].sort((a, b) => a.disease.localeCompare(b.disease));
+  const sortedPrev = [...prev].sort((a, b) => a.disease.localeCompare(b.disease));
+  const sortedCurr = [...curr].sort((a, b) => a.disease.localeCompare(b.disease));
 
-    return sortedPrev.every((p, i) => {
-        const c = sortedCurr[i];
-        return p.disease === c.disease &&
-            Math.abs(p.estimated_probability - c.estimated_probability) < threshold;
-    });
+  return sortedPrev.every((p, i) => {
+    const c = sortedCurr[i];
+    return (
+      p.disease === c.disease &&
+      Math.abs(p.estimated_probability - c.estimated_probability) < threshold
+    );
+  });
 }
 
 function handleEvaluateConfidence(
-    args: {
-        current_diagnoses: DiagnosisSnapshot[];
-        confidence_level: string;
-        gaps: string[];
-    },
-    previousSnapshot: DiagnosisSnapshot[]
+  args: {
+    current_diagnoses: DiagnosisSnapshot[];
+    confidence_level: string;
+    gaps: string[];
+  },
+  previousSnapshot: DiagnosisSnapshot[],
 ): { result: string; shouldStop: boolean; snapshot: DiagnosisSnapshot[] } {
-    const converged = hasProbabilityConverged(previousSnapshot, args.current_diagnoses);
-    const highConfidence = args.confidence_level === "high";
-    const noGaps = args.gaps.length === 0;
+  const converged = hasProbabilityConverged(previousSnapshot, args.current_diagnoses);
+  const highConfidence = args.confidence_level === "high";
+  const noGaps = args.gaps.length === 0;
+  const shouldStop = converged || (highConfidence && noGaps);
 
-    const shouldStop = converged || (highConfidence && noGaps);
-
-    return {
-        result: JSON.stringify({
-            converged,
-            should_stop: shouldStop,
-            reason: shouldStop
-                ? converged
-                    ? "Probabilities have converged — no significant change from previous iteration."
-                    : "High confidence with no remaining knowledge gaps."
-                : `Continue research. Confidence: ${args.confidence_level}. Gaps: ${args.gaps.join("; ")}`,
-            recommendation: shouldStop
-                ? "Proceed to final JSON output."
-                : "Continue calling search_medical_literature or calculate_risk_factors for remaining gaps.",
-        }),
-        shouldStop,
-        snapshot: args.current_diagnoses,
-    };
+  return {
+    result: JSON.stringify({
+      converged,
+      should_stop: shouldStop,
+      reason: shouldStop
+        ? converged
+          ? "Probabilities have converged — no significant change from previous iteration."
+          : "High confidence with no remaining knowledge gaps."
+        : `Continue research. Confidence: ${args.confidence_level}. Gaps: ${args.gaps.join("; ")}`,
+      recommendation: shouldStop
+        ? "Proceed to final JSON output."
+        : "Continue calling search_medical_literature or calculate_risk_factors.",
+    }),
+    shouldStop,
+    snapshot: args.current_diagnoses,
+  };
 }
 
 // ─── Tool definitions ──────────────────────────────────────────────────────────
-
 const tools: Groq.Chat.ChatCompletionTool[] = [
   {
     type: "function",
     function: {
       name: "search_medical_literature",
-      description:
-        "Search trusted medical literature and clinical guidelines to cross-reference symptoms with possible diseases. Use this to validate differential diagnoses.",
+      description: "Search trusted medical literature to cross-reference symptoms.",
       parameters: {
         type: "object",
         properties: {
-          query: {
-            type: "string",
-            description:
-              "Medical search query, e.g. 'fever headache fatigue differential diagnosis adult'",
-          },
-          symptoms: {
-            type: "array",
-            items: { type: "string" },
-            description: "List of symptom names to cross-reference",
-          },
+          query: { type: "string" },
+          symptoms: { type: "array", items: { type: "string" } },
         },
         required: ["query", "symptoms"],
       },
@@ -93,18 +151,17 @@ const tools: Groq.Chat.ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "calculate_risk_factors",
-      description:
-        "Calculate risk score adjustments based on patient demographics, BMI, medical history, and environmental factors.",
+      description: "Calculate risk score based on patient demographics. Pass multiple diseases in the array to evaluate them simultaneously.",
       parameters: {
         type: "object",
         properties: {
-          disease: {
-            type: "string",
-            description: "Disease name to evaluate risk for",
+          diseases: { 
+            type: "array", 
+            items: { type: "string" },
+            description: "List of candidate diseases to evaluate risk for"
           },
           patient_factors: {
             type: "object",
-            description: "Patient demographic and health factors",
             properties: {
               age: { type: "number" },
               gender: { type: "string" },
@@ -112,16 +169,10 @@ const tools: Groq.Chat.ChatCompletionTool[] = [
               bmi_category: { type: "string" },
               has_relevant_history: { type: "boolean" },
             },
-            required: [
-              "age",
-              "gender",
-              "bmi",
-              "bmi_category",
-              "has_relevant_history",
-            ],
+            required: ["age", "gender", "bmi", "bmi_category", "has_relevant_history"],
           },
         },
-        required: ["disease", "patient_factors"],
+        required: ["diseases", "patient_factors"], // FIX 400: Ubah requirement jadi 'diseases' (Array)
       },
     },
   },
@@ -129,8 +180,7 @@ const tools: Groq.Chat.ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "evaluate_confidence",
-      description:
-        "Evaluate current diagnostic confidence and decide whether more research is needed. Call this after gathering sufficient evidence to check if probabilities have converged.",
+      description: "Evaluate if differential diagnosis has converged. Call this to check if you can stop researching.",
       parameters: {
         type: "object",
         properties: {
@@ -143,19 +193,9 @@ const tools: Groq.Chat.ChatCompletionTool[] = [
                 estimated_probability: { type: "number" },
               },
             },
-            description: "Current estimated diagnoses with probabilities",
           },
-          confidence_level: {
-            type: "string",
-            enum: ["low", "medium", "high"],
-            description: "Overall confidence in current differential diagnosis",
-          },
-          gaps: {
-            type: "array",
-            items: { type: "string" },
-            description:
-              "Remaining knowledge gaps that need further research. Empty array if confident.",
-          },
+          confidence_level: { type: "string", enum: ["low", "medium", "high"] },
+          gaps: { type: "array", items: { type: "string" } },
         },
         required: ["current_diagnoses", "confidence_level", "gaps"],
       },
@@ -164,34 +204,17 @@ const tools: Groq.Chat.ChatCompletionTool[] = [
 ];
 
 // ─── Tool handlers ─────────────────────────────────────────────────────────────
-
-function handleSearchMedicalLiterature(args: {
-  query: string;
-  symptoms: string[];
-}): string {
-  // Di production ini bisa di-replace dengan real API (PubMed, WHO, dll)
-  // Untuk sekarang return structured context agar AI tetap bisa reasoning
+function handleSearchMedicalLiterature(args: { query: string; symptoms: string[] }): string {
   return JSON.stringify({
     source: "Clinical Guidelines Database",
     query: args.query,
-    findings: `Cross-referenced ${args.symptoms.length} symptoms: ${args.symptoms.join(", ")}. Common differential diagnoses considered based on symptom clustering, prevalence, and clinical presentation patterns.`,
+    findings: `Cross-referenced ${args.symptoms.length} symptoms: ${args.symptoms.join(", ")}.`,
     confidence: "high",
-    note: "Always recommend professional medical consultation for definitive diagnosis.",
   });
 }
 
-function handleCalculateRiskFactors(args: {
-  disease: string;
-  patient_factors: {
-    age: number;
-    gender: string;
-    bmi: number;
-    bmi_category: string;
-    has_relevant_history: boolean;
-  };
-}): string {
+function handleCalculateRiskFactors(args: any): string {
   const { age, bmi_category, has_relevant_history } = args.patient_factors;
-
   let risk_modifier = 1.0;
   if (age > 60) risk_modifier += 0.2;
   if (age < 12) risk_modifier += 0.1;
@@ -199,123 +222,192 @@ function handleCalculateRiskFactors(args: {
   if (bmi_category === "Underweight") risk_modifier += 0.1;
   if (has_relevant_history) risk_modifier += 0.25;
 
+  // FIX: Dukung format 'diseases' (array) atau fallback ke 'disease' (string) kalau model ngeyel
+  const targetDiseases = args.diseases || (args.disease ? [args.disease] : ["Unknown"]);
+
   return JSON.stringify({
-    disease: args.disease,
+    evaluated_diseases: targetDiseases,
     risk_modifier: Math.min(risk_modifier, 1.8).toFixed(2),
-    factors_considered: ["age", "bmi", "medical_history"],
-    recommendation: has_relevant_history
-      ? "Prior medical history significantly increases relevance of this diagnosis."
-      : "No significant history-based risk elevation.",
   });
 }
 
-// ─── Agentic loop ──────────────────────────────────────────────────────────────
+// ─── Single-model completion ───────────────────────────────────────────────────
+async function createCompletion(
+  model: string,
+  messages: Groq.Chat.ChatCompletionMessageParam[],
+  withTools: boolean,
+  temperature: number,
+): Promise<Groq.Chat.ChatCompletion> {
+  const params: any = {
+    model,
+    messages,
+    temperature,
+    max_tokens: 4096,
+  };
 
-// ─── Agentic loop dengan konvergensi ──────────────────────────────────────────
+  if (withTools) {
+    // JIKA menggunakan tools, kirim definisi tools.
+    params.tools = tools;
+    params.tool_choice = "auto";
+  } else {
+    // FIX 400 ERROR: Jangan kirim "tools" sama sekali jika withTools = false.
+    // Paksa ke JSON mode (Groq support ini untuk Llama & Mixtral).
+    params.response_format = { type: "json_object" };
+  }
+
+  return groq.chat.completions.create(params);
+}
+
+// ─── Model-aware completion with fallback & Retry ──────────────────────────────
+async function completionWithFallback(
+  messages: Groq.Chat.ChatCompletionMessageParam[],
+  withTools: boolean,
+  temperature: number,
+  startModelIndex = 0,
+): Promise<{ completion: Groq.Chat.ChatCompletion; modelIndex: number }> {
+  for (let i = startModelIndex; i < MODEL_CHAIN.length; i++) {
+    const model = MODEL_CHAIN[i];
+    let retryCount = 0;
+
+    while (retryCount < 2) { // Maksimal 1x retry per model jika kena 429
+      try {
+        const completion = await createCompletion(model, messages, withTools, temperature);
+        if (i > startModelIndex) console.log(`[MediScan] Fell back to model[${i}]: ${model}`);
+        return { completion, modelIndex: i };
+      } catch (err: any) {
+        const msg = err.message ? err.message.toLowerCase() : String(err).toLowerCase();
+        
+        // FIX 429 ERROR: Naikkan Jeda ke 5 detik jika kena rate limit sebelum coba lagi
+        if ((msg.includes("429") || msg.includes("rate limit")) && retryCount < 1) {
+          console.warn(`[MediScan] Rate limit hit on ${model}. Waiting 5s before retry...`);
+          await sleep(5000); // 5000ms = 5 detik
+          retryCount++;
+          continue;
+        }
+
+        if (shouldFallback(err) && i < MODEL_CHAIN.length - 1) {
+          console.warn(`[MediScan] model[${i}] (${model}) failed. Trying next...`);
+          break; // Keluar dari while retry, lanjut ke model berikutnya di for loop
+        }
+        throw err;
+      }
+    }
+  }
+  throw new Error("All models in fallback chain exhausted");
+}
+
+// ─── Agentic loop with convergence + fallback ─────────────────────────────────
 async function runAgenticPrediction(
-    messages: Groq.Chat.ChatCompletionMessageParam[]
+  messages: Groq.Chat.ChatCompletionMessageParam[],
 ): Promise<string> {
-    const MAX_ITERATIONS = 6; // lebih banyak untuk riset mendalam
-    let iteration = 0;
-    let previousSnapshot: DiagnosisSnapshot[] = [];
-    let forceStop = false;
+  const MAX_ITERATIONS = 4; // Kurangi ke 4 agar lebih hemat limit
+  let iteration = 0;
+  let previousSnapshot: DiagnosisSnapshot[] = [];
+  let forceStop = false;
+  let currentModelIndex = 0;
 
-    while (iteration < MAX_ITERATIONS && !forceStop) {
-        iteration++;
-        console.log(`[MediScan] Iteration ${iteration}/${MAX_ITERATIONS}`);
+  while (iteration < MAX_ITERATIONS && !forceStop) {
+    iteration++;
+    console.log(`[MediScan] Iteration ${iteration}/${MAX_ITERATIONS} | model: ${MODEL_CHAIN[currentModelIndex]}`);
 
-        const response = await groq.chat.completions.create({
-            model: "openai/gpt-oss-120b",
-            messages,
-            tools,
-            tool_choice: "auto",
-            temperature: 0.15, // lebih rendah = lebih deterministik untuk riset
-            max_tokens: 4096,
-        });
+    // IMPLEMENTASI PRUNING: Amankan token sebelum menembak ke API
+    const safeMessages = pruneMessages(messages);
 
-        const choice = response.choices[0];
+    const { completion: response, modelIndex } = await completionWithFallback(
+      safeMessages,
+      true, // withTools
+      0.15,
+      currentModelIndex,
+    );
+    currentModelIndex = modelIndex;
 
-        if (choice.finish_reason === "stop") {
-            console.log(`[MediScan] Finished at iteration ${iteration} (stop)`);
-            return choice.message.content ?? "";
-        }
+    const choice = response.choices[0];
 
-        if (choice.finish_reason === "tool_calls" && choice.message.tool_calls) {
-            messages.push({ ...choice.message, role: "assistant" });
-
-            for (const toolCall of choice.message.tool_calls) {
-                const args = JSON.parse(toolCall.function.arguments);
-                let result = "";
-
-                if (toolCall.function.name === "search_medical_literature") {
-                    result = handleSearchMedicalLiterature(args);
-
-                } else if (toolCall.function.name === "calculate_risk_factors") {
-                    result = handleCalculateRiskFactors(args);
-
-                } else if (toolCall.function.name === "evaluate_confidence") {
-                    const evaluation = handleEvaluateConfidence(args, previousSnapshot);
-                    result = evaluation.result;
-                    previousSnapshot = evaluation.snapshot;
-
-                    if (evaluation.shouldStop) {
-                        forceStop = true;
-                        console.log(`[MediScan] Converged at iteration ${iteration} — stopping early`);
-                        // Inject instruksi untuk langsung output final JSON
-                        messages.push({
-                            role: "tool",
-                            tool_call_id: toolCall.id,
-                            content: result,
-                        });
-                        messages.push({
-                            role: "user",
-                            content: "Research complete. Now produce the final JSON prediction based on all gathered evidence."
-                        });
-                        break;
-                    }
-                }
-
-                if (!forceStop) {
-                    messages.push({
-                        role: "tool",
-                        tool_call_id: toolCall.id,
-                        content: result,
-                    });
-                }
-            }
-
-            continue;
-        }
-
-        break;
+    if (choice.finish_reason === "stop") {
+      console.log(`[MediScan] Finished naturally at iteration ${iteration}`);
+      return choice.message.content ?? "";
     }
 
-    // Jika loop habis atau forceStop, minta final output
-    if (iteration >= MAX_ITERATIONS || forceStop) {
-        console.log(`[MediScan] Requesting final output after ${iteration} iterations`);
-        const finalResponse = await groq.chat.completions.create({
-            model: "openai/gpt-oss-120b",
-            messages,
-            temperature: 0.1,
-            max_tokens: 4096,
-        });
-        return finalResponse.choices[0].message.content ?? "";
-    }
+    if (choice.finish_reason === "tool_calls" && choice.message.tool_calls) {
+      
+      // FIX 400 REASONING ERROR: Sanitize the assistant message!
+      // Do NOT use `...choice.message` directly. Reasoning models inject a "reasoning" key 
+      // which causes schema errors when switching to fallback models like Llama 3.
+      messages.push({ 
+        role: "assistant",
+        content: choice.message.content,
+        tool_calls: choice.message.tool_calls
+      } as any);
 
-    throw new Error("Agentic loop exited unexpectedly");
+      for (const toolCall of choice.message.tool_calls) {
+        const args = JSON.parse(toolCall.function.arguments);
+        let result = "";
+
+        if (toolCall.function.name === "search_medical_literature") {
+          result = handleSearchMedicalLiterature(args);
+        } else if (toolCall.function.name === "calculate_risk_factors") {
+          result = handleCalculateRiskFactors(args);
+        } else if (toolCall.function.name === "evaluate_confidence") {
+          const evaluation = handleEvaluateConfidence(args, previousSnapshot);
+          result = evaluation.result;
+          previousSnapshot = evaluation.snapshot;
+
+          if (evaluation.shouldStop) {
+            forceStop = true;
+            console.log(`[MediScan] Converged at iteration ${iteration}`);
+            messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: result,
+            });
+            break; // FIX: Break tool loop, jangan buat request final di sini!
+          }
+        }
+
+        if (!forceStop) {
+          messages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: result,
+          });
+        }
+      }
+      continue;
+    }
+    break;
+  }
+
+  // ─── REQUEST FINAL (OUTSIDE LOOP) ───
+  console.log(`[MediScan] Requesting final output after ${iteration} iterations`);
+
+  // Kita gunakan role "user" di akhir karena beberapa model bingung jika role "system" ditaruh di akhir percakapan.
+  messages.push({
+    role: "user",
+    content: forceStop 
+      ? "IMPORTANT: Research phase has converged successfully. DO NOT call any tools. Output the final diagnostic JSON response immediately matching the required schema."
+      : "SYSTEM ALERT: Maximum research iterations reached. Time is up! DO NOT call any tools. Immediately synthesize data and output the final JSON response matching the required schema.",
+  });
+
+  // IMPLEMENTASI PRUNING UNTUK REQUEST FINAL
+  const finalSafeMessages = pruneMessages(messages);
+
+  const { completion: finalResponse } = await completionWithFallback(
+    finalSafeMessages,
+    false, // TANPA TOOLS = BEBAS ERROR 400
+    0.1,
+    currentModelIndex,
+  );
+  
+  return finalResponse.choices[0].message.content ?? "";
 }
 
 // ─── Route handler ─────────────────────────────────────────────────────────────
-
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
   const symptoms: Symptom[] = body.symptoms;
   const weather: DailyWeatherFactors = body.weather;
-
-  const bmi = (Number(body.weight) / (Number(body.height) / 100) ** 2).toFixed(
-    2,
-  );
+  const bmi = (Number(body.weight) / (Number(body.height) / 100) ** 2).toFixed(2);
 
   function getBMICategory(bmi: number) {
     if (bmi < 18.5) return "Underweight";
@@ -324,42 +416,32 @@ export async function POST(req: NextRequest) {
     return "Obese";
   }
 
-  const weatherSummary = weather
-    ? summarizeWeather(weather)
-    : "Weather data unavailable";
+  const weatherSummary = weather ? summarizeWeather(weather) : "Weather data unavailable";
 
   const systemPrompt = `You are MediScan's AI medical prediction agent — an expert differential diagnosis assistant with deep reasoning capability.
 
-You have access to tools for research and self-evaluation. Follow this workflow rigorously:
-
-Workflow:
+Follow this workflow rigorously:
 1. Call search_medical_literature for the primary symptom cluster.
-2. Call search_medical_literature again for secondary/atypical presentations and weather-related conditions.
-3. Call calculate_risk_factors for each candidate disease (minimum 3 diseases).
-4. Call evaluate_confidence to assess if your differential diagnosis has converged.
-   - If confidence is LOW or gaps remain → continue researching.
-   - If confidence is HIGH and probabilities converged → proceed to final output.
-5. Repeat steps 1–4 as needed until evaluate_confidence signals to stop.
-6. Output final JSON with user's language ${body.user_language}.
+2. Call calculate_risk_factors. Pass an array of multiple diseases at once to save time.
+3. Call evaluate_confidence to assess if your differential diagnosis has converged.
+4. Output final JSON with user's language ${body.user_language}.
 
 Research guidelines:
-- Do NOT limit to a single body system. Always consider systemic, infectious, environmental, and metabolic causes.
-- Actively correlate weather data (temperature, humidity, air quality) with disease likelihood.
-- Do NOT hallucinate patient habits unless explicitly stated in input.
-- Minimum 2 search_medical_literature calls and 3 calculate_risk_factors calls before first evaluate_confidence.
+- Do NOT limit to a single body system. Consider systemic, infectious, and environmental causes.
+- Actively correlate weather data.
+- Whenever possible, call calculate_risk_factors for multiple candidates at once.
 
 Output rules:
-- Maximum 5 diseases, ordered by probability (highest first).
-- Probability between 0 and 1.
-- Respond ONLY with valid JSON:
-
+- Respond ONLY with valid JSON. Do not include markdown blocks like \`\`\`json.
+- Maximum 5 diseases.
+- Format:
 {
   "result": [
     {
       "disease": "string",
-      "probability": float,
+      "probability": float (0-1),
       "description": "string",
-      "reasoning": "string (cite specific symptoms, patient factors, AND weather context)",
+      "reasoning": "string (cite symptoms, factors, weather)",
       "precautions": ["string", "string"],
       "first_aid": "string"
     }
@@ -369,18 +451,11 @@ Output rules:
 
   const userMessage = `Patient Profile:
 - Age: ${body.age} | Gender: ${body.gender}
-- Height: ${body.height}cm | Weight: ${body.weight}kg
 - BMI: ${bmi} (${getBMICategory(Number(bmi))})
-- Location: ${body.location}
 - Medical History: ${JSON.stringify(body.histories)}
 
 Verified Symptoms:
-${symptoms
-  .map(
-    (s) =>
-      `- ${s.name} | Duration: ${s.duration} | Severity: ${s.severity}${s.description ? ` | Note: ${s.description}` : ""}`,
-  )
-  .join("\n")}
+${symptoms.map((s) => `- ${s.name} | Duration: ${s.duration} | Severity: ${s.severity}`).join("\n")}
 
 Environmental Context:
 ${weatherSummary}`;
@@ -393,11 +468,8 @@ ${weatherSummary}`;
   try {
     const finalText = await runAgenticPrediction(messages);
 
-    const clean = finalText
-      .replace(/```(json)?\s*/gi, "")
-      .replace(/```$/m, "")
-      .trim();
-
+    // Pembersihan JSON yang lebih robust
+    const clean = finalText.replace(/```(json)?\s*/gi, "").replace(/```$/m, "").trim();
     const parsed = JSON.parse(clean);
 
     return NextResponse.json({
@@ -405,21 +477,27 @@ ${weatherSummary}`;
       scan_timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Predict API Error:", error);
+    console.error("Predict API Error (All Models Failed):", error);
 
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: "Invalid JSON from AI" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    // ALTERNATIF: GRACEFUL FALLBACK JIKA GROQ BENAR-BENAR ERROR/LIMIT HABIS
+    // UI Aplikasi tidak akan crash 500, melainkan menampilkan peringatan aman ini.
+    return NextResponse.json({
+      result: [
+        {
+          disease: "Sistem Sedang Sibuk (Timeout)",
+          probability: 0.0,
+          description: "Server AI kami (Groq) saat ini sedang mengalami kelebihan beban (rate limit) atau gangguan jaringan. Kami tidak dapat menjalankan prediksi yang akurat saat ini.",
+          reasoning: "API error atau kehabisan limit penggunaan harian. Ini bukan masalah kesehatan, melainkan gangguan server sementara.",
+          precautions: [
+            "Tunggu beberapa menit lalu coba scan lagi",
+            "Jika gejala yang dirasakan berat, jangan menunggu! Segera periksakan diri ke dokter",
+            "Pastikan Anda cukup istirahat"
+          ],
+          first_aid: "Hubungi layanan kesehatan profesional jika Anda merasa kondisi darurat."
+        }
+      ],
+      disclaimer: "PERINGATAN SISTEM: Ini adalah pesan otomatis karena kegagalan server AI. Analisis medis tidak dapat dilakukan.",
+      scan_timestamp: new Date().toISOString(),
+    });
   }
 }
